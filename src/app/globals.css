@@ -43,5 +43,29 @@ main { min-height: calc(100vh - 9rem); }
 .empty-state { margin: 0 auto; max-width: 70rem; padding: 8rem 1.25rem; }
 .eyebrow { color: var(--accent); font-size: .8rem; font-weight: 900; letter-spacing: .16em; }
 h1 { font-size: clamp(2.6rem, 8vw, 6rem); letter-spacing: -.065em; line-height: .9; margin: 1rem 0; max-width: 12ch; }
+.hero { align-items: end; display: flex; gap: 2rem; justify-content: space-between; margin: 0 auto; max-width: 90rem; padding: 6rem clamp(1rem, 5vw, 5rem) 4rem; }
+.hero > div:first-child { max-width: 50rem; }
+.hero p:not(.eyebrow) { color: var(--muted); font-size: clamp(1rem, 2vw, 1.25rem); line-height: 1.6; max-width: 42rem; }
+.hero-stat { background: var(--accent); border-radius: 1.5rem; color: #10121c; display: grid; min-width: 11rem; padding: 1.5rem; transform: rotate(2deg); }
+.hero-stat strong { font-size: 3.5rem; line-height: 1; }.hero-stat span { font-size: .8rem; font-weight: 800; text-transform: uppercase; }
+.shop-section { margin: 0 auto; max-width: 90rem; padding: 0 clamp(1rem, 5vw, 5rem) 5rem; }
+.section-heading { align-items: end; display: flex; justify-content: space-between; margin-bottom: 1.5rem; }
+.section-heading h2 { font-size: clamp(1.8rem, 4vw, 3rem); margin: .2rem 0; }.section-heading > p { color: var(--muted); font-size: .85rem; }
+.catalog-layout { display: grid; gap: 1rem; grid-template-columns: 1.25fr 1fr; }
+.catalog-grid { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.catalog-card { background: var(--panel); border: 1px solid rgba(255,255,255,.09); border-radius: 1.25rem; overflow: hidden; transition: transform .2s ease, border-color .2s ease; }
+.catalog-card:hover { border-color: rgba(85,217,255,.55); transform: translateY(-4px); }
+.catalog-card--featured .item-art { min-height: 31rem; }.catalog-card--featured h2 { font-size: 2rem; }
+.item-art { align-items: center; background: linear-gradient(145deg, #4d5790, #1b2447); display: flex; justify-content: center; min-height: 15rem; overflow: hidden; position: relative; }
+.item-art[data-rarity*="Épico"] { background: linear-gradient(145deg, #864de5, #2c1c59); }.item-art[data-rarity*="Raro"] { background: linear-gradient(145deg, #259ddb, #17395d); }
+.item-art > span:not(.status-chip) { font-size: 8rem; font-weight: 1000; opacity: .25; }.item-art img { object-fit: contain; }
+.status-chip { background: rgba(9,12,25,.88); border-radius: 999px; font-size: .65rem; font-weight: 800; left: .8rem; padding: .45rem .65rem; position: absolute; top: .8rem; }
+.card-copy { padding: 1rem; }.card-copy h2 { font-size: 1.15rem; margin: .15rem 0 1rem; }.item-meta { color: var(--muted); font-size: .7rem; margin: 0; text-transform: uppercase; }
+.prices { align-items: end; display: flex; justify-content: space-between; }.prices strong { color: var(--accent); font-size: 1.25rem; }.vbucks { color: var(--muted); font-size: .8rem; }
+.detail-shell { display: grid; gap: clamp(2rem, 5vw, 6rem); grid-template-columns: minmax(0, 1fr) minmax(20rem, .8fr); margin: 0 auto; max-width: 78rem; padding: 5rem clamp(1rem, 5vw, 4rem); }
+.detail-art { border-radius: 2rem; min-height: 38rem; }.detail-copy { align-self: center; }.detail-copy h1 { font-size: clamp(3rem, 7vw, 5.5rem); }.detail-copy > p:not(.eyebrow,.availability) { color: var(--muted); font-size: 1.1rem; line-height: 1.7; }
+.detail-price { border-bottom: 1px solid rgba(255,255,255,.12); border-top: 1px solid rgba(255,255,255,.12); display: flex; justify-content: space-between; margin: 2rem 0 1rem; padding: 1.25rem 0; }.detail-price strong { color: var(--accent); font-size: 2rem; }.availability { color: var(--cyan); font-size: .8rem; }
+.primary-button { background: var(--accent); border: 0; border-radius: .8rem; color: #10121c; display: inline-flex; font-weight: 950; justify-content: center; margin-top: 1.5rem; padding: 1rem 1.4rem; width: 100%; }.primary-button:disabled { cursor: not-allowed; filter: grayscale(1); opacity: .5; }
 footer { color: var(--muted); font-size: .75rem; padding: 2rem clamp(1rem, 5vw, 5rem); }
-@media (max-width: 600px) { nav a:last-child { display: none; } }
+@media (max-width: 800px) { .hero { align-items: start; flex-direction: column; padding-top: 4rem; }.hero-stat { display: none; }.section-heading > p { display: none; }.catalog-layout, .detail-shell { grid-template-columns: 1fr; }.catalog-card--featured .item-art, .detail-art { min-height: 28rem; } }
+@media (max-width: 600px) { nav a:last-child { display: none; }.catalog-grid { grid-template-columns: 1fr; } }
