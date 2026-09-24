@@ -4,10 +4,12 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Drop Shop MX",
-  description: "Catálogo independiente de objetos disponibles en Fortnite."
+  description: "Catálogo independiente de objetos disponibles en Fortnite.",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="es-MX">
       <body>
@@ -22,9 +24,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           </nav>
         </header>
         <main>{children}</main>
-        <footer>
-          <p>Este material no es oficial ni está avalado por Epic Games.</p>
-        </footer>
       </body>
     </html>
   );
