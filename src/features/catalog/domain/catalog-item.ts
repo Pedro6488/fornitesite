@@ -36,7 +36,3 @@ export function isCatalogItemDisplayable(item: CatalogItem): boolean {
     !["objeto", "object", "unknown"].includes(type)
   );
 }
-
-export function getCatalogTransitionName(mainId: string): string {
-  return `catalog-${mainId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-}

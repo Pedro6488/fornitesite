@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CatalogItem } from "../domain/catalog-item";
 import { CatalogGrid } from "./catalog-grid";
@@ -20,7 +20,13 @@ const item = (overrides: Partial<CatalogItem>): CatalogItem => ({
   ...overrides
 });
 
+let intersectionCallback: IntersectionObserverCallback;
+
 class IntersectionObserverMock {
+  constructor(callback: IntersectionObserverCallback) {
+    intersectionCallback = callback;
+  }
+
   observe() {}
   disconnect() {}
 }
@@ -55,5 +61,24 @@ describe("CatalogGrid", () => {
 
     await waitFor(() => expect(screen.queryByText("Exploradora estelar")).not.toBeInTheDocument());
     expect(screen.getByText("Pico solar")).toBeInTheDocument();
+  });
+
+  it("agrega más objetos sin reemplazar las tarjetas ya visibles", async () => {
+    const items = Array.from({ length: 25 }, (_, index) => item({
+      mainId: `item-${index}`,
+      name: `Objeto ${index}`
+    }));
+    render(<CatalogGrid items={items} />);
+    const firstCard = screen.getByText("Objeto 0").closest("article");
+
+    act(() => {
+      intersectionCallback(
+        [{ isIntersecting: true } as IntersectionObserverEntry],
+        {} as IntersectionObserver
+      );
+    });
+
+    await waitFor(() => expect(screen.getByText("Objeto 24")).toBeInTheDocument());
+    expect(screen.getByText("Objeto 0").closest("article")).toBe(firstCard);
   });
 });

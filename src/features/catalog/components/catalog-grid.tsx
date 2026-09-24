@@ -7,8 +7,7 @@ import {
   useId,
   useMemo,
   useRef,
-  useState,
-  ViewTransition
+  useState
 } from "react";
 import {
   CATALOG_CATEGORIES,
@@ -117,24 +116,22 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         ))}
       </div>
 
-      <ViewTransition update="catalog-results" default="none">
-        <div className="catalog-results">
-          {visibleItems.length ? (
-            <div className="catalog-grid">
-              {visibleItems.map((item, index) => (
-                <CatalogCard key={item.mainId} item={item} index={index} />
-              ))}
-            </div>
-          ) : (
-            <div className="catalog-empty">
-              <span aria-hidden="true">⌕</span>
-              <h3>No encontramos ese objeto</h3>
-              <p>Prueba otro nombre o cambia la categoría.</p>
-              <button type="button" onClick={clearSearch}>Limpiar búsqueda</button>
-            </div>
-          )}
-        </div>
-      </ViewTransition>
+      <div className="catalog-results">
+        {visibleItems.length ? (
+          <div className="catalog-grid">
+            {visibleItems.map((item, index) => (
+              <CatalogCard key={item.mainId} item={item} index={index} />
+            ))}
+          </div>
+        ) : (
+          <div className="catalog-empty">
+            <span aria-hidden="true">⌕</span>
+            <h3>No encontramos ese objeto</h3>
+            <p>Prueba otro nombre o cambia la categoría.</p>
+            <button type="button" onClick={clearSearch}>Limpiar búsqueda</button>
+          </div>
+        )}
+      </div>
 
       {hasMore && (
         <div className="catalog-load-more" ref={loadMoreRef}>

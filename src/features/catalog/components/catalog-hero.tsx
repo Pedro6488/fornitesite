@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getCatalogCategory } from "../application/catalog-query";
 import type { CatalogItem } from "../domain/catalog-item";
 
 export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
@@ -25,7 +26,7 @@ export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
         <div className="hero-glow" aria-hidden="true" />
         <div className="hero-live"><span aria-hidden="true" /> Catálogo activo</div>
         {previewItems.map((item, index) => (
-          <div className={`hero-item hero-item-${index + 1}`} key={item.mainId}>
+          <div className={`hero-item hero-item-${index + 1}`} data-category={getCatalogCategory(item)} key={item.mainId}>
             {item.imageUrl && (
               <Image
                 src={item.imageUrl}

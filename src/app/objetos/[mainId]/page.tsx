@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import { ViewTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { getCatalogCategory } from "@/features/catalog/application/catalog-query";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
-import { canPurchase, getCatalogTransitionName } from "@/features/catalog/domain/catalog-item";
+import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { BackButton } from "@/shared/components/back-button";
 
@@ -13,18 +13,17 @@ export default async function ItemPage({ params }: { params: Promise<{ mainId: s
   const item = await catalog.find(decodeURIComponent(mainId));
   if (!item) notFound();
   const purchasable = canPurchase(item);
+  const category = getCatalogCategory(item);
 
   return (
     <section className="detail-shell">
       <div className="detail-navigation"><BackButton /></div>
-      <ViewTransition name={getCatalogTransitionName(item.mainId)} share="catalog-item">
-        <div className="detail-art item-art" data-rarity={item.rarity}>
-          {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} fill priority sizes="(max-width: 800px) 100vw, 50vw" /> : <span className="item-fallback">{item.name.slice(0, 1)}</span>}
-          <span className="detail-motion-chip"><i aria-hidden="true" /> Vista dinámica</span>
-          <span className="detail-orbit detail-orbit-one" aria-hidden="true" />
-          <span className="detail-orbit detail-orbit-two" aria-hidden="true" />
-        </div>
-      </ViewTransition>
+      <div className="detail-art item-art" data-rarity={item.rarity} data-category={category}>
+        {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} fill priority sizes="(max-width: 800px) 100vw, 50vw" /> : <span className="item-fallback">{item.name.slice(0, 1)}</span>}
+        <span className="detail-motion-chip"><i aria-hidden="true" /> En movimiento</span>
+        <span className="detail-orbit detail-orbit-one" aria-hidden="true" />
+        <span className="detail-orbit detail-orbit-two" aria-hidden="true" />
+      </div>
       <div className="detail-copy">
         <p className="eyebrow">{item.type} · {item.rarity}</p>
         <h1>{item.name}</h1>
