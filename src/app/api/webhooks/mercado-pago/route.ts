@@ -3,11 +3,12 @@ import { MercadoPagoProvider } from "@/features/payments/infrastructure/mercado-
 import { verifyMercadoPagoSignature } from "@/features/payments/infrastructure/mercado-pago-webhook";
 import { SupabaseOrderRepository } from "@/features/orders/infrastructure/supabase-order-repository";
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
+import { getAppUrl } from "@/shared/server/app-url";
 
 export async function POST(request: Request) {
   const body = await request.json() as { id?: string | number; type?: string; data?: { id?: string | number } }; const url = new URL(request.url); const dataId = String(body.data?.id ?? url.searchParams.get("data.id") ?? "");
-  const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET; const token = process.env.MERCADO_PAGO_ACCESS_TOKEN; const appUrl = process.env.NEXT_PUBLIC_APP_URL; const database = getSupabaseAdmin();
-  if (!secret || !token || !appUrl || !database) return NextResponse.json({ error: "Webhook no configurado." }, { status: 503 });
+  const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET; const token = process.env.MERCADO_PAGO_ACCESS_TOKEN; const appUrl = getAppUrl(); const database = getSupabaseAdmin();
+  if (!secret || !token || !database) return NextResponse.json({ error: "Webhook no configurado." }, { status: 503 });
   if (!verifyMercadoPagoSignature({ signature: request.headers.get("x-signature"), requestId: request.headers.get("x-request-id"), dataId, secret })) return NextResponse.json({ error: "Firma inválida." }, { status: 401 });
   const eventId = String(body.id ?? `${body.type}-${dataId}`); const { error: eventError } = await database.from("webhook_events").insert({ provider: "mercado_pago", external_event_id: eventId, event_type: body.type ?? "payment", payload: body });
   if (eventError?.code === "23505") return NextResponse.json({ received: true, duplicate: true });

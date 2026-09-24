@@ -48,6 +48,11 @@ la tienda: habilita la coincidencia transaccional, validación y entrega. Sin
 esa clave, los objetos reales permanecen visibles como informativos y no se
 pueden comprar.
 
+`NEXT_PUBLIC_APP_URL` utiliza `https://fornitesite.vercel.app` como respaldo
+cuando no está definida. En previews y desarrollo se debe configurar de forma
+explícita con el dominio correspondiente para que los retornos de pago apunten
+al ambiente correcto.
+
 No reutilices credenciales entre QA y producción. Registra en Mercado Pago el webhook `https://DOMINIO/api/webhooks/mercado-pago`.
 
 ## Liberación
