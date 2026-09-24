@@ -11,7 +11,7 @@ export class CatalogService {
     const visualItems = await this.visualCatalog.getCurrentCatalog();
     const transactionalItems = this.transactionalCatalog
       ? await this.transactionalCatalog.getCurrentCatalog()
-      : visualItems;
+      : [];
     const transactionById = new Map(transactionalItems.map((item) => [item.mainId, item]));
 
     return visualItems.map((item) => {

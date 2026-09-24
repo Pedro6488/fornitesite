@@ -14,6 +14,10 @@ describe("CatalogService", () => {
     const [result] = await new CatalogService(provider([item()]), provider([])).list();
     expect(result).toEqual(expect.objectContaining({ offerId: null, giftable: false }));
   });
+  it("mantiene el catálogo visual como informativo cuando no existe proveedor transaccional", async () => {
+    const [result] = await new CatalogService(provider([item()])).list();
+    expect(result).toEqual(expect.objectContaining({ offerId: null, giftable: false, priceMxn: 113 }));
+  });
   it("encuentra por identificador permanente", async () => {
     const result = await new CatalogService(provider([item()])).find("CID_TEST");
     expect(result?.name).toBe("Prueba");
