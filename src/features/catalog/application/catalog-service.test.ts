@@ -18,6 +18,14 @@ describe("CatalogService", () => {
     const [result] = await new CatalogService(provider([item()])).list();
     expect(result).toEqual(expect.objectContaining({ offerId: null, giftable: false, priceMxn: 113 }));
   });
+  it("elimina ofertas visuales duplicadas por identificador permanente", async () => {
+    const results = await new CatalogService(provider([
+      item({ name: "Primera oferta" }),
+      item({ name: "Oferta repetida", offerId: "second-offer" })
+    ])).list();
+    expect(results).toHaveLength(1);
+    expect(results[0].name).toBe("Primera oferta");
+  });
   it("encuentra por identificador permanente", async () => {
     const result = await new CatalogService(provider([item()])).find("CID_TEST");
     expect(result?.name).toBe("Prueba");

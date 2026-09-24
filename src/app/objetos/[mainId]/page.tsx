@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
+import { ViewTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
-import { canPurchase } from "@/features/catalog/domain/catalog-item";
+import { canPurchase, getCatalogTransitionName } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 
 export default async function ItemPage({ params }: { params: Promise<{ mainId: string }> }) {
@@ -13,9 +14,11 @@ export default async function ItemPage({ params }: { params: Promise<{ mainId: s
 
   return (
     <section className="detail-shell">
-      <div className="detail-art item-art" data-rarity={item.rarity}>
-        {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} fill priority sizes="(max-width: 800px) 100vw, 50vw" /> : <span>{item.name.slice(0, 1)}</span>}
-      </div>
+      <ViewTransition name={getCatalogTransitionName(item.mainId)} share="catalog-item">
+        <div className="detail-art item-art" data-rarity={item.rarity}>
+          {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} fill priority sizes="(max-width: 800px) 100vw, 50vw" /> : <span>{item.name.slice(0, 1)}</span>}
+        </div>
+      </ViewTransition>
       <div className="detail-copy">
         <p className="eyebrow">{item.type} · {item.rarity}</p>
         <h1>{item.name}</h1>

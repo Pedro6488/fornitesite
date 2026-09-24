@@ -14,7 +14,7 @@ export class CatalogService {
       : [];
     const transactionById = new Map(transactionalItems.map((item) => [item.mainId, item]));
 
-    return visualItems.map((item) => {
+    const enrichedItems = visualItems.map((item) => {
       const transaction = transactionById.get(item.mainId);
       let priceMxn: number | null = null;
 
@@ -32,6 +32,13 @@ export class CatalogService {
         priceMxn
       };
     });
+
+    const uniqueItems = new Map<string, CatalogItem>();
+    for (const item of enrichedItems) {
+      if (!uniqueItems.has(item.mainId)) uniqueItems.set(item.mainId, item);
+    }
+
+    return [...uniqueItems.values()];
   }
 
   async find(mainId: string): Promise<CatalogItem | null> {

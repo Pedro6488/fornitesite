@@ -21,3 +21,7 @@ export interface CatalogProvider {
 export function canPurchase(item: CatalogItem): boolean {
   return Boolean(item.offerId && item.giftable && item.priceMxn !== null);
 }
+
+export function getCatalogTransitionName(mainId: string): string {
+  return `catalog-${mainId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
