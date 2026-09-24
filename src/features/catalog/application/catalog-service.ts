@@ -1,5 +1,5 @@
 import { calculateMxnPrice, UnsupportedVbucksPriceError } from "@/features/pricing/domain/price-calculator";
-import type { CatalogItem, CatalogProvider } from "../domain/catalog-item";
+import { isCatalogItemDisplayable, type CatalogItem, type CatalogProvider } from "../domain/catalog-item";
 
 export class CatalogService {
   constructor(
@@ -14,7 +14,7 @@ export class CatalogService {
       : [];
     const transactionById = new Map(transactionalItems.map((item) => [item.mainId, item]));
 
-    const enrichedItems = visualItems.map((item) => {
+    const enrichedItems = visualItems.filter(isCatalogItemDisplayable).map((item) => {
       const transaction = transactionById.get(item.mainId);
       let priceMxn: number | null = null;
 

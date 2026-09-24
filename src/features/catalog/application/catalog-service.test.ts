@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CatalogService } from "./catalog-service";
 import type { CatalogItem, CatalogProvider } from "../domain/catalog-item";
 
-const item = (overrides: Partial<CatalogItem> = {}): CatalogItem => ({ mainId: "CID_TEST", offerId: "visual-offer", name: "Prueba", description: "", imageUrl: null, type: "Atuendo", rarity: "Raro", regularPriceVbucks: 1_800, finalPriceVbucks: 1_500, priceMxn: null, giftable: true, availableUntil: null, featured: false, ...overrides });
+const item = (overrides: Partial<CatalogItem> = {}): CatalogItem => ({ mainId: "CID_TEST", offerId: "visual-offer", name: "Prueba", description: "", imageUrl: "https://fortnite-api.com/item.png", type: "Atuendo", rarity: "Raro", regularPriceVbucks: 1_800, finalPriceVbucks: 1_500, priceMxn: null, giftable: true, availableUntil: null, featured: false, ...overrides });
 const provider = (items: readonly CatalogItem[]): CatalogProvider => ({ getCurrentCatalog: async () => items });
 
 describe("CatalogService", () => {
@@ -25,6 +25,14 @@ describe("CatalogService", () => {
     ])).list();
     expect(results).toHaveLength(1);
     expect(results[0].name).toBe("Primera oferta");
+  });
+  it("oculta objetos incompletos antes de construir el catálogo", async () => {
+    const results = await new CatalogService(provider([
+      item({ mainId: "valid" }),
+      item({ mainId: "unnamed", name: "Objeto sin nombre" }),
+      item({ mainId: "no-image", imageUrl: null })
+    ])).list();
+    expect(results.map((result) => result.mainId)).toEqual(["valid"]);
   });
   it("encuentra por identificador permanente", async () => {
     const result = await new CatalogService(provider([item()])).find("CID_TEST");

@@ -7,14 +7,23 @@ export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
   return (
     <section className="hero">
       <div className="hero-copy">
-        <p className="eyebrow">DESCUBRE LA TIENDA DE HOY</p>
-        <h1>Encuentra tu próximo favorito.</h1>
-        <p>Explora objetos, compara precios y encuentra justo lo que buscas sin perderte entre cientos de opciones.</p>
-        <a className="hero-cta" href="#catalogo">Explorar catálogo <span aria-hidden="true">↓</span></a>
+        <p className="eyebrow">TU TIENDA, SIN COMPLICACIONES</p>
+        <h1>Tu próximo favorito <span>está aquí.</span></h1>
+        <p>Descubre el catálogo vigente, compara el precio en paVos y MXN, y valida la disponibilidad antes de pagar.</p>
+        <div className="hero-actions">
+          <a className="hero-cta" href="#catalogo">Ver objetos disponibles <span aria-hidden="true">↓</span></a>
+          <small>Explora primero. Decide con calma.</small>
+        </div>
+        <ul className="hero-benefits" aria-label="Beneficios de la tienda">
+          <li><span aria-hidden="true">✓</span> Catálogo vigente</li>
+          <li><span aria-hidden="true">✓</span> Precios claros</li>
+          <li><span aria-hidden="true">✓</span> Validación previa</li>
+        </ul>
       </div>
 
       <div className="hero-showcase" aria-label={`${items.length} objetos disponibles`}>
         <div className="hero-glow" aria-hidden="true" />
+        <div className="hero-live"><span aria-hidden="true" /> Catálogo activo</div>
         {previewItems.map((item, index) => (
           <div className={`hero-item hero-item-${index + 1}`} key={item.mainId}>
             {item.imageUrl && (
@@ -31,7 +40,7 @@ export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
         ))}
         <div className="hero-count">
           <strong>{items.length}</strong>
-          <span>objetos disponibles</span>
+          <span>objetos listos para explorar</span>
         </div>
       </div>
     </section>
