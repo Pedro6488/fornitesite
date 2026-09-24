@@ -42,6 +42,12 @@ BANK_BENEFICIARY
 BANK_CLABE
 ```
 
+`FORTNITE_API_BASE_URL` alimenta el catálogo visual y, si se omite, usa
+`https://fortnite-api.com/v2`. `FNSHOP_API_KEY` no es necesaria para mostrar
+la tienda: habilita la coincidencia transaccional, validación y entrega. Sin
+esa clave, los objetos reales permanecen visibles como informativos y no se
+pueden comprar.
+
 No reutilices credenciales entre QA y producción. Registra en Mercado Pago el webhook `https://DOMINIO/api/webhooks/mercado-pago`.
 
 ## Liberación
