@@ -92,6 +92,10 @@ h1 { font-size: clamp(2.6rem, 8vw, 6rem); letter-spacing: -.065em; line-height: 
 .category-list button:hover { border-color: rgba(85,217,255,.45); color: var(--ink); transform: translateY(-1px); }.category-list button.active { background: var(--ink); border-color: var(--ink); color: #0b1022; }
 .category-list small { align-items: center; background: rgba(255,255,255,.1); border-radius: 999px; display: inline-flex; font-size: .65rem; height: 1.4rem; justify-content: center; min-width: 1.4rem; padding: 0 .35rem; }.category-list button.active small { background: rgba(9,12,25,.12); }
 .catalog-results { min-height: 30rem; }
+.catalog-collaborations { display: grid; gap: 2.25rem; }
+.catalog-collaboration { display: grid; gap: .85rem; }
+.catalog-collaboration-heading { align-items: baseline; border-bottom: 1px solid rgba(255,255,255,.12); display: flex; flex-wrap: wrap; gap: .4rem .7rem; padding-bottom: .75rem; }
+.catalog-collaboration-heading p { color: var(--cyan); font-size: .64rem; font-weight: 900; letter-spacing: .08em; margin: 0; }.catalog-collaboration-heading h2 { font-size: 1.2rem; margin: 0; }.catalog-collaboration-heading span { color: var(--muted); font-size: .7rem; font-weight: 700; }
 .catalog-grid { display: grid; gap: 1rem; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .catalog-card { animation: card-enter .45s calc(var(--card-order) * 35ms) cubic-bezier(.2,.8,.2,1) both; background: rgba(21,26,49,.9); border: 1px solid rgba(255,255,255,.09); border-radius: 1.25rem; contain: layout paint; overflow: hidden; transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease; }
 .catalog-card:hover { border-color: rgba(85,217,255,.55); box-shadow: 0 1.2rem 3rem rgba(0,0,0,.24); transform: translateY(-5px); }
