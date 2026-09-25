@@ -13,6 +13,7 @@ import {
   CATALOG_CATEGORIES,
   countCatalogCategories,
   filterCatalog,
+  groupCatalogByCollaboration,
   type CatalogCategory
 } from "../application/catalog-query";
 import type { CatalogItem } from "../domain/catalog-item";
@@ -35,7 +36,15 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
     () => filterCatalog(items, deferredQuery, category),
     [items, deferredQuery, category]
   );
-  const visibleItems = filteredItems.slice(0, visibleCount);
+  const orderedItems = useMemo(
+    () => groupCatalogByCollaboration(filteredItems).flatMap((group) => group.items),
+    [filteredItems]
+  );
+  const visibleItems = orderedItems.slice(0, visibleCount);
+  const visibleGroups = useMemo(
+    () => groupCatalogByCollaboration(visibleItems),
+    [visibleItems]
+  );
   const hasMore = visibleCount < filteredItems.length;
 
   useEffect(() => {
@@ -118,11 +127,32 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
 
       <div className="catalog-results">
         {visibleItems.length ? (
-          <div className="catalog-grid">
-            {visibleItems.map((item, index) => (
-              <CatalogCard key={item.mainId} item={item} index={index} />
-            ))}
-          </div>
+            <div className="catalog-collaborations">
+              {visibleGroups.map((group, groupIndex) => {
+                const startingIndex = visibleGroups
+                  .slice(0, groupIndex)
+                  .reduce((count, previousGroup) => count + previousGroup.items.length, 0);
+
+                return (
+                  <section className="catalog-collaboration" key={group.name}>
+                    <div className="catalog-collaboration-heading">
+                      <p>COLABORACIÃ“N / COLECCIÃ“N</p>
+                      <h2>{group.name}</h2>
+                      <span>{group.items.length} {group.items.length === 1 ? "objeto" : "objetos"}</span>
+                    </div>
+                    <div className="catalog-grid">
+                      {group.items.map((item, itemIndex) => (
+                        <CatalogCard
+                          key={item.mainId}
+                          item={item}
+                          index={startingIndex + itemIndex}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
         ) : (
           <div className="catalog-empty">
             <span aria-hidden="true">⌕</span>

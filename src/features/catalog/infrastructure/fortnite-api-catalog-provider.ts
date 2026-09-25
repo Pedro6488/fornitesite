@@ -29,6 +29,7 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
       const brItems = Array.isArray(entry.brItems) ? entry.brItems : [];
       const first = record(brItems[0]);
       const bundle = record(entry.bundle);
+      const layout = record(entry.layout);
       const images = record(first.images);
       const rarity = record(first.rarity);
       const type = record(first.type);
@@ -57,7 +58,8 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
         priceMxn: null,
         giftable: Boolean(entry.giftable ?? true),
         availableUntil: text(entry.outDate) || null,
-        featured: index === 0
+        featured: index === 0,
+        collaboration: text(layout.name) || null
       }];
     });
   }

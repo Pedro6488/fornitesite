@@ -14,6 +14,13 @@ export const CATALOG_CATEGORIES = [
 
 export type CatalogCategory = (typeof CATALOG_CATEGORIES)[number];
 
+export type CatalogCollaborationGroup = Readonly<{
+  name: string;
+  items: readonly CatalogItem[];
+}>;
+
+const UNGROUPED_COLLABORATION = "Otros objetos";
+
 function normalize(value: string): string {
   return value
     .normalize("NFD")
@@ -65,4 +72,31 @@ export function countCatalogCategories(
 
   for (const item of items) counts[getCatalogCategory(item)] += 1;
   return counts;
+}
+
+export function groupCatalogByCollaboration(
+  items: readonly CatalogItem[]
+): readonly CatalogCollaborationGroup[] {
+  const groups = new Map<string, CatalogItem[]>();
+
+  for (const item of items) {
+    const name = item.collaboration?.trim() || UNGROUPED_COLLABORATION;
+    const group = groups.get(name) ?? [];
+    group.push(item);
+    groups.set(name, group);
+  }
+
+  return [...groups.entries()]
+    .sort(([left], [right]) => {
+      if (left === UNGROUPED_COLLABORATION) return 1;
+      if (right === UNGROUPED_COLLABORATION) return -1;
+      return left.localeCompare(right, "es-MX", { sensitivity: "base" });
+    })
+    .map(([name, group]) => ({
+      name,
+      items: group.sort((left, right) => {
+        const typeOrder = Number(getCatalogCategory(right) === "Lotes") - Number(getCatalogCategory(left) === "Lotes");
+        return typeOrder || left.name.localeCompare(right.name, "es-MX", { sensitivity: "base" });
+      })
+    }));
 }

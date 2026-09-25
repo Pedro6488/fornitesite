@@ -12,6 +12,7 @@ export type CatalogItem = Readonly<{
   giftable: boolean;
   availableUntil: string | null;
   featured: boolean;
+  collaboration?: string | null;
 }>;
 
 export interface CatalogProvider {
