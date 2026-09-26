@@ -30,6 +30,20 @@ describe("catalog-query", () => {
     expect(filterCatalog([catalogItem()], "exploradora epico", "Todos")).toHaveLength(1);
   });
 
+  it("encuentra objetos por el nombre de su colaboración", () => {
+    const items = [
+      catalogItem({
+        mainId: "leon",
+        name: "Leon S. Kennedy",
+        collaboration: "Resident Evil"
+      })
+    ];
+
+    expect(filterCatalog(items, "resident evil", "Todos").map((item) => item.mainId)).toEqual([
+      "leon"
+    ]);
+  });
+
   it("combina búsqueda y categoría", () => {
     const items = [catalogItem(), catalogItem({ mainId: "pickaxe", name: "Pico solar", type: "Pickaxe" })];
     expect(filterCatalog(items, "solar", "Picos").map((item) => item.mainId)).toEqual(["pickaxe"]);

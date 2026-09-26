@@ -56,7 +56,8 @@ export function filterCatalog(
       item.name,
       item.description,
       item.type,
-      item.rarity
+      item.rarity,
+      item.collaboration ?? ""
     ].join(" "));
 
     return normalizedQuery.split(/\s+/).every((term) => searchableText.includes(term));

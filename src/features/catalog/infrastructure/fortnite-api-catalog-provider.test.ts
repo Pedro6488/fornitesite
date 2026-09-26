@@ -15,6 +15,9 @@ describe("FortniteApiCatalogProvider", () => {
             name: "Madison Beer Bundle",
             image: "https://fortnite-api.com/madison.png"
           },
+          layout: {
+            name: "Madison Beer"
+          },
           brItems: [{
             id: "CID_MADISON",
             name: "Make You Mine Madison",
@@ -33,7 +36,8 @@ describe("FortniteApiCatalogProvider", () => {
       offerId: "bundle-offer",
       name: "Madison Beer Bundle",
       type: "Lote",
-      imageUrl: "https://fortnite-api.com/madison.png"
+      imageUrl: "https://fortnite-api.com/madison.png",
+      collaboration: "Madison Beer"
     }));
   });
 });

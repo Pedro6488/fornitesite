@@ -97,7 +97,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
                 setQuery(event.target.value);
                 setVisibleCount(PAGE_SIZE);
               }}
-              placeholder="Busca una skin, lote, rareza..."
+              placeholder="Busca una skin, lote o colaboración..."
               autoComplete="off"
             />
             {query && <button type="button" onClick={clearSearch} aria-label="Limpiar búsqueda">×</button>}
@@ -136,7 +136,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
                 return (
                   <section className="catalog-collaboration" key={group.name}>
                     <div className="catalog-collaboration-heading">
-                      <p>COLABORACIÃ“N / COLECCIÃ“N</p>
+                      <p>COLABORACIÓN / COLECCIÓN</p>
                       <h2>{group.name}</h2>
                       <span>{group.items.length} {group.items.length === 1 ? "objeto" : "objetos"}</span>
                     </div>

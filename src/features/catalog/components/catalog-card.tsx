@@ -16,7 +16,6 @@ export function CatalogCard({
   const category = getCatalogCategory(item);
   const style = {
     "--card-order": Math.min(index, 12),
-    "--motion-delay": `${-(index % 8) * 0.43}s`,
   } as CSSProperties;
 
   return (
@@ -26,7 +25,7 @@ export function CatalogCard({
         aria-label={`Ver ${item.name}`}
         prefetch={false}
       >
-        <div className="item-art" data-rarity={item.rarity} data-category={category}>
+        <div className="item-art" data-rarity={item.rarity}>
           {item.imageUrl ? (
             <Image
               src={item.imageUrl}
@@ -45,9 +44,6 @@ export function CatalogCard({
           </span>
           <span className="card-arrow" aria-hidden="true">
             ↗
-          </span>
-          <span className="motion-chip" aria-hidden="true">
-            <i /> En movimiento
           </span>
         </div>
         <div className="card-copy">
