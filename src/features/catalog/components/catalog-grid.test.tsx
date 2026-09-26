@@ -63,8 +63,35 @@ describe("CatalogGrid", () => {
     expect(screen.getByText("Pico solar")).toBeInTheDocument();
   });
 
+  it("muestra y permite abrir una colaboración recién llegada aunque su nombre no sea alfabéticamente primero", async () => {
+    render(<CatalogGrid items={[
+      item({
+        mainId: "bloons",
+        name: "Dart Monkey",
+        collaboration: "Bloons TD",
+        shopInDate: "2026-09-25T00:00:00Z",
+        shopLayoutIndex: 1
+      }),
+      item({
+        mainId: "leon",
+        name: "Leon S. Kennedy",
+        collaboration: "Resident Evil",
+        shopInDate: "2026-09-26T00:00:00Z",
+        shopLayoutIndex: 9
+      })
+    ]} />);
+
+    const headings = screen.getAllByRole("heading", { level: 2 });
+    expect(headings[0]).toHaveTextContent("Resident Evil");
+    fireEvent.click(screen.getByRole("button", { name: /Resident Evil/ }));
+
+    await waitFor(() => expect(screen.queryByText("Dart Monkey")).not.toBeInTheDocument());
+    expect(screen.getByText("Leon S. Kennedy")).toBeInTheDocument();
+    expect(screen.getByLabelText("Ordenar")).toHaveValue("newest");
+  });
+
   it("agrega más objetos sin reemplazar las tarjetas ya visibles", async () => {
-    const items = Array.from({ length: 25 }, (_, index) => item({
+    const items = Array.from({ length: 49 }, (_, index) => item({
       mainId: `item-${index}`,
       name: `Objeto ${index}`
     }));
@@ -78,7 +105,7 @@ describe("CatalogGrid", () => {
       );
     });
 
-    await waitFor(() => expect(screen.getByText("Objeto 24")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Objeto 48")).toBeInTheDocument());
     expect(screen.getByText("Objeto 0").closest("article")).toBe(firstCard);
   });
 });

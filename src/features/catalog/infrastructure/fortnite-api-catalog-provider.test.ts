@@ -11,12 +11,15 @@ describe("FortniteApiCatalogProvider", () => {
           offerId: "bundle-offer",
           finalPrice: 3_400,
           regularPrice: 6_800,
+          inDate: "2026-09-26T00:00:00Z",
           bundle: {
             name: "Madison Beer Bundle",
             image: "https://fortnite-api.com/madison.png"
           },
           layout: {
-            name: "Madison Beer"
+            name: "Madison Beer",
+            index: 7,
+            rank: 198
           },
           brItems: [{
             id: "CID_MADISON",
@@ -37,7 +40,10 @@ describe("FortniteApiCatalogProvider", () => {
       name: "Madison Beer Bundle",
       type: "Lote",
       imageUrl: "https://fortnite-api.com/madison.png",
-      collaboration: "Madison Beer"
+      collaboration: "Madison Beer",
+      shopInDate: "2026-09-26T00:00:00Z",
+      shopLayoutIndex: 7,
+      shopLayoutRank: 198
     }));
   });
 });

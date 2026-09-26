@@ -14,6 +14,15 @@ export const CATALOG_CATEGORIES = [
 
 export type CatalogCategory = (typeof CATALOG_CATEGORIES)[number];
 
+export const CATALOG_SORT_OPTIONS = [
+  "newest",
+  "featured",
+  "price-asc",
+  "price-desc"
+] as const;
+
+export type CatalogSort = (typeof CATALOG_SORT_OPTIONS)[number];
+
 export type CatalogCollaborationGroup = Readonly<{
   name: string;
   items: readonly CatalogItem[];
@@ -75,6 +84,54 @@ export function countCatalogCategories(
   return counts;
 }
 
+function compareDateDescending(left?: string | null, right?: string | null): number {
+  return (right ?? "").localeCompare(left ?? "");
+}
+
+function compareOptionalNumber(
+  left?: number | null,
+  right?: number | null,
+  direction: "ascending" | "descending" = "ascending"
+): number {
+  const leftValue = left ?? (direction === "ascending" ? Number.MAX_SAFE_INTEGER : -1);
+  const rightValue = right ?? (direction === "ascending" ? Number.MAX_SAFE_INTEGER : -1);
+  return direction === "ascending" ? leftValue - rightValue : rightValue - leftValue;
+}
+
+function compareOfficialShopOrder(left: CatalogItem, right: CatalogItem): number {
+  return compareOptionalNumber(left.shopLayoutIndex, right.shopLayoutIndex)
+    || compareOptionalNumber(left.shopLayoutRank, right.shopLayoutRank, "descending")
+    || left.name.localeCompare(right.name, "es-MX", { sensitivity: "base" });
+}
+
+export function sortCatalog(
+  items: readonly CatalogItem[],
+  sort: CatalogSort
+): readonly CatalogItem[] {
+  return [...items].sort((left, right) => {
+    if (sort === "price-asc") {
+      return left.finalPriceVbucks - right.finalPriceVbucks || compareOfficialShopOrder(left, right);
+    }
+    if (sort === "price-desc") {
+      return right.finalPriceVbucks - left.finalPriceVbucks || compareOfficialShopOrder(left, right);
+    }
+    if (sort === "featured") {
+      return compareOfficialShopOrder(left, right)
+        || compareDateDescending(left.shopInDate, right.shopInDate);
+    }
+
+    return compareDateDescending(left.shopInDate, right.shopInDate)
+      || compareOfficialShopOrder(left, right);
+  });
+}
+
+export function getLatestShopDate(items: readonly CatalogItem[]): string | null {
+  return items.reduce<string | null>((latest, item) => {
+    if (!item.shopInDate) return latest;
+    return !latest || item.shopInDate > latest ? item.shopInDate : latest;
+  }, null);
+}
+
 export function groupCatalogByCollaboration(
   items: readonly CatalogItem[]
 ): readonly CatalogCollaborationGroup[] {
@@ -87,17 +144,11 @@ export function groupCatalogByCollaboration(
     groups.set(name, group);
   }
 
-  return [...groups.entries()]
-    .sort(([left], [right]) => {
-      if (left === UNGROUPED_COLLABORATION) return 1;
-      if (right === UNGROUPED_COLLABORATION) return -1;
-      return left.localeCompare(right, "es-MX", { sensitivity: "base" });
+  return [...groups.entries()].map(([name, group]) => ({
+    name,
+    items: group.sort((left, right) => {
+      const typeOrder = Number(getCatalogCategory(right) === "Lotes") - Number(getCatalogCategory(left) === "Lotes");
+      return typeOrder || left.name.localeCompare(right.name, "es-MX", { sensitivity: "base" });
     })
-    .map(([name, group]) => ({
-      name,
-      items: group.sort((left, right) => {
-        const typeOrder = Number(getCatalogCategory(right) === "Lotes") - Number(getCatalogCategory(left) === "Lotes");
-        return typeOrder || left.name.localeCompare(right.name, "es-MX", { sensitivity: "base" });
-      })
-    }));
+  }));
 }

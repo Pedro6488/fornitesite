@@ -1,34 +1,35 @@
 import Image from "next/image";
+import { sortCatalog } from "../application/catalog-query";
 import type { CatalogItem } from "../domain/catalog-item";
 
 export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
-  const previewItems = items.filter((item) => item.imageUrl).slice(0, 3);
+  const previewItems = sortCatalog(items, "newest").filter((item) => item.imageUrl).slice(0, 3);
 
   return (
     <section className="hero">
       <div className="hero-copy">
-        <p className="eyebrow">TU TIENDA, SIN COMPLICACIONES</p>
+        <p className="eyebrow">LO NUEVO YA ESTÁ AQUÍ</p>
         <h1>
-          Tu próximo favorito <span>está aquí.</span>
+          Elige. Valida. <span>Recíbelo.</span>
         </h1>
         <p>
-          Descubre el catálogo vigente, compara el precio en paVos y MXN, y
-          valida la disponibilidad antes de pagar.
+          Encuentra tu objeto, conoce el precio en pesos y confirma quién puede
+          entregártelo antes de pagar.
         </p>
         <div className="hero-actions">
           <a className="hero-cta" href="#catalogo">
-            Ver objetos disponibles <span aria-hidden="true">↓</span>
+            Comprar ahora <span aria-hidden="true">↓</span>
           </a>
         </div>
         <ul className="hero-benefits" aria-label="Beneficios de la tienda">
           <li>
-            <span aria-hidden="true">✓</span> Catálogo vigente
+            <span aria-hidden="true">1</span> Elige tu objeto
           </li>
           <li>
-            <span aria-hidden="true">✓</span> Precios claros
+            <span aria-hidden="true">2</span> Validamos disponibilidad
           </li>
           <li>
-            <span aria-hidden="true">✓</span> Validación previa
+            <span aria-hidden="true">3</span> Recibe seguimiento
           </li>
         </ul>
       </div>
@@ -60,7 +61,7 @@ export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
         ))}
         <div className="hero-count">
           <strong>{items.length}</strong>
-          <span>objetos listos para explorar</span>
+          <span>objetos disponibles</span>
         </div>
       </div>
     </section>

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { CatalogItem } from "../domain/catalog-item";
-import { countCatalogCategories, filterCatalog, getCatalogCategory } from "./catalog-query";
+import {
+  countCatalogCategories,
+  filterCatalog,
+  getCatalogCategory,
+  getLatestShopDate,
+  sortCatalog
+} from "./catalog-query";
 
 const catalogItem = (overrides: Partial<CatalogItem> = {}): CatalogItem => ({
   mainId: "item",
@@ -47,6 +53,25 @@ describe("catalog-query", () => {
   it("combina búsqueda y categoría", () => {
     const items = [catalogItem(), catalogItem({ mainId: "pickaxe", name: "Pico solar", type: "Pickaxe" })];
     expect(filterCatalog(items, "solar", "Picos").map((item) => item.mainId)).toEqual(["pickaxe"]);
+  });
+
+  it("coloca primero las ofertas que acaban de entrar a la tienda", () => {
+    const items = [
+      catalogItem({ mainId: "old", name: "Anterior", shopInDate: "2026-09-25T00:00:00Z" }),
+      catalogItem({ mainId: "new", name: "Resident Evil", shopInDate: "2026-09-26T00:00:00Z" })
+    ];
+
+    expect(sortCatalog(items, "newest").map((item) => item.mainId)).toEqual(["new", "old"]);
+    expect(getLatestShopDate(items)).toBe("2026-09-26T00:00:00Z");
+  });
+
+  it("usa la posición oficial de la tienda para popular ahora", () => {
+    const items = [
+      catalogItem({ mainId: "later", shopLayoutIndex: 12, shopLayoutRank: 200 }),
+      catalogItem({ mainId: "first", shopLayoutIndex: 2, shopLayoutRank: 100 })
+    ];
+
+    expect(sortCatalog(items, "featured").map((item) => item.mainId)).toEqual(["first", "later"]);
   });
 
   it("cuenta únicamente las categorías presentes", () => {
