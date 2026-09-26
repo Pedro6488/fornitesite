@@ -30,7 +30,7 @@ const PAGE_SIZE = 48;
 
 const SORT_LABELS: Readonly<Record<CatalogSort, string>> = {
   newest: "Más nuevo",
-  featured: "Destacados primero",
+  featured: "Destacados",
   "price-asc": "Menor precio",
   "price-desc": "Mayor precio"
 };
