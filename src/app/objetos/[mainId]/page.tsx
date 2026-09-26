@@ -5,6 +5,7 @@ import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { BackButton } from "@/shared/components/back-button";
+import { FavoriteButton } from "@/features/catalog/components/favorite-button";
 
 export default async function ItemPage({ params }: { params: Promise<{ mainId: string }> }) {
   const { mainId } = await params;
@@ -22,6 +23,7 @@ export default async function ItemPage({ params }: { params: Promise<{ mainId: s
       <div className="detail-copy">
         <p className="eyebrow">{item.type} · {item.rarity}</p>
         <h1>{item.name}</h1>
+        <FavoriteButton itemId={item.mainId} itemName={item.name} variant="detail" />
         {item.description && <p>{item.description}</p>}
         <div className="detail-price">
           <div><small>Precio en paVos</small><span>◉ {item.finalPriceVbucks.toLocaleString("es-MX")}</span></div>

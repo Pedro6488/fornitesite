@@ -83,10 +83,9 @@ describe("CatalogGrid", () => {
 
     const headings = screen.getAllByRole("heading", { level: 2 });
     expect(headings[0]).toHaveTextContent("Resident Evil");
-    fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
     fireEvent.click(screen.getByRole("tab", { name: /Colecciones/ }));
-    fireEvent.change(screen.getByLabelText("Buscar colección"), { target: { value: "resident" } });
-    fireEvent.click(screen.getByRole("button", { name: /Resident Evil 1 objeto/ }));
+    fireEvent.change(screen.getByLabelText("Buscar en la tienda"), { target: { value: "resident" } });
+    fireEvent.click(screen.getByRole("button", { name: /Abrir Resident Evil, 1 objeto/ }));
 
     await waitFor(() => expect(screen.queryByText("Dart Monkey")).not.toBeInTheDocument());
     expect(screen.getByText("Leon S. Kennedy")).toBeInTheDocument();
@@ -130,11 +129,10 @@ describe("CatalogGrid", () => {
       })
     ]} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
-    expect(screen.getByRole("dialog", { name: "Filtrar catálogo" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: /Colecciones/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Resident Evil 1 objeto/ }));
-    fireEvent.click(screen.getByRole("tab", { name: "Filtros" }));
+    fireEvent.click(screen.getByRole("button", { name: /Abrir Resident Evil, 1 objeto/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Filtros/ }));
+    expect(screen.getByRole("dialog", { name: "Filtrar catálogo" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Hasta $80" }));
     fireEvent.click(screen.getByRole("button", { name: "Listos para comprar" }));
     fireEvent.click(screen.getByRole("button", { name: /Ver 1 resultado/ }));

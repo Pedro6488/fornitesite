@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   startTransition,
   useDeferredValue,
@@ -55,12 +56,11 @@ const AVAILABILITY_OPTIONS: readonly { value: CatalogAvailability; label: string
   { value: "preview", label: "Solo vista previa" }
 ];
 
-type FilterTab = "filters" | "collections";
+type CatalogView = "items" | "collections";
 
 export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
   const searchId = useId();
   const sortId = useId();
-  const collectionSearchId = useId();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CatalogCategory>("Todos");
@@ -71,7 +71,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
   const [priceRange, setPriceRange] = useState<CatalogPriceRange>("all");
   const [rarity, setRarity] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filterTab, setFilterTab] = useState<FilterTab>("filters");
+  const [catalogView, setCatalogView] = useState<CatalogView>("items");
   const [collectionQuery, setCollectionQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const deferredQuery = useDeferredValue(query);
@@ -161,6 +161,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
 
   function selectMode(nextMode: CatalogDiscoveryMode) {
     startTransition(() => {
+      setCatalogView("items");
       setMode(nextMode);
       setSort(nextMode === "popular" ? "featured" : "newest");
       setQuery("");
@@ -175,6 +176,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
 
   function selectCollaboration(nextCollaboration: string | null) {
     startTransition(() => {
+      if (nextCollaboration) setCatalogView("items");
       setCollaboration(nextCollaboration);
       if (nextCollaboration) setMode("all");
       setCategory("Todos");
@@ -200,6 +202,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
 
   function clearAllFilters() {
     startTransition(() => {
+      setCatalogView("items");
       setMode("all");
       setSort("newest");
       setQuery("");
@@ -226,21 +229,33 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
             <input
               id={searchId}
               type="search"
-              value={query}
+              value={catalogView === "collections" ? collectionQuery : query}
               onChange={(event) => {
+                if (catalogView === "collections") {
+                  setCollectionQuery(event.target.value);
+                  return;
+                }
                 setQuery(event.target.value);
                 setMode("all");
                 setCollaboration(null);
                 setVisibleCount(PAGE_SIZE);
               }}
-              placeholder="Busca personaje, objeto o colección..."
+              placeholder={catalogView === "collections" ? "Busca una colección..." : "Busca personaje, objeto o colección..."}
               autoComplete="off"
             />
-            {query && <button type="button" onClick={clearSearch} aria-label="Limpiar búsqueda">×</button>}
+            {(catalogView === "collections" ? collectionQuery : query) && (
+              <button
+                type="button"
+                onClick={catalogView === "collections" ? () => setCollectionQuery("") : clearSearch}
+                aria-label="Limpiar búsqueda"
+              >
+                ×
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="catalog-sort">
+        {catalogView === "items" && <><div className="catalog-sort">
           <label htmlFor={sortId}>Ordenar</label>
           <select
             id={sortId}
@@ -258,10 +273,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
           className="catalog-filter-toggle"
           aria-expanded={filtersOpen}
           aria-controls="catalog-filters"
-          onClick={() => {
-            setFilterTab("filters");
-            setFiltersOpen((current) => !current);
-          }}
+          onClick={() => setFiltersOpen((current) => !current)}
         >
           Filtros {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
         </button>
@@ -270,6 +282,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
           <strong>{filteredItems.length}</strong>
           <span>{filteredItems.length === 1 ? "resultado" : "resultados"}</span>
         </div>
+        </>}
       </div>
 
       <div className="catalog-modes" role="group" aria-label="Descubrir objetos">
@@ -302,6 +315,36 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         </button>
       </div>
 
+      <div className="catalog-view-tabs" role="tablist" aria-label="Vista del catálogo">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={catalogView === "items"}
+          className={catalogView === "items" ? "active" : undefined}
+          onClick={() => setCatalogView("items")}
+        >
+          Objetos
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={catalogView === "collections"}
+          className={catalogView === "collections" ? "active" : undefined}
+          onClick={() => {
+            startTransition(() => {
+              setCatalogView("collections");
+              setMode("all");
+              setCollaboration(null);
+              setCategory("Todos");
+              setQuery("");
+              setCollectionQuery("");
+            });
+          }}
+        >
+          Colecciones <span>{collections.length}</span>
+        </button>
+      </div>
+
       {filtersOpen && (
         <>
           <button
@@ -331,29 +374,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
                 ×
               </button>
             </div>
-            <div className="catalog-filter-tabs" role="tablist" aria-label="Opciones del catálogo">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={filterTab === "filters"}
-                className={filterTab === "filters" ? "active" : undefined}
-                onClick={() => setFilterTab("filters")}
-              >
-                Filtros
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={filterTab === "collections"}
-                className={filterTab === "collections" ? "active" : undefined}
-                onClick={() => setFilterTab("collections")}
-              >
-                Colecciones <span>{collections.length}</span>
-              </button>
-            </div>
-
-            {filterTab === "filters" ? (
-              <div className="catalog-filter-fields" role="tabpanel">
+            <div className="catalog-filter-fields">
                 <fieldset className="catalog-filter-group catalog-filter-category">
                   <legend>Categoría</legend>
                   <div className="catalog-filter-options compact">
@@ -435,48 +456,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
                     ))}
                   </div>
                 </fieldset>
-              </div>
-            ) : (
-              <div className="catalog-collection-browser" role="tabpanel">
-                <label htmlFor={collectionSearchId}>Buscar colección</label>
-                <div className="collection-search-field">
-                  <span aria-hidden="true">⌕</span>
-                  <input
-                    id={collectionSearchId}
-                    type="search"
-                    value={collectionQuery}
-                    onChange={(event) => setCollectionQuery(event.target.value)}
-                    placeholder="Ej. Resident Evil, Disney..."
-                    autoComplete="off"
-                  />
-                  {collectionQuery && (
-                    <button type="button" aria-label="Limpiar búsqueda de colección" onClick={() => setCollectionQuery("")}>×</button>
-                  )}
-                </div>
-                <div className="catalog-collection-grid">
-                  <button
-                    type="button"
-                    className={collaboration === null ? "active" : undefined}
-                    onClick={() => selectCollaboration(null)}
-                  >
-                    <strong>Todas</strong><span>{items.length} objetos</span>
-                  </button>
-                  {visibleCollections.map((group) => (
-                    <button
-                      type="button"
-                      key={group.name}
-                      className={collaboration === group.name ? "active" : undefined}
-                      aria-pressed={collaboration === group.name}
-                      onClick={() => selectCollaboration(group.name)}
-                    >
-                      <strong>{group.name}</strong>
-                      <span>{group.items.length} {group.items.length === 1 ? "objeto" : "objetos"}</span>
-                    </button>
-                  ))}
-                </div>
-                {visibleCollections.length === 0 && <p className="collection-empty">No encontramos esa colección.</p>}
-              </div>
-            )}
+            </div>
             <div className="catalog-filter-actions">
               {activeFilterCount > 0 && (
                 <button type="button" className="catalog-filter-clear" onClick={clearAllFilters}>
@@ -491,7 +471,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         </>
       )}
 
-      <div className="category-list" role="group" aria-label="Filtrar por categoría">
+      {catalogView === "items" && <div className="category-list" role="group" aria-label="Filtrar por categoría">
         {categories.map((candidate) => (
           <button
             type="button"
@@ -504,9 +484,9 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
             <small>{counts[candidate]}</small>
           </button>
         ))}
-      </div>
+      </div>}
 
-      {activeFilterCount > 0 && (
+      {catalogView === "items" && activeFilterCount > 0 && (
         <div className="active-filters" aria-label="Filtros aplicados">
           <span>Filtros:</span>
           {category !== "Todos" && (
@@ -529,12 +509,46 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
       )}
 
       <div className="catalog-list-heading">
-        <div><p>{MODE_LABELS[mode]}</p><h3>{filteredItems.length} {filteredItems.length === 1 ? "objeto" : "objetos"}</h3></div>
-        <span>{collaboration ? `Colección ${collaboration}` : "Explora y elige tu favorito"}</span>
+        {catalogView === "collections" ? (
+          <div><p>Explora por universo</p><h3>{visibleCollections.length} colecciones</h3></div>
+        ) : (
+          <div><p>{MODE_LABELS[mode]}</p><h3>{filteredItems.length} {filteredItems.length === 1 ? "objeto" : "objetos"}</h3></div>
+        )}
+        <span>{catalogView === "collections" ? "Elige una colección para ver sus objetos" : collaboration ? `Colección ${collaboration}` : "Explora y elige tu favorito"}</span>
       </div>
 
       <div className="catalog-results">
-        {visibleItems.length ? (
+        {catalogView === "collections" ? (
+          <div className="catalog-collection-explorer">
+            {visibleCollections.length ? (
+              <div className="catalog-collection-showcase">
+                {visibleCollections.map((group) => (
+                  <button
+                    type="button"
+                    className="catalog-collection-card"
+                    key={group.name}
+                    aria-label={`Abrir ${group.name}, ${group.items.length} ${group.items.length === 1 ? "objeto" : "objetos"}`}
+                    onClick={() => selectCollaboration(group.name)}
+                  >
+                    <span className="catalog-collection-art" aria-hidden="true">
+                      {group.items.filter((item) => item.imageUrl).slice(0, 3).map((item, index) => (
+                        <span className={`collection-preview collection-preview-${index + 1}`} key={item.mainId}>
+                          <Image src={item.imageUrl!} alt="" fill loading="lazy" sizes="(max-width: 600px) 45vw, 20vw" />
+                        </span>
+                      ))}
+                    </span>
+                    <span className="catalog-collection-copy">
+                      <span><small>Colección</small><strong>{group.name}</strong></span>
+                      <b>{group.items.length} {group.items.length === 1 ? "objeto" : "objetos"} <span aria-hidden="true">→</span></b>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="collection-empty">No encontramos esa colección.</p>
+            )}
+          </div>
+        ) : visibleItems.length ? (
             <div className="catalog-collaborations">
               {visibleGroups.map((group, groupIndex) => {
                 const startingIndex = visibleGroups
@@ -571,7 +585,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         )}
       </div>
 
-      {hasMore && (
+      {catalogView === "items" && hasMore && (
         <div className="catalog-load-more" ref={loadMoreRef}>
           <button
             type="button"
