@@ -63,7 +63,7 @@ describe("CatalogGrid", () => {
     expect(screen.getByText("Pico solar")).toBeInTheDocument();
   });
 
-  it("muestra y permite abrir una colaboración recién llegada aunque su nombre no sea alfabéticamente primero", async () => {
+  it("muestra primero una colaboración recién llegada y permite encontrarla por colección", async () => {
     render(<CatalogGrid items={[
       item({
         mainId: "bloons",
@@ -83,7 +83,10 @@ describe("CatalogGrid", () => {
 
     const headings = screen.getAllByRole("heading", { level: 2 });
     expect(headings[0]).toHaveTextContent("Resident Evil");
-    fireEvent.click(screen.getByRole("button", { name: /Resident Evil/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
+    fireEvent.click(screen.getByRole("tab", { name: /Colecciones/ }));
+    fireEvent.change(screen.getByLabelText("Buscar colección"), { target: { value: "resident" } });
+    fireEvent.click(screen.getByRole("button", { name: /Resident Evil 1 objeto/ }));
 
     await waitFor(() => expect(screen.queryByText("Dart Monkey")).not.toBeInTheDocument());
     expect(screen.getByText("Leon S. Kennedy")).toBeInTheDocument();
@@ -127,14 +130,31 @@ describe("CatalogGrid", () => {
       })
     ]} />);
 
-    fireEvent.change(screen.getByLabelText("Colección"), { target: { value: "Resident Evil" } });
-    fireEvent.change(screen.getByLabelText("Precio MXN"), { target: { value: "under-80" } });
-    fireEvent.change(screen.getByLabelText("Disponibilidad"), { target: { value: "available" } });
+    fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
+    expect(screen.getByRole("dialog", { name: "Filtrar catálogo" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("tab", { name: /Colecciones/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Resident Evil 1 objeto/ }));
+    fireEvent.click(screen.getByRole("tab", { name: "Filtros" }));
+    fireEvent.click(screen.getByRole("button", { name: "Hasta $80" }));
+    fireEvent.click(screen.getByRole("button", { name: "Listos para comprar" }));
+    fireEvent.click(screen.getByRole("button", { name: /Ver 1 resultado/ }));
 
     await waitFor(() => expect(screen.queryByText("Alien")).not.toBeInTheDocument());
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByText("Leon S. Kennedy")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Resident Evil ×" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Listos para comprar ×" })).toBeInTheDocument();
+  });
+
+  it("mantiene los filtros secundarios ocultos hasta que el usuario los solicita", () => {
+    render(<CatalogGrid items={[item({})]} />);
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Filtros" }));
+    expect(screen.getByRole("dialog", { name: "Filtrar catálogo" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole("button", { name: "Cerrar filtros" })[1]);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("agrega más objetos sin reemplazar las tarjetas ya visibles", async () => {

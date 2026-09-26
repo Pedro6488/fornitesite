@@ -15,7 +15,6 @@ import {
   filterCatalog,
   filterCatalogDiscovery,
   filterCatalogFacets,
-  getLatestShopDate,
   groupCatalogByCollaboration,
   sortCatalog,
   type CatalogAvailability,
@@ -31,7 +30,7 @@ const PAGE_SIZE = 48;
 
 const SORT_LABELS: Readonly<Record<CatalogSort, string>> = {
   newest: "Más nuevo",
-  featured: "Popular ahora",
+  featured: "Destacados primero",
   "price-asc": "Menor precio",
   "price-desc": "Mayor precio"
 };
@@ -42,9 +41,26 @@ const MODE_LABELS: Readonly<Record<CatalogDiscoveryMode, string>> = {
   all: "Todo el catálogo"
 };
 
+const PRICE_OPTIONS: readonly { value: CatalogPriceRange; label: string }[] = [
+  { value: "all", label: "Cualquier precio" },
+  { value: "under-80", label: "Hasta $80" },
+  { value: "80-120", label: "$81 a $120" },
+  { value: "120-160", label: "$121 a $160" },
+  { value: "over-160", label: "Más de $160" }
+];
+
+const AVAILABILITY_OPTIONS: readonly { value: CatalogAvailability; label: string }[] = [
+  { value: "all", label: "Todos" },
+  { value: "available", label: "Listos para comprar" },
+  { value: "preview", label: "Solo vista previa" }
+];
+
+type FilterTab = "filters" | "collections";
+
 export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
   const searchId = useId();
   const sortId = useId();
+  const collectionSearchId = useId();
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CatalogCategory>("Todos");
@@ -55,6 +71,8 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
   const [priceRange, setPriceRange] = useState<CatalogPriceRange>("all");
   const [rarity, setRarity] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filterTab, setFilterTab] = useState<FilterTab>("filters");
+  const [collectionQuery, setCollectionQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const deferredQuery = useDeferredValue(query);
   const discoveryItems = useMemo(() => filterCatalogDiscovery(items, mode), [items, mode]);
@@ -85,17 +103,14 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
     popular: filterCatalogDiscovery(items, "popular").length,
     all: items.length
   }), [items]);
-  const latestShopDate = useMemo(() => getLatestShopDate(items), [items]);
-  const latestCollaborations = useMemo(() => {
-    if (!latestShopDate) return [];
-    return groupCatalogByCollaboration(sortCatalog(
-      items.filter((item) => item.shopInDate === latestShopDate && item.collaboration?.trim()),
-      "featured"
-    ));
-  }, [items, latestShopDate]);
   const collections = useMemo(() => groupCatalogByCollaboration(items)
     .filter((group) => group.name !== "Otros objetos")
     .sort((left, right) => left.name.localeCompare(right.name, "es-MX", { sensitivity: "base" })), [items]);
+  const visibleCollections = useMemo(() => {
+    const normalizedQuery = collectionQuery.trim().toLocaleLowerCase("es-MX");
+    if (!normalizedQuery) return collections;
+    return collections.filter((group) => group.name.toLocaleLowerCase("es-MX").includes(normalizedQuery));
+  }, [collectionQuery, collections]);
   const rarities = useMemo(() => [...new Set(items.map((item) => item.rarity).filter(Boolean))]
     .sort((left, right) => left.localeCompare(right, "es-MX", { sensitivity: "base" })), [items]);
   const activeFilterCount = Number(category !== "Todos")
@@ -120,6 +135,22 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
     observer.observe(target);
     return () => observer.disconnect();
   }, [filteredItems.length, hasMore]);
+
+  useEffect(() => {
+    if (!filtersOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setFiltersOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [filtersOpen]);
 
   function selectCategory(nextCategory: CatalogCategory) {
     startTransition(() => {
@@ -146,17 +177,6 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
     startTransition(() => {
       setCollaboration(nextCollaboration);
       if (nextCollaboration) setMode("all");
-      setCategory("Todos");
-      setQuery("");
-      setVisibleCount(PAGE_SIZE);
-    });
-  }
-
-  function selectLatestCollaboration(nextCollaboration: string) {
-    startTransition(() => {
-      setMode("new");
-      setSort("newest");
-      setCollaboration(nextCollaboration);
       setCategory("Todos");
       setQuery("");
       setVisibleCount(PAGE_SIZE);
@@ -238,7 +258,10 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
           className="catalog-filter-toggle"
           aria-expanded={filtersOpen}
           aria-controls="catalog-filters"
-          onClick={() => setFiltersOpen((current) => !current)}
+          onClick={() => {
+            setFilterTab("filters");
+            setFiltersOpen((current) => !current);
+          }}
         >
           Filtros {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
         </button>
@@ -279,102 +302,194 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         </button>
       </div>
 
-      {latestCollaborations.length > 0 && (
-        <div className="latest-discovery" aria-label="Colaboraciones recién llegadas">
-          <div className="latest-discovery-label">
-            <span aria-hidden="true" /> Recién llegados
-          </div>
-          <div className="latest-collaborations">
-            <button
-              type="button"
-              onClick={() => selectMode("new")}
-            >
-              Ver novedades
-            </button>
-            {latestCollaborations.map((group) => (
+      {filtersOpen && (
+        <>
+          <button
+            type="button"
+            className="catalog-filter-backdrop"
+            aria-label="Cerrar filtros"
+            onClick={() => setFiltersOpen(false)}
+          />
+          <section
+            className="catalog-filter-panel"
+            id="catalog-filters"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="catalog-filter-title"
+          >
+            <div className="catalog-filter-heading">
+              <div>
+                <strong id="catalog-filter-title">Filtrar catálogo</strong>
+                <span>Elige solo lo que te interesa</span>
+              </div>
               <button
                 type="button"
-                key={group.name}
-                className={collaboration === group.name ? "active" : undefined}
-                aria-pressed={collaboration === group.name}
-                onClick={() => selectLatestCollaboration(group.name)}
+                className="catalog-filter-close"
+                aria-label="Cerrar filtros"
+                onClick={() => setFiltersOpen(false)}
               >
-                {group.name} <small>{group.items.length}</small>
+                ×
               </button>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+            <div className="catalog-filter-tabs" role="tablist" aria-label="Opciones del catálogo">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={filterTab === "filters"}
+                className={filterTab === "filters" ? "active" : undefined}
+                onClick={() => setFilterTab("filters")}
+              >
+                Filtros
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={filterTab === "collections"}
+                className={filterTab === "collections" ? "active" : undefined}
+                onClick={() => setFilterTab("collections")}
+              >
+                Colecciones <span>{collections.length}</span>
+              </button>
+            </div>
 
-      <div
-        className={`catalog-filter-panel ${filtersOpen ? "open" : ""}`}
-        id="catalog-filters"
-      >
-        <div className="catalog-filter-heading">
-          <div><strong>Afina tu búsqueda</strong><span>Combina los filtros que necesites</span></div>
-          {activeFilterCount > 0 && <button type="button" onClick={clearAllFilters}>Limpiar todo</button>}
-        </div>
-        <div className="catalog-filter-fields">
-          <label>
-            Colección
-            <select
-              value={collaboration ?? ""}
-              onChange={(event) => selectCollaboration(event.target.value || null)}
-            >
-              <option value="">Todas las colecciones</option>
-              {collections.map((group) => (
-                <option value={group.name} key={group.name}>{group.name} ({group.items.length})</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Precio MXN
-            <select
-              value={priceRange}
-              onChange={(event) => {
-                setPriceRange(event.target.value as CatalogPriceRange);
-                setVisibleCount(PAGE_SIZE);
-              }}
-            >
-              <option value="all">Cualquier precio</option>
-              <option value="under-80">Hasta $80</option>
-              <option value="80-120">De $81 a $120</option>
-              <option value="120-160">De $121 a $160</option>
-              <option value="over-160">Más de $160</option>
-            </select>
-          </label>
-          <label>
-            Disponibilidad
-            <select
-              value={availability}
-              onChange={(event) => {
-                setAvailability(event.target.value as CatalogAvailability);
-                setVisibleCount(PAGE_SIZE);
-              }}
-            >
-              <option value="all">Todos</option>
-              <option value="available">Listos para comprar</option>
-              <option value="preview">Solo vista previa</option>
-            </select>
-          </label>
-          <label>
-            Rareza
-            <select
-              value={rarity ?? ""}
-              onChange={(event) => {
-                setRarity(event.target.value || null);
-                setVisibleCount(PAGE_SIZE);
-              }}
-            >
-              <option value="">Todas las rarezas</option>
-              {rarities.map((value) => <option value={value} key={value}>{value}</option>)}
-            </select>
-          </label>
-        </div>
-        <button type="button" className="catalog-filter-apply" onClick={() => setFiltersOpen(false)}>
-          Ver {filteredItems.length} resultados
-        </button>
-      </div>
+            {filterTab === "filters" ? (
+              <div className="catalog-filter-fields" role="tabpanel">
+                <fieldset className="catalog-filter-group catalog-filter-category">
+                  <legend>Categoría</legend>
+                  <div className="catalog-filter-options compact">
+                    {categories.map((candidate) => (
+                      <button
+                        type="button"
+                        key={candidate}
+                        className={category === candidate ? "active" : undefined}
+                        aria-pressed={category === candidate}
+                        onClick={() => selectCategory(candidate)}
+                      >
+                        {candidate} <small>{counts[candidate]}</small>
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="catalog-filter-group">
+                  <legend>Precio MXN</legend>
+                  <div className="catalog-filter-options">
+                    {PRICE_OPTIONS.map((option) => (
+                      <button
+                        type="button"
+                        key={option.value}
+                        className={priceRange === option.value ? "active" : undefined}
+                        aria-pressed={priceRange === option.value}
+                        onClick={() => {
+                          setPriceRange(option.value);
+                          setVisibleCount(PAGE_SIZE);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="catalog-filter-group">
+                  <legend>Disponibilidad</legend>
+                  <div className="catalog-filter-options">
+                    {AVAILABILITY_OPTIONS.map((option) => (
+                      <button
+                        type="button"
+                        key={option.value}
+                        className={availability === option.value ? "active" : undefined}
+                        aria-pressed={availability === option.value}
+                        onClick={() => {
+                          setAvailability(option.value);
+                          setVisibleCount(PAGE_SIZE);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+                <fieldset className="catalog-filter-group">
+                  <legend>Rareza</legend>
+                  <div className="catalog-filter-options compact">
+                    <button
+                      type="button"
+                      className={rarity === null ? "active" : undefined}
+                      aria-pressed={rarity === null}
+                      onClick={() => setRarity(null)}
+                    >
+                      Todas
+                    </button>
+                    {rarities.map((value) => (
+                      <button
+                        type="button"
+                        key={value}
+                        className={rarity === value ? "active" : undefined}
+                        aria-pressed={rarity === value}
+                        onClick={() => {
+                          setRarity(value);
+                          setVisibleCount(PAGE_SIZE);
+                        }}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+            ) : (
+              <div className="catalog-collection-browser" role="tabpanel">
+                <label htmlFor={collectionSearchId}>Buscar colección</label>
+                <div className="collection-search-field">
+                  <span aria-hidden="true">⌕</span>
+                  <input
+                    id={collectionSearchId}
+                    type="search"
+                    value={collectionQuery}
+                    onChange={(event) => setCollectionQuery(event.target.value)}
+                    placeholder="Ej. Resident Evil, Disney..."
+                    autoComplete="off"
+                  />
+                  {collectionQuery && (
+                    <button type="button" aria-label="Limpiar búsqueda de colección" onClick={() => setCollectionQuery("")}>×</button>
+                  )}
+                </div>
+                <div className="catalog-collection-grid">
+                  <button
+                    type="button"
+                    className={collaboration === null ? "active" : undefined}
+                    onClick={() => selectCollaboration(null)}
+                  >
+                    <strong>Todas</strong><span>{items.length} objetos</span>
+                  </button>
+                  {visibleCollections.map((group) => (
+                    <button
+                      type="button"
+                      key={group.name}
+                      className={collaboration === group.name ? "active" : undefined}
+                      aria-pressed={collaboration === group.name}
+                      onClick={() => selectCollaboration(group.name)}
+                    >
+                      <strong>{group.name}</strong>
+                      <span>{group.items.length} {group.items.length === 1 ? "objeto" : "objetos"}</span>
+                    </button>
+                  ))}
+                </div>
+                {visibleCollections.length === 0 && <p className="collection-empty">No encontramos esa colección.</p>}
+              </div>
+            )}
+            <div className="catalog-filter-actions">
+              {activeFilterCount > 0 && (
+                <button type="button" className="catalog-filter-clear" onClick={clearAllFilters}>
+                  Limpiar filtros
+                </button>
+              )}
+              <button type="button" className="catalog-filter-apply" onClick={() => setFiltersOpen(false)}>
+                Ver {filteredItems.length} resultados
+              </button>
+            </div>
+          </section>
+        </>
+      )}
 
       <div className="category-list" role="group" aria-label="Filtrar por categoría">
         {categories.map((candidate) => (
@@ -391,12 +506,9 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         ))}
       </div>
 
-      {(mode !== "all" || activeFilterCount > 0) && (
+      {activeFilterCount > 0 && (
         <div className="active-filters" aria-label="Filtros aplicados">
-          <span>Viendo:</span>
-          {mode !== "all" && (
-            <button type="button" onClick={() => selectMode("all")}>{MODE_LABELS[mode]} ×</button>
-          )}
+          <span>Filtros:</span>
           {category !== "Todos" && (
             <button type="button" onClick={() => selectCategory("Todos")}>{category} ×</button>
           )}
