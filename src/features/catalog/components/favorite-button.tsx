@@ -1,19 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const FAVORITES_STORAGE_KEY = "drop-shop-mx:favorites";
-const FAVORITES_CHANGED_EVENT = "drop-shop-mx:favorites-changed";
-
-function readFavorites(): Set<string> {
-  try {
-    const stored = window.localStorage.getItem(FAVORITES_STORAGE_KEY);
-    const values = stored ? JSON.parse(stored) : [];
-    return new Set(Array.isArray(values) ? values.filter((value): value is string => typeof value === "string") : []);
-  } catch {
-    return new Set();
-  }
-}
+import {
+  readFavoriteIds,
+  subscribeToFavorites,
+  writeFavoriteIds
+} from "../application/favorite-storage";
 
 export function FavoriteButton({
   itemId,
@@ -27,24 +19,18 @@ export function FavoriteButton({
   const [favorite, setFavorite] = useState(false);
 
   useEffect(() => {
-    const syncFavorite = () => setFavorite(readFavorites().has(itemId));
+    const syncFavorite = () => setFavorite(readFavoriteIds().has(itemId));
     syncFavorite();
-    window.addEventListener("storage", syncFavorite);
-    window.addEventListener(FAVORITES_CHANGED_EVENT, syncFavorite);
-    return () => {
-      window.removeEventListener("storage", syncFavorite);
-      window.removeEventListener(FAVORITES_CHANGED_EVENT, syncFavorite);
-    };
+    return subscribeToFavorites(syncFavorite);
   }, [itemId]);
 
   function toggleFavorite() {
-    const favorites = readFavorites();
+    const favorites = readFavoriteIds();
     if (favorites.has(itemId)) favorites.delete(itemId);
     else favorites.add(itemId);
 
-    window.localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...favorites]));
+    writeFavoriteIds(favorites);
     setFavorite(favorites.has(itemId));
-    window.dispatchEvent(new Event(FAVORITES_CHANGED_EVENT));
   }
 
   return (
