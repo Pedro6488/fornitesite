@@ -1,14 +1,17 @@
 import Image from "next/image";
-import { sortCatalog } from "../application/catalog-query";
+import { filterCatalogDiscovery, sortCatalog } from "../application/catalog-query";
 import type { CatalogItem } from "../domain/catalog-item";
 
 export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
-  const previewItems = sortCatalog(items, "newest").filter((item) => item.imageUrl).slice(0, 3);
+  const popularItems = filterCatalogDiscovery(items, "popular");
+  const previewItems = sortCatalog(popularItems, "featured")
+    .filter((item) => item.imageUrl)
+    .slice(0, 3);
 
   return (
     <section className="hero">
       <div className="hero-copy">
-        <p className="eyebrow">LO NUEVO YA ESTÁ AQUÍ</p>
+        <p className="eyebrow">DESTACADOS DE HOY</p>
         <h1>
           Elige. Valida. <span>Recíbelo.</span>
         </h1>
@@ -40,7 +43,7 @@ export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
       >
         <div className="hero-glow" aria-hidden="true" />
         <div className="hero-live">
-          <span aria-hidden="true" /> Catálogo activo
+          <span aria-hidden="true" /> Selección destacada
         </div>
         {previewItems.map((item, index) => (
           <div

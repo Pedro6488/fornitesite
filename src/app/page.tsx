@@ -11,8 +11,8 @@ export default async function HomePage() {
       <CatalogHero items={items} />
       <section className="shop-section" id="catalogo">
         <div className="section-heading">
-          <div><p className="eyebrow">ELIGE TU FAVORITO</p><h2>Lo nuevo aparece primero</h2></div>
-          <p>Explora recién llegados, populares y categorías sin perderte entre cientos de objetos.</p>
+          <div><p className="eyebrow">ELIGE TU FAVORITO</p><h2>Encuentra lo que buscas</h2></div>
+          <p>Descubre novedades, destacados y colecciones completas sin perderte entre cientos de objetos.</p>
         </div>
         <CatalogGrid items={items} />
       </section>

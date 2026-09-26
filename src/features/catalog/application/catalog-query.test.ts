@@ -3,6 +3,8 @@ import type { CatalogItem } from "../domain/catalog-item";
 import {
   countCatalogCategories,
   filterCatalog,
+  filterCatalogDiscovery,
+  filterCatalogFacets,
   getCatalogCategory,
   getLatestShopDate,
   sortCatalog
@@ -71,7 +73,36 @@ describe("catalog-query", () => {
       catalogItem({ mainId: "first", shopLayoutIndex: 2, shopLayoutRank: 100 })
     ];
 
-    expect(sortCatalog(items, "featured").map((item) => item.mainId)).toEqual(["first", "later"]);
+    expect(sortCatalog(items, "featured").map((item) => item.mainId)).toEqual(["later", "first"]);
+  });
+
+  it("hace que novedades y popular sean conjuntos diferentes", () => {
+    const items = Array.from({ length: 7 }, (_, index) => catalogItem({
+      mainId: `item-${index}`,
+      collaboration: `Colección ${index}`,
+      shopInDate: index === 6 ? "2026-09-26T00:00:00Z" : "2026-09-25T00:00:00Z",
+      shopLayoutRank: index
+    }));
+
+    expect(filterCatalogDiscovery(items, "new").map((item) => item.mainId)).toEqual(["item-6"]);
+    expect(filterCatalogDiscovery(items, "popular").map((item) => item.mainId)).toEqual([
+      "item-6", "item-5", "item-4", "item-3", "item-2", "item-1"
+    ]);
+  });
+
+  it("combina colección, precio, disponibilidad y rareza", () => {
+    const items = [
+      catalogItem({ mainId: "match", collaboration: "Resident Evil", priceMxn: 75, offerId: "offer", giftable: true }),
+      catalogItem({ mainId: "expensive", collaboration: "Resident Evil", priceMxn: 170, offerId: "offer-2", giftable: true }),
+      catalogItem({ mainId: "preview", collaboration: "Resident Evil", priceMxn: 75 })
+    ];
+
+    expect(filterCatalogFacets(items, {
+      collaboration: "Resident Evil",
+      availability: "available",
+      priceRange: "under-80",
+      rarity: "Épico"
+    }).map((item) => item.mainId)).toEqual(["match"]);
   });
 
   it("cuenta únicamente las categorías presentes", () => {
