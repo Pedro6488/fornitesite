@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { getCatalogCategory } from "../application/catalog-query";
 import { canPurchase, type CatalogItem } from "../domain/catalog-item";
+import { FavoriteButton } from "./favorite-button";
 
 export function CatalogCard({
   item,
@@ -16,7 +17,6 @@ export function CatalogCard({
   const category = getCatalogCategory(item);
   const style = {
     "--card-order": Math.min(index, 12),
-    "--motion-delay": `${-(index % 8) * 0.43}s`,
   } as CSSProperties;
 
   return (
@@ -26,7 +26,7 @@ export function CatalogCard({
         aria-label={`Ver ${item.name}`}
         prefetch={false}
       >
-        <div className="item-art" data-rarity={item.rarity} data-category={category}>
+        <div className="item-art" data-rarity={item.rarity}>
           {item.imageUrl ? (
             <Image
               src={item.imageUrl}
@@ -46,9 +46,6 @@ export function CatalogCard({
           <span className="card-arrow" aria-hidden="true">
             ↗
           </span>
-          <span className="motion-chip" aria-hidden="true">
-            <i /> En movimiento
-          </span>
         </div>
         <div className="card-copy">
           <p className="item-meta">
@@ -67,6 +64,7 @@ export function CatalogCard({
           </div>
         </div>
       </Link>
+      <FavoriteButton itemId={item.mainId} itemName={item.name} />
     </article>
   );
 }

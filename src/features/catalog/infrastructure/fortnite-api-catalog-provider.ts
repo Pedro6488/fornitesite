@@ -14,6 +14,10 @@ function integer(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : 0;
 }
 
+function optionalInteger(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : null;
+}
+
 export class FortniteApiCatalogProvider implements CatalogProvider {
   constructor(private readonly baseUrl: string) {}
 
@@ -59,7 +63,10 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
         giftable: Boolean(entry.giftable ?? true),
         availableUntil: text(entry.outDate) || null,
         featured: index === 0,
-        collaboration: text(layout.name) || null
+        collaboration: text(layout.name) || null,
+        shopInDate: text(entry.inDate) || null,
+        shopLayoutIndex: optionalInteger(layout.index),
+        shopLayoutRank: optionalInteger(layout.rank)
       }];
     });
   }

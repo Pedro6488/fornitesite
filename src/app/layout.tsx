@@ -20,6 +20,7 @@ export default function RootLayout({
           </Link>
           <nav aria-label="Navegación principal">
             <Link href="/">Tienda</Link>
+            <Link href="/favoritos">♡ Favoritos</Link>
             <Link href="/cuenta">Mis compras</Link>
           </nav>
         </header>

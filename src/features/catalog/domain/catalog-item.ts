@@ -13,6 +13,9 @@ export type CatalogItem = Readonly<{
   availableUntil: string | null;
   featured: boolean;
   collaboration?: string | null;
+  shopInDate?: string | null;
+  shopLayoutIndex?: number | null;
+  shopLayoutRank?: number | null;
 }>;
 
 export interface CatalogProvider {

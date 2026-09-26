@@ -27,8 +27,8 @@ describe("groupCatalogByCollaboration", () => {
       item({ mainId: "toy", name: "Alien", collaboration: "Disney" })
     ]);
 
-    expect(groups.map((group) => group.name)).toEqual(["Disney", "Madison Beer"]);
-    expect(groups[1].items.map((catalogItem) => catalogItem.mainId)).toEqual([
+    expect(groups.map((group) => group.name)).toEqual(["Madison Beer", "Disney"]);
+    expect(groups[0].items.map((catalogItem) => catalogItem.mainId)).toEqual([
       "madison-bundle",
       "madison-pickaxe"
     ]);
