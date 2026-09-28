@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { BackButton } from "@/shared/components/back-button";
 import { FavoriteButton } from "@/features/catalog/components/favorite-button";
+import { ItemPreview } from "@/features/catalog/components/item-preview";
+import { getFortniteCosmoPreview } from "@/features/catalog/infrastructure/fortnite-cosmo-preview";
 
 export default async function ItemPage({ params }: { params: Promise<{ mainId: string }> }) {
   const { mainId } = await params;
@@ -13,13 +14,12 @@ export default async function ItemPage({ params }: { params: Promise<{ mainId: s
   const item = await catalog.find(decodeURIComponent(mainId));
   if (!item) notFound();
   const purchasable = canPurchase(item);
+  const preview = await getFortniteCosmoPreview(item.officialUrl, item.name);
 
   return (
     <section className="detail-shell">
       <div className="detail-navigation"><BackButton /></div>
-      <div className="detail-art item-art" data-rarity={item.rarity}>
-        {item.imageUrl ? <Image src={item.imageUrl} alt={item.name} fill priority sizes="(max-width: 800px) 100vw, 50vw" /> : <span className="item-fallback">{item.name.slice(0, 1)}</span>}
-      </div>
+      <ItemPreview imageUrl={item.imageUrl} name={item.name} rarity={item.rarity} videoUrl={preview?.videoUrl ?? item.videoUrl ?? null} />
       <div className="detail-copy">
         <p className="eyebrow">{item.type} · {item.rarity}</p>
         <h1>{item.name}</h1>

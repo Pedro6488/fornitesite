@@ -34,6 +34,7 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
       const first = record(brItems[0]);
       const bundle = record(entry.bundle);
       const layout = record(entry.layout);
+      const displayAsset = record(entry.newDisplayAsset);
       const images = record(first.images);
       const rarity = record(first.rarity);
       const type = record(first.type);
@@ -42,6 +43,10 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
       const bundleName = text(bundle.name);
       const bundleImage = text(bundle.image);
       const isBundle = Boolean(bundleName || bundleImage);
+      const renderImages = Array.isArray(displayAsset.renderImages) ? displayAsset.renderImages : [];
+      const renderImage = record(renderImages[0]);
+      const cosmoFileName = text(renderImage.fileName);
+      const cosmoId = /^cosmo__(.+)\.png$/i.exec(cosmoFileName)?.[1] ?? null;
       // Fortnite-API no siempre entrega bundle.id. Usar el primer brItem en ese
       // caso hace que el lote colisione con la oferta individual y se descarte.
       const mainId = isBundle
@@ -64,6 +69,10 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
         availableUntil: text(entry.outDate) || null,
         featured: index === 0,
         collaboration: text(layout.name) || null,
+        // Algunas respuestas del catálogo incluyen el enlace canónico de Fortnite.
+        // Se conserva para resolver la previsualización sólo al abrir el detalle.
+        officialUrl: text(entry.webURL, text(entry.webUrl, text(entry.itemShopUrl))) || null,
+        cosmoId,
         shopInDate: text(entry.inDate) || null,
         shopLayoutIndex: optionalInteger(layout.index),
         shopLayoutRank: optionalInteger(layout.rank)

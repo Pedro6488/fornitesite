@@ -13,6 +13,9 @@ export type CatalogItem = Readonly<{
   availableUntil: string | null;
   featured: boolean;
   collaboration?: string | null;
+  officialUrl?: string | null;
+  cosmoId?: string | null;
+  videoUrl?: string | null;
   shopInDate?: string | null;
   shopLayoutIndex?: number | null;
   shopLayoutRank?: number | null;
