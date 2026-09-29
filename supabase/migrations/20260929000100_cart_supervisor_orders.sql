@@ -29,3 +29,26 @@ create table if not exists public.order_supervisor_events (
   created_at timestamptz not null default now()
 );
 alter table public.order_supervisor_events enable row level security;
+
+create or replace function public.assign_order_to_existing_user() returns trigger language plpgsql security definer set search_path = '' as $$
+begin
+  if new.user_id is null then
+    select id into new.user_id from auth.users where lower(email) = lower(new.customer_email) limit 1;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists on_order_created_assign_user on public.orders;
+create trigger on_order_created_assign_user before insert on public.orders for each row execute procedure public.assign_order_to_existing_user();
+
+update public.orders as order_row set user_id = auth_user.id from auth.users as auth_user
+where order_row.user_id is null and lower(order_row.customer_email) = lower(auth_user.email);
+
+drop policy if exists "users read own order items" on public.order_items;
+create policy "users read own order items" on public.order_items for select using (
+  exists (select 1 from public.orders where orders.id = order_items.order_id and orders.user_id = auth.uid())
+);
+drop policy if exists "users read own supervisor events" on public.order_supervisor_events;
+create policy "users read own supervisor events" on public.order_supervisor_events for select using (
+  exists (select 1 from public.orders where orders.id = order_supervisor_events.order_id and orders.user_id = auth.uid())
+);
