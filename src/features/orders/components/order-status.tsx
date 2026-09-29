@@ -30,10 +30,12 @@ export function OrderStatus({ initialOrder, bank }: { initialOrder: Order; bank:
   }
 
   const transferOpen = ["awaiting_transfer", "information_required"].includes(order.status);
+  const supervisor = order.supervisorStatus ?? "pending_confirmation";
   const sendEnabled = order.status === "ready_to_send";
   return <div className="order-status-card">
     <div className="order-summary"><div><p className="eyebrow">PEDIDO {order.id.slice(0, 8).toUpperCase()}</p><h2>{order.itemName}</h2><span>Para {order.epicDisplayName}</span></div><strong>{formatMxn(order.amountMxnCents / 100)}</strong></div>
     <div className={`status-banner status-${order.status}`}><span>Estado</span><strong>{statusCopy[order.status] ?? order.status}</strong></div>
+    <div className={`customer-traffic traffic-${supervisor}`}><span>{supervisor === "pending_confirmation" ? "Rojo" : supervisor === "payment_received" ? "Naranja" : "Verde"}</span><strong>{supervisor === "pending_confirmation" ? "Pedido por confirmar" : supervisor === "payment_received" ? "Pago recibido" : "Pedido enviado correctamente"}</strong></div>
     {transferOpen && <><div className="bank-details"><p><span>Banco</span><strong>{bank.name}</strong></p><p><span>Beneficiario</span><strong>{bank.beneficiary}</strong></p><p><span>CLABE</span><strong>{bank.clabe}</strong></p><p><span>Concepto</span><strong>PEDIDO-{order.id.slice(0, 8).toUpperCase()}</strong></p></div><form className="receipt-form" onSubmit={upload}><label>Banco emisor<input name="senderBank" required maxLength={80} /></label><label>Nombre del titular<input name="senderName" required maxLength={120} /></label><label>Referencia<input name="reference" required maxLength={120} /></label><label>Comprobante<input name="receipt" type="file" required accept="image/jpeg,image/png,application/pdf" /></label><button className="secondary-button" disabled={loading}>Enviar comprobante</button></form></>}
     {sendEnabled && <div className="send-panel"><p>Pago confirmado. Revisa el receptor antes de continuar.</p><button className="primary-button" onClick={sendGift} disabled={loading}>{loading ? "Validando…" : "Enviar regalo"}</button></div>}
     {message && <p className="notice">{message}</p>}

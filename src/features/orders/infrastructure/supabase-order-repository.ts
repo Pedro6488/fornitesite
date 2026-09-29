@@ -5,6 +5,7 @@ type OrderRow = {
   id: string; public_token: string; status: OrderStatus; customer_email: string; epic_account_id: string;
   epic_display_name: string; item_main_id: string; offer_id: string; item_name: string; item_image_url: string | null;
   vbucks_price: number; amount_mxn_cents: number; payment_method: "mercado_pago" | "bank_transfer"; created_at: string;
+  supervisor_status?: "pending_confirmation" | "payment_received" | "sent";
 };
 
 export class SupabaseOrderRepository implements OrderRepository {
@@ -41,5 +42,5 @@ function mapRow(row: OrderRow): Order {
   return { id: row.id, publicToken: row.public_token, status: row.status, customerEmail: row.customer_email,
     epicAccountId: row.epic_account_id, epicDisplayName: row.epic_display_name, itemMainId: row.item_main_id,
     offerId: row.offer_id, itemName: row.item_name, itemImageUrl: row.item_image_url, vbucksPrice: row.vbucks_price,
-    amountMxnCents: row.amount_mxn_cents, paymentMethod: row.payment_method, createdAt: row.created_at };
+    amountMxnCents: row.amount_mxn_cents, paymentMethod: row.payment_method, supervisorStatus: row.supervisor_status ?? "pending_confirmation", createdAt: row.created_at };
 }

@@ -5,6 +5,7 @@ import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { getCatalogCategory } from "../application/catalog-query";
 import { canPurchase, type CatalogItem } from "../domain/catalog-item";
 import { FavoriteButton } from "./favorite-button";
+import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
 
 export function CatalogCard({
   item,
@@ -64,6 +65,7 @@ export function CatalogCard({
           </div>
         </div>
       </Link>
+      {purchasable && <AddToCartButton itemId={item.mainId} compact />}
       <FavoriteButton itemId={item.mainId} itemName={item.name} />
     </article>
   );

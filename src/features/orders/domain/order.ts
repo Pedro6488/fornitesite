@@ -21,6 +21,7 @@ export type Order = Readonly<{
   vbucksPrice: number;
   amountMxnCents: number;
   paymentMethod: PaymentMethod;
+  supervisorStatus?: "pending_confirmation" | "payment_received" | "sent";
   createdAt: string;
 }>;
 
