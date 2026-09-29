@@ -65,7 +65,7 @@ export function CatalogCard({
           </div>
         </div>
       </Link>
-      {purchasable && <AddToCartButton itemId={item.mainId} compact />}
+      <AddToCartButton itemId={item.mainId} compact />
       <FavoriteButton itemId={item.mainId} itemName={item.name} />
     </article>
   );
