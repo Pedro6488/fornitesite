@@ -22,7 +22,7 @@ export function readCart(): CartEntry[] {
       if (!entry || typeof entry !== "object") return [];
       const candidate = entry as { itemId?: unknown; quantity?: unknown; item?: unknown };
       return typeof candidate.itemId === "string" && typeof candidate.quantity === "number" && Number.isInteger(candidate.quantity) && candidate.quantity > 0
-        ? [{ itemId: candidate.itemId, quantity: Math.min(candidate.quantity, 10), item: snapshot(candidate.item) }] : [];
+        ? [{ itemId: candidate.itemId, quantity: 1, item: snapshot(candidate.item) }] : [];
     });
   } catch { return []; }
 }
@@ -39,7 +39,7 @@ export function subscribeToCart(listener: () => void) {
 
 export function addToCart(item: CartItemSnapshot) {
   const cart = readCart(); const index = cart.findIndex((entry) => entry.itemId === item.mainId);
-  if (index >= 0) cart[index] = { ...cart[index], item, quantity: Math.min(10, cart[index].quantity + 1) };
+  if (index >= 0) cart[index] = { ...cart[index], item, quantity: 1 };
   else cart.push({ itemId: item.mainId, item, quantity: 1 });
   writeCart(cart);
 }
