@@ -1,11 +1,59 @@
 "use client";
+
 import { useState, type FormEvent } from "react";
 import type { Order, SupervisorStatus } from "../domain/order";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
-const statusCopy: Record<SupervisorStatus, string> = { pending_confirmation: "Realiza el pago para solicitar tu pedido", submitted_to_administrator: "El pedido se ha enviado a un administrador", payment_received: "Pago recibido y en revisión", sent: "Pedido enviado correctamente" };
+
+const statusCopy: Record<SupervisorStatus, string> = {
+  pending_confirmation: "Realiza el pago para solicitar tu pedido",
+  submitted_to_administrator: "El pedido se ha enviado a un administrador",
+  payment_received: "Pago recibido y en revisión",
+  sent: "Pedido enviado correctamente"
+};
+
 export function OrderStatus({ initialOrder, bank }: { initialOrder: Order; bank: { name: string; beneficiary: string; clabe: string } }) {
-  const [order, setOrder] = useState(initialOrder); const [message, setMessage] = useState<string | null>(null); const [loading, setLoading] = useState(false); const supervisor = order.supervisorStatus ?? "pending_confirmation";
-  async function refresh() { const response = await fetch(`/api/orders/${order.id}?access=${order.publicToken}`, { cache: "no-store" }); if (response.ok) setOrder((await response.json()).order); }
-  async function uploadTicket(event: FormEvent<HTMLFormElement>) { event.preventDefault(); setLoading(true); setMessage(null); const form = new FormData(event.currentTarget); form.set("access", order.publicToken); const response = await fetch(`/api/orders/${order.id}/payment-ticket`, { method: "POST", body: form }); const body = await response.json(); setLoading(false); setMessage(response.ok ? "Ticket anexado. Tu pedido fue enviado a un administrador." : body.error); if (response.ok) await refresh(); }
-  return <div className="order-status-card"><div className="order-summary"><div><p className="eyebrow">PEDIDO {order.id.slice(0, 8).toUpperCase()}</p><h2>Resumen de compra</h2><span>Para {order.epicDisplayName}</span></div><strong>{formatMxn(order.amountMxnCents / 100)}</strong></div><div className="order-items-summary">{(order.items ?? []).map((item, index) => <p key={`${item.itemName}-${index}`}><span>{item.itemName} × {item.quantity}</span><strong>{formatMxn((item.unitAmountMxnCents * item.quantity) / 100)}</strong></p>)}</div><div className={`customer-status customer-status-${supervisor}`}><span>ESTADO DEL PEDIDO</span><strong>{statusCopy[supervisor]}</strong></div>{supervisor === "pending_confirmation" && <><div className="bank-details"><p><span>Banco</span><strong>{bank.name}</strong></p><p><span>Beneficiario</span><strong>{bank.beneficiary}</strong></p><p><span>CLABE</span><strong>{bank.clabe}</strong></p><p><span>Concepto</span><strong>PEDIDO-{order.id.slice(0, 8).toUpperCase()}</strong></p></div><form className="receipt-form" onSubmit={uploadTicket}><label>Ticket de pago<input name="ticket" type="file" required accept="image/jpeg,image/png" /></label><button className="primary-button" disabled={loading}>{loading ? "Anexando…" : "Anexar ticket de pago"}</button></form></>}{message && <p className="notice">{message}</p>}{supervisor !== "sent" && supervisor !== "pending_confirmation" && <button className="secondary-button" onClick={refresh}>Actualizar estado</button>}</div>;
+  const [order, setOrder] = useState(initialOrder);
+  const [message, setMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const supervisor = order.supervisorStatus ?? "pending_confirmation";
+
+  async function refresh() {
+    const response = await fetch(`/api/orders/${order.id}?access=${order.publicToken}`, { cache: "no-store" });
+    if (response.ok) setOrder((await response.json()).order);
+  }
+
+  async function uploadTicket(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setMessage(null);
+    const form = new FormData(event.currentTarget);
+    form.set("access", order.publicToken);
+    const response = await fetch(`/api/orders/${order.id}/payment-ticket`, { method: "POST", body: form });
+    const body = await response.json();
+    setLoading(false);
+    setMessage(response.ok ? "Ticket anexado. Tu pedido fue enviado a un administrador." : body.error);
+    if (response.ok) await refresh();
+  }
+
+  return <div className="order-status-card">
+    <div className="order-summary">
+      <div><p className="eyebrow">PEDIDO {order.id.slice(0, 8).toUpperCase()}</p><h2>Resumen de compra</h2><span>Para {order.epicDisplayName}</span></div>
+      <strong>{formatMxn(order.amountMxnCents / 100)}</strong>
+    </div>
+    <div className="order-items-summary">
+      {(order.items ?? []).map((item, index) => <p key={`${item.itemName}-${index}`}><span>{item.itemName} × {item.quantity}</span><strong>{formatMxn((item.unitAmountMxnCents * item.quantity) / 100)}</strong></p>)}
+    </div>
+    <div className="recipient-id-notice">
+      <span>ID DE ENTREGA</span>
+      <strong>{order.epicDisplayName}</strong>
+      <p><b>Este es el ID que recibirá el pedido.</b> No se permiten cambios después de enviar la solicitud.</p>
+    </div>
+    <div className={`customer-status customer-status-${supervisor}`}><span>ESTADO DEL PEDIDO</span><strong>{statusCopy[supervisor]}</strong></div>
+    {supervisor === "pending_confirmation" && <>
+      <div className="bank-details"><p><span>Banco</span><strong>{bank.name}</strong></p><p><span>Beneficiario</span><strong>{bank.beneficiary}</strong></p><p><span>CLABE</span><strong>{bank.clabe}</strong></p><p><span>Concepto</span><strong>PEDIDO-{order.id.slice(0, 8).toUpperCase()}</strong></p></div>
+      <form className="receipt-form" onSubmit={uploadTicket}><label>Ticket de pago<input name="ticket" type="file" required accept="image/jpeg,image/png" /></label><button className="primary-button" disabled={loading}>{loading ? "Anexando…" : "Anexar ticket de pago"}</button></form>
+    </>}
+    {message && <p className="notice">{message}</p>}
+    {supervisor !== "sent" && supervisor !== "pending_confirmation" && <button className="secondary-button" onClick={refresh}>Actualizar estado</button>}
+  </div>;
 }
