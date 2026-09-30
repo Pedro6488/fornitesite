@@ -163,6 +163,7 @@ label { color: var(--muted); display: grid; font-size: .75rem; font-weight: 800;
 .payment-strip { align-items: center; background: #0d1227; border-bottom: 1px solid rgba(255,255,255,.08); border-top: 1px solid rgba(255,255,255,.08); display: flex; gap: 2rem; justify-content: center; padding: 1.1rem clamp(1rem, 5vw, 5rem); }.payment-strip p { color: var(--muted); font-size: .68rem; font-weight: 900; margin: 0; text-transform: uppercase; }.payment-strip > div { display: flex; flex-wrap: wrap; gap: .6rem; justify-content: center; }.payment-method { align-items: center; border: 1px solid rgba(255,255,255,.11); border-radius: .55rem; display: inline-flex; font-size: .7rem; font-weight: 850; gap: .35rem; padding: .45rem .65rem; }.bank-icon { color: #a8e9ff; }.paypal-icon { color: #8bbcff; }.paypal-icon::first-letter { color: #fff; font-weight: 950; }.cash-icon { color: #8df2b9; }footer { color: var(--muted); font-size: .75rem; padding: 2rem clamp(1rem, 5vw, 5rem); } footer strong, footer a { color: var(--ink); } footer a { text-decoration: underline; }
 .traffic-submitted_to_administrator { background: var(--cyan); }.order-items-summary { border-bottom: 1px solid rgba(255,255,255,.1); display: grid; gap: .6rem; padding-bottom: 1rem; }.order-items-summary p { display: flex; justify-content: space-between; margin: 0; }.order-items-summary span { color: var(--muted); }.customer-status { border-radius: .75rem; display: grid; gap: .25rem; padding: .9rem; }.customer-status span { color: var(--muted); font-size: .65rem; font-weight: 900; }.customer-status-pending_confirmation { background: rgba(255,101,119,.12); }.customer-status-submitted_to_administrator { background: rgba(85,217,255,.12); }.customer-status-payment_received { background: rgba(255,174,61,.12); }.customer-status-sent { background: rgba(75,225,154,.12); }
 .recipient-id-notice { background: rgba(255,213,31,.09); border: 1px solid rgba(255,213,31,.32); border-radius: .75rem; display: grid; gap: .3rem; padding: .9rem; }.recipient-id-notice > span { color: var(--accent); font-size: .65rem; font-weight: 900; }.recipient-id-notice > strong { font-size: 1.15rem; overflow-wrap: anywhere; }.recipient-id-notice p { color: var(--muted); font-size: .78rem; line-height: 1.45; margin: .1rem 0 0; }.recipient-id-notice b { color: var(--ink); }
+.cart-line { grid-template-columns: 4.25rem minmax(0, 1fr) auto; }.cart-item-image { align-items: center; aspect-ratio: 1; background: linear-gradient(145deg, rgba(85,217,255,.16), rgba(108,58,184,.26)); border-radius: .7rem; display: flex; justify-content: center; overflow: hidden; position: relative; width: 4.25rem; }.cart-item-image img { object-fit: contain; padding: .25rem; }.cart-item-image span { color: var(--cyan); font-size: 1.35rem; font-weight: 900; }.cart-item-copy { min-width: 0; }.cart-item-copy h2 { overflow-wrap: anywhere; }.cart-line-actions { align-items: center; display: flex; gap: 1.15rem; }.cart-line-actions > strong { min-width: 4.4rem; text-align: right; }
 @media (max-width: 1100px) {
   .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hero { grid-template-columns: minmax(0, 1fr) minmax(21rem, .8fr); }
@@ -248,6 +249,16 @@ label { color: var(--muted); display: grid; font-size: .75rem; font-weight: 800;
   .detail-copy > p:not(.eyebrow,.availability) { font-size: .92rem; line-height: 1.55; }
   .detail-price { margin-top: 1.25rem; }
   .detail-price strong { font-size: 1.6rem; }
+  .cart-page { padding: 2.5rem .85rem 3.5rem; }
+  .cart-page header h1 { font-size: clamp(2.65rem, 15vw, 4.2rem); line-height: .92; }
+  .cart-layout { grid-template-columns: 1fr; }
+  .cart-summary { position: static; }
+  .cart-line { gap: .7rem; grid-template-columns: 3.5rem minmax(0, 1fr); padding: .8rem; }
+  .cart-item-image { border-radius: .6rem; width: 3.5rem; }
+  .cart-item-copy h2 { font-size: 1rem; line-height: 1.1; }
+  .cart-line-actions { grid-column: 1 / -1; justify-content: space-between; padding-top: .15rem; }
+  .quantity-control button { height: 2.5rem; width: 2.5rem; }
+  .cart-line-actions > strong { font-size: 1.05rem; }
   .account-fields { grid-template-columns: 1fr; }
   .account-welcome, .orders-heading { align-items: flex-start; flex-direction: column; }
   .payment-strip { flex-direction: column; gap: .65rem; text-align: center; }
