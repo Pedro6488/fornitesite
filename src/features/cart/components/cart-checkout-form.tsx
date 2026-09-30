@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
-import { readCart, writeCart, type CartEntry } from "../application/cart-storage";
+import { readCart, resolveCartItem, writeCart, type CartEntry } from "../application/cart-storage";
 
 type Platform = "epic" | "xbox" | "playstation" | "nintendo";
 export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const router = useRouter(); const [cart, setCart] = useState<CartEntry[]>([]); const [email, setEmail] = useState(""); const [receiverId, setReceiverId] = useState(""); const [platform, setPlatform] = useState<Platform>("epic"); const [whatsapp, setWhatsapp] = useState(""); const [loading, setLoading] = useState(false); const [error, setError] = useState<string | null>(null);
   useEffect(() => { const frame = window.requestAnimationFrame(() => setCart(readCart())); return () => window.cancelAnimationFrame(frame); }, []);
-  const lines = useMemo(() => cart.flatMap((entry) => { const item = items.find((candidate) => candidate.mainId === entry.itemId); return item ? [{ item, quantity: entry.quantity }] : []; }), [cart, items]);
+  const lines = useMemo(() => cart.flatMap((entry) => { const item = resolveCartItem(entry, items); return item ? [{ item, quantity: entry.quantity }] : []; }), [cart, items]);
   const total = lines.reduce((sum, line) => sum + (line.item.priceMxn ?? 0) * line.quantity, 0);
   const hasPendingPrice = lines.some((line) => line.item.priceMxn === null);
   async function submit(event: FormEvent) { event.preventDefault(); if (!lines.length || hasPendingPrice) return; setLoading(true); setError(null); const response = await fetch("/api/cart-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerEmail: email, receiverId, platform, whatsapp, items: lines.map((line) => ({ itemMainId: line.item.mainId, quantity: line.quantity })) }) }); const body = await response.json(); setLoading(false); if (!response.ok) { setError(body.error ?? "No fue posible crear tu solicitud."); return; } writeCart([]); router.push(`/pedidos/${body.order.id}?access=${body.order.publicToken}`); }

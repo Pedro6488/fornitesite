@@ -65,7 +65,7 @@ export function CatalogCard({
           </div>
         </div>
       </Link>
-      <AddToCartButton itemId={item.mainId} compact />
+      <AddToCartButton item={item} compact />
       <FavoriteButton itemId={item.mainId} itemName={item.name} />
     </article>
   );
