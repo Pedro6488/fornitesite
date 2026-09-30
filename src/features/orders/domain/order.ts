@@ -6,6 +6,8 @@ export const ORDER_STATUSES = [
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export type PaymentMethod = "mercado_pago" | "bank_transfer";
+export type SupervisorStatus = "pending_confirmation" | "submitted_to_administrator" | "payment_received" | "sent";
+export type OrderLine = Readonly<{ itemName: string; quantity: number; unitAmountMxnCents: number }>;
 
 export type Order = Readonly<{
   id: string;
@@ -21,7 +23,8 @@ export type Order = Readonly<{
   vbucksPrice: number;
   amountMxnCents: number;
   paymentMethod: PaymentMethod;
-  supervisorStatus?: "pending_confirmation" | "payment_received" | "sent";
+  supervisorStatus?: SupervisorStatus;
+  items?: readonly OrderLine[];
   createdAt: string;
 }>;
 

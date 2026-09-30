@@ -1,6 +1,76 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
-const labels = { pending_confirmation: "Rojo · Por confirmar", payment_received: "Naranja · Pago recibido", sent: "Verde · Enviado" } as const;
-type Status = keyof typeof labels; type Order = { id: string; created_at: string; customer_email: string; epic_display_name: string; recipient_platform: string; contact_whatsapp: string; amount_mxn_cents: number; supervisor_status: Status; order_items: { item_name: string; quantity: number }[] };
-export function SupervisorOrders() { const supabase = useMemo(() => getSupabaseBrowser(), []); const [orders, setOrders] = useState<Order[]>([]); const [message, setMessage] = useState("Actualiza para cargar los pedidos."); async function load() { const session = (await supabase?.auth.getSession())?.data.session; if (!session) return setMessage("Inicia sesión con una cuenta de supervisor."); const response = await fetch("/api/admin/orders", { headers: { Authorization: `Bearer ${session.access_token}` } }); const body = await response.json(); if (!response.ok) return setMessage(body.error); setOrders(body.orders); setMessage(body.orders.length ? "" : "No hay pedidos todavía."); } async function update(id: string, status: Status) { const session = (await supabase?.auth.getSession())?.data.session; if (!session) return; const response = await fetch(`/api/admin/orders/${id}/status`, { method: "PATCH", headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" }, body: JSON.stringify({ status }) }); if (!response.ok) return setMessage((await response.json()).error); await load(); } return <div className="supervisor-orders"><button className="secondary-button" onClick={load}>Actualizar pedidos</button>{message && <p className="notice">{message}</p>}{orders.map((order) => <article className="supervisor-order" key={order.id}><div><span className={`traffic-light traffic-${order.supervisor_status}`} aria-label={labels[order.supervisor_status]} /><p className="eyebrow">{labels[order.supervisor_status]}</p><h2>#{order.id.slice(0, 8).toUpperCase()}</h2><p>{order.order_items.map((item) => `${item.item_name} × ${item.quantity}`).join(", ")}</p></div><div><strong>${(order.amount_mxn_cents / 100).toFixed(2)} MXN</strong><p>{order.epic_display_name} · {order.recipient_platform}</p><p>{order.customer_email} · {order.contact_whatsapp}</p></div><label>Estado<select value={order.supervisor_status} onChange={(event) => void update(order.id, event.target.value as Status)}>{Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></article>)}</div>; }
+
+const labels = {
+  pending_confirmation: "Realiza el pago para solicitar tu pedido",
+  submitted_to_administrator: "El pedido se ha enviado a un administrador",
+  payment_received: "Pago recibido y en revisión",
+  sent: "Pedido enviado correctamente"
+} as const;
+
+type Status = keyof typeof labels;
+type Order = {
+  id: string;
+  customer_email: string;
+  epic_display_name: string;
+  recipient_platform: string;
+  contact_whatsapp: string;
+  amount_mxn_cents: number;
+  supervisor_status: Status;
+  order_items: { item_name: string; quantity: number }[];
+  paymentTicketUrl: string | null;
+};
+
+export function SupervisorOrders() {
+  const supabase = useMemo(() => getSupabaseBrowser(), []);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [message, setMessage] = useState("Actualiza para cargar los pedidos.");
+
+  async function load() {
+    const session = (await supabase?.auth.getSession())?.data.session;
+    if (!session) return setMessage("Inicia sesión con una cuenta de supervisor.");
+    const response = await fetch("/api/admin/orders", { headers: { Authorization: `Bearer ${session.access_token}` } });
+    const body = await response.json();
+    if (!response.ok) return setMessage(body.error);
+    setOrders(body.orders);
+    setMessage(body.orders.length ? "" : "No hay pedidos todavía.");
+  }
+
+  async function update(id: string, status: Status) {
+    const session = (await supabase?.auth.getSession())?.data.session;
+    if (!session) return;
+    const response = await fetch(`/api/admin/orders/${id}/status`, {
+      method: "PATCH",
+      headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ status })
+    });
+    if (!response.ok) return setMessage((await response.json()).error);
+    await load();
+  }
+
+  return <div className="supervisor-orders">
+    <button className="secondary-button" onClick={load}>Actualizar pedidos</button>
+    {message && <p className="notice">{message}</p>}
+    {orders.map((order) => <article className="supervisor-order" key={order.id}>
+      <div>
+        <span className={`traffic-light traffic-${order.supervisor_status}`} aria-label={labels[order.supervisor_status]} />
+        <p className="eyebrow">{labels[order.supervisor_status]}</p>
+        <h2>#{order.id.slice(0, 8).toUpperCase()}</h2>
+        <p>{order.order_items.map((item) => `${item.item_name} × ${item.quantity}`).join(", ")}</p>
+      </div>
+      <div>
+        <strong>${(order.amount_mxn_cents / 100).toFixed(2)} MXN</strong>
+        <p>{order.epic_display_name} · {order.recipient_platform}</p>
+        <p>{order.customer_email} · {order.contact_whatsapp}</p>
+        {order.paymentTicketUrl && <a className="cart-secondary" href={order.paymentTicketUrl} target="_blank" rel="noreferrer">Ver ticket de pago</a>}
+      </div>
+      <label>Estado
+        <select value={order.supervisor_status} onChange={(event) => void update(order.id, event.target.value as Status)}>
+          {Object.entries(labels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
+    </article>)}
+  </div>;
+}
