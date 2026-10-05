@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ChevronDown, Flame, Grid2X2, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import {
   startTransition,
   useDeferredValue,
@@ -26,6 +27,7 @@ import {
 } from "../application/catalog-query";
 import type { CatalogItem } from "../domain/catalog-item";
 import { CatalogCard } from "./catalog-card";
+import { SystemActionBar } from "@/shared/components/system-action-bar";
 
 const PAGE_SIZE = 48;
 
@@ -64,10 +66,10 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CatalogCategory>("Todos");
-  const [mode, setMode] = useState<CatalogDiscoveryMode>("all");
+  const [mode, setMode] = useState<CatalogDiscoveryMode>("new");
   const [sort, setSort] = useState<CatalogSort>("newest");
   const [collaboration, setCollaboration] = useState<string | null>(null);
-  const [availability, setAvailability] = useState<CatalogAvailability>("all");
+  const [availability, setAvailability] = useState<CatalogAvailability>("available");
   const [priceRange, setPriceRange] = useState<CatalogPriceRange>("all");
   const [rarity, setRarity] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -223,9 +225,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         <div className="catalog-search">
           <label htmlFor={searchId}>Buscar en la tienda</label>
           <div className="search-field">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m21 21-4.35-4.35m2.35-5.4a7.75 7.75 0 1 1-15.5 0 7.75 7.75 0 0 1 15.5 0Z" />
-            </svg>
+            <Search aria-hidden="true" size={18} strokeWidth={2} />
             <input
               id={searchId}
               type="search"
@@ -249,7 +249,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
                 onClick={catalogView === "collections" ? () => setCollectionQuery("") : clearSearch}
                 aria-label="Limpiar búsqueda"
               >
-                ×
+                <X aria-hidden="true" size={17} />
               </button>
             )}
           </div>
@@ -257,15 +257,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
 
         {catalogView === "items" && <><div className="catalog-sort">
           <label htmlFor={sortId}>Ordenar</label>
-          <select
-            id={sortId}
-            value={sort}
-            onChange={(event) => selectSort(event.target.value as CatalogSort)}
-          >
-            {Object.entries(SORT_LABELS).map(([value, label]) => (
-              <option value={value} key={value}>{label}</option>
-            ))}
-          </select>
+          <span className="select-control"><select id={sortId} value={sort} onChange={(event) => selectSort(event.target.value as CatalogSort)}>{Object.entries(SORT_LABELS).map(([value, label]) => <option value={value} key={value}>{label}</option>)}</select><ChevronDown aria-hidden="true" size={17} /></span>
         </div>
 
         <button
@@ -275,7 +267,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
           aria-controls="catalog-filters"
           onClick={() => setFiltersOpen((current) => !current)}
         >
-          Filtros {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+          <SlidersHorizontal aria-hidden="true" size={16} />Filtros {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
         </button>
 
         <div className="catalog-result-count" aria-live="polite">
@@ -292,7 +284,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
           aria-pressed={mode === "new"}
           onClick={() => selectMode("new")}
         >
-          <span aria-hidden="true">✦</span>
+          <span aria-hidden="true"><Sparkles size={18} /></span>
           <span><strong>Novedades</strong><small>{discoveryCounts.new} objetos recién llegados</small></span>
         </button>
         <button
@@ -301,7 +293,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
           aria-pressed={mode === "popular"}
           onClick={() => selectMode("popular")}
         >
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true"><Flame size={18} /></span>
           <span><strong>Popular ahora</strong><small>{discoveryCounts.popular} objetos destacados</small></span>
         </button>
         <button
@@ -310,7 +302,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
           aria-pressed={mode === "all"}
           onClick={() => selectMode("all")}
         >
-          <span aria-hidden="true">⌘</span>
+          <span aria-hidden="true"><Grid2X2 size={18} /></span>
           <span><strong>Todo el catálogo</strong><small>{discoveryCounts.all} objetos disponibles</small></span>
         </button>
       </div>
@@ -457,7 +449,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
                   </div>
                 </fieldset>
             </div>
-            <div className="catalog-filter-actions">
+            <SystemActionBar className="catalog-filter-actions" variant="contained">
               {activeFilterCount > 0 && (
                 <button type="button" className="catalog-filter-clear" onClick={clearAllFilters}>
                   Limpiar filtros
@@ -466,7 +458,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
               <button type="button" className="catalog-filter-apply" onClick={() => setFiltersOpen(false)}>
                 Ver {filteredItems.length} resultados
               </button>
-            </div>
+            </SystemActionBar>
           </section>
         </>
       )}
@@ -558,9 +550,8 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
                 return (
                   <section className="catalog-collaboration" key={group.name}>
                     <div className="catalog-collaboration-heading">
-                      <p>COLABORACIÓN / COLECCIÓN</p>
-                      <h2>{group.name}</h2>
-                      <span>{group.items.length} {group.items.length === 1 ? "objeto" : "objetos"}</span>
+                      <div><p>COLABORACIÓN / COLECCIÓN</p><h2>{group.name}</h2><small>Objetos disponibles para revisar hoy</small></div>
+                      <span><b>{group.items.length}</b> {group.items.length === 1 ? "objeto" : "objetos"}</span>
                     </div>
                     <div className="catalog-grid">
                       {group.items.map((item, itemIndex) => (

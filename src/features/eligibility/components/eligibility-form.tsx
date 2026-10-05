@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 
 type EligibilityResponse = {
   receiver: { epicAccountId: string; displayName: string };
@@ -52,7 +53,7 @@ export function EligibilityForm({ itemId, requiredVbucks }: { itemId: string; re
     <div className="validation-panel">
       <form className="validation-form" onSubmit={validate}>
         <label>Epic ID o gamertag<input required minLength={3} maxLength={32} value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Tu nombre en Fortnite" /></label>
-        <label>Plataforma<select value={platform} onChange={(event) => setPlatform(event.target.value)}><option value="epic">Epic Games</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option><option value="nintendo">Nintendo</option></select></label>
+        <label>Plataforma<span className="select-control"><select value={platform} onChange={(event) => setPlatform(event.target.value)}><option value="epic">Epic Games</option><option value="psn">PlayStation</option><option value="xbl">Xbox</option><option value="nintendo">Nintendo</option></select><ChevronDown aria-hidden="true" size={17} /></span></label>
         <button className="primary-button" disabled={loading}>{loading ? "Validando…" : "Validar ID"}</button>
       </form>
       {error && <p className={error.startsWith("Solicitud") ? "notice success" : "notice error"}>{error}</p>}

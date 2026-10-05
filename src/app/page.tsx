@@ -12,7 +12,7 @@ export default async function HomePage() {
       <section className="shop-section" id="catalogo">
         <div className="section-heading">
           <div><p className="eyebrow">ELIGE TU FAVORITO</p><h2>Encuentra lo que buscas</h2></div>
-          <p>Descubre novedades, destacados y colecciones completas sin perderte entre cientos de objetos.</p>
+          <p>Filtra por colección, confirma el valor en pesos y guarda tus favoritos antes de solicitar.</p>
         </div>
         <CatalogGrid items={items} />
       </section>

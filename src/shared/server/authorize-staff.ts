@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
 
-export async function authorizeStaff(request: Request, roles: readonly string[] = ["operator", "admin"]) {
+export async function authorizeStaff(request: Request, roles: readonly string[] = ["admin"]) {
   const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   const database = getSupabaseAdmin();
   if (!token || !database) return null;

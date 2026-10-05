@@ -1,10 +1,12 @@
 import { calculateMxnPrice, UnsupportedVbucksPriceError } from "@/features/pricing/domain/price-calculator";
+import type { CatalogPricingProvider } from "@/features/pricing/infrastructure/supabase-pricing-provider";
 import { isCatalogItemDisplayable, type CatalogItem, type CatalogProvider } from "../domain/catalog-item";
 
 export class CatalogService {
   constructor(
     private readonly visualCatalog: CatalogProvider,
-    private readonly transactionalCatalog?: CatalogProvider
+    private readonly transactionalCatalog?: CatalogProvider,
+    private readonly pricing?: CatalogPricingProvider
   ) {}
 
   async list(): Promise<readonly CatalogItem[]> {
@@ -13,21 +15,26 @@ export class CatalogService {
       ? await this.transactionalCatalog.getCurrentCatalog()
       : [];
     const transactionById = new Map(transactionalItems.map((item) => [item.mainId, item]));
+    const hasTransactionalCatalog = Boolean(this.transactionalCatalog);
 
-    const enrichedItems = visualItems.filter(isCatalogItemDisplayable).map((item) => {
+    const displayableItems = visualItems.filter(isCatalogItemDisplayable);
+    const authoritativePrices = this.pricing ? await this.pricing.price(displayableItems) : null;
+    const enrichedItems = displayableItems.map((item) => {
       const transaction = transactionById.get(item.mainId);
-      let priceMxn: number | null = null;
+      let priceMxn: number | null = authoritativePrices?.get(item.mainId) ?? null;
 
-      try {
-        priceMxn = calculateMxnPrice(item.finalPriceVbucks);
-      } catch (error) {
-        if (!(error instanceof UnsupportedVbucksPriceError)) throw error;
+      if (!authoritativePrices) {
+        try {
+          priceMxn = calculateMxnPrice(item.finalPriceVbucks);
+        } catch (error) {
+          if (!(error instanceof UnsupportedVbucksPriceError)) throw error;
+        }
       }
 
       return {
         ...item,
-        offerId: transaction?.offerId ?? null,
-        giftable: Boolean(transaction?.giftable),
+        offerId: hasTransactionalCatalog ? transaction?.offerId ?? null : item.offerId,
+        giftable: hasTransactionalCatalog ? Boolean(transaction?.giftable) : item.giftable,
         availableUntil: transaction?.availableUntil ?? item.availableUntil,
         priceMxn
       };

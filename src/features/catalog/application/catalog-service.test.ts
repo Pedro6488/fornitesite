@@ -14,9 +14,9 @@ describe("CatalogService", () => {
     const [result] = await new CatalogService(provider([item()]), provider([])).list();
     expect(result).toEqual(expect.objectContaining({ offerId: null, giftable: false }));
   });
-  it("mantiene el catálogo visual como informativo cuando no existe proveedor transaccional", async () => {
+  it("conserva la oferta oficial para el carrito cuando FN Shop no está configurado", async () => {
     const [result] = await new CatalogService(provider([item()])).list();
-    expect(result).toEqual(expect.objectContaining({ offerId: null, giftable: false, priceMxn: 113 }));
+    expect(result).toEqual(expect.objectContaining({ offerId: "visual-offer", giftable: true, priceMxn: 113 }));
   });
   it("elimina ofertas visuales duplicadas por identificador permanente", async () => {
     const results = await new CatalogService(provider([

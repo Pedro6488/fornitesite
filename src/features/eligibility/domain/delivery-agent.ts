@@ -45,6 +45,25 @@ export function selectBestAgent(agents: readonly DeliveryAgent[], requiredVbucks
     })[0] ?? null;
 }
 
+export function evaluateAgentForCart(agent: DeliveryAgent, requiredVbucks: number, itemCount: number): AgentEvaluation {
+  const base = evaluateAgent(agent, requiredVbucks);
+  if (!base.available) return base;
+  if (!Number.isInteger(itemCount) || itemCount < 1 || agent.giftsLimit - agent.giftsUsed < itemCount) {
+    return { agent, available: false, reason: "Sin suficientes envíos disponibles hoy" };
+  }
+  return base;
+}
+
+export function selectBestAgentForCart(agents: readonly DeliveryAgent[], requiredVbucks: number, itemCount: number): DeliveryAgent | null {
+  return agents
+    .filter((agent) => evaluateAgentForCart(agent, requiredVbucks, itemCount).available)
+    .toSorted((left, right) => {
+      const leftRemainder = left.vbucksBalance - requiredVbucks;
+      const rightRemainder = right.vbucksBalance - requiredVbucks;
+      return leftRemainder - rightRemainder || left.giftsUsed - right.giftsUsed || left.id.localeCompare(right.id);
+    })[0] ?? null;
+}
+
 function formatReadyTime(value: string): string {
   const milliseconds = new Date(value).getTime() - Date.now();
   if (milliseconds <= 0) return "en unos minutos";

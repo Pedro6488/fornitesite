@@ -1,5 +1,26 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { ORDER_STATUSES } from "@/features/orders/domain/order";
+import { SupabaseOrderRepository } from "@/features/orders/infrastructure/supabase-order-repository";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
-const schema = z.object({ status: z.enum(["pending_confirmation", "submitted_to_administrator", "payment_received", "sent"]) });
-export async function PATCH(request: Request, { params }: { params: Promise<{ orderId: string }> }) { const staff = await authorizeStaff(request); const parsed = schema.safeParse(await request.json()); if (!staff || !parsed.success) return NextResponse.json({ error: "No autorizado o estado inválido." }, { status: 400 }); const { orderId } = await params; const { data: previous } = await staff.database.from("orders").select("supervisor_status").eq("id", orderId).maybeSingle(); const { error } = await staff.database.from("orders").update({ supervisor_status: parsed.data.status, supervisor_status_updated_at: new Date().toISOString(), supervisor_status_updated_by: staff.user.id }).eq("id", orderId); if (error) return NextResponse.json({ error: "No fue posible actualizar el pedido." }, { status: 503 }); await staff.database.from("order_supervisor_events").insert({ order_id: orderId, from_status: previous?.supervisor_status ?? null, to_status: parsed.data.status, actor_id: staff.user.id }); return NextResponse.json({ ok: true }); }
+
+const schema = z.object({ status: z.enum(ORDER_STATUSES), notes: z.string().trim().max(500).optional() })
+  .refine((value) => !["information_required", "rejected", "canceled"].includes(value.status) || Boolean(value.notes && value.notes.length >= 3), {
+    message: "La transición requiere una nota.", path: ["notes"]
+  });
+export async function PATCH(request: Request, { params }: { params: Promise<{ orderId: string }> }) {
+  const staff = await authorizeStaff(request);
+  if (!staff) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
+  const parsed = schema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
+  const { orderId } = await params;
+  const orders = new SupabaseOrderRepository(staff.database);
+  const order = await orders.findById(orderId);
+  if (!order) return NextResponse.json({ error: "Pedido no encontrado." }, { status: 404 });
+  try {
+    const changed = await orders.transition(order.id, order.status, parsed.data.status, { actor_id: staff.user.id, notes: parsed.data.notes });
+    return changed ? NextResponse.json({ ok: true }) : NextResponse.json({ error: "El pedido cambió; actualiza antes de continuar." }, { status: 409 });
+  } catch {
+    return NextResponse.json({ error: `No se permite cambiar de ${order.status} a ${parsed.data.status}.` }, { status: 409 });
+  }
+}

@@ -21,6 +21,6 @@ npm run build
 
 Consulta [arquitectura](docs/architecture.md) y [despliegue](docs/deployment.md).
 
-La integración real requiere proyectos de Supabase y Mercado Pago, además de una licencia/API key de FN Shop. Fortnite-API y FN Shop no son APIs oficiales de Epic.
+La integración real requiere Supabase, datos bancarios, WhatsApp Business y una licencia/API key de FN Shop. Fortnite-API y FN Shop no son APIs oficiales de Epic.
 
 Prueba para ver si sube a deploy
