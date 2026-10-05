@@ -53,7 +53,7 @@ servidor. Una fase posterior podrá usar `FULFILLMENT_MODE=fnshop` junto con
 `COMMERCE_SESSION_SECRET` debe ser un valor aleatorio exclusivo
 de cada ambiente. `ALLOW_DEMO_PROVIDERS` debe permanecer en `false` en producción.
 
-`NEXT_PUBLIC_APP_URL` utiliza `https://fornitesite.vercel.app` como respaldo
+`NEXT_PUBLIC_APP_URL` utiliza `https://www.sigfriedlootbox.com` como respaldo
 cuando no está definida. En previews y desarrollo se debe configurar de forma
 explícita con el dominio correspondiente para que los retornos de pago apunten
 al ambiente correcto.
