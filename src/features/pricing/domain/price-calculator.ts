@@ -35,6 +35,26 @@ export function calculateMxnPrice(
   return Math.ceil((vbucks / 100) * tier.mxnPerHundred);
 }
 
+export function calculateAuthoritativePrice(
+  vbucks: number,
+  tiers: readonly PriceTier[],
+  overrideMxnCents?: number
+): number {
+  if (overrideMxnCents !== undefined) {
+    if (!Number.isInteger(overrideMxnCents) || overrideMxnCents <= 0) {
+      throw new UnsupportedVbucksPriceError(vbucks);
+    }
+    return overrideMxnCents / 100;
+  }
+  return calculateMxnPrice(vbucks, tiers);
+}
+
+export function priceTiersOverlap(left: PriceTier, right: PriceTier): boolean {
+  const leftEnd = left.maxVbucks ?? Number.POSITIVE_INFINITY;
+  const rightEnd = right.maxVbucks ?? Number.POSITIVE_INFINITY;
+  return left.minVbucks <= rightEnd && right.minVbucks <= leftEnd;
+}
+
 export function formatMxn(amount: number): string {
   return new Intl.NumberFormat("es-MX", {
     style: "currency",

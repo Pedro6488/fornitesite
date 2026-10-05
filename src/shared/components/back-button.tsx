@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 type BackButtonProps = Readonly<{
   fallbackHref?: string;
@@ -29,7 +30,7 @@ export function BackButton({
 
   return (
     <button className="back-button" type="button" onClick={navigateBack}>
-      <span aria-hidden="true">←</span>
+      <span aria-hidden="true"><ArrowLeft size={15} strokeWidth={2.4} /></span>
       {label}
     </button>
   );

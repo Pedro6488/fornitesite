@@ -6,12 +6,14 @@ export const ORDER_STATUSES = [
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export type PaymentMethod = "mercado_pago" | "bank_transfer";
+export type SupervisorStatus = "pending_confirmation" | "submitted_to_administrator" | "payment_received" | "sent";
+export type OrderLine = Readonly<{ itemName: string; quantity: number; unitAmountMxnCents: number }>;
 
 export type Order = Readonly<{
   id: string;
   publicToken: string;
   status: OrderStatus;
-  customerEmail: string;
+  customerEmail: string | null;
   epicAccountId: string;
   epicDisplayName: string;
   itemMainId: string;
@@ -21,22 +23,26 @@ export type Order = Readonly<{
   vbucksPrice: number;
   amountMxnCents: number;
   paymentMethod: PaymentMethod;
+  recipientPlatform?: "epic" | "xbl" | "psn" | "nintendo";
+  contactWhatsapp?: string | null;
+  supervisorStatus?: SupervisorStatus;
+  items?: readonly OrderLine[];
   createdAt: string;
 }>;
 
 const transitions: Readonly<Record<OrderStatus, readonly OrderStatus[]>> = {
   draft: ["payment_pending", "awaiting_transfer", "canceled"],
   payment_pending: ["paid", "rejected", "expired", "canceled"],
-  awaiting_transfer: ["receipt_submitted", "expired", "canceled"],
-  receipt_submitted: ["transfer_review"],
+  awaiting_transfer: ["receipt_submitted", "paid", "expired", "canceled"],
+  receipt_submitted: ["transfer_review", "paid"],
   transfer_review: ["information_required", "paid", "rejected"],
-  information_required: ["receipt_submitted", "rejected", "canceled"],
+  information_required: ["receipt_submitted", "paid", "rejected", "canceled"],
   paid: ["ready_to_send", "refund_pending", "manual_review"],
   ready_to_send: ["validating_delivery", "refund_pending", "manual_review"],
   validating_delivery: ["delivering", "manual_review", "refund_pending"],
   delivering: ["delivered", "reconciling", "manual_review"],
   reconciling: ["delivered", "manual_review"],
-  manual_review: ["ready_to_send", "refund_pending", "canceled"],
+  manual_review: ["awaiting_transfer", "canceled"],
   refund_pending: ["refunded", "manual_review"],
   delivered: [], refunded: [], rejected: [], expired: [], canceled: []
 };

@@ -1,50 +1,165 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
-import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { BackButton } from "@/shared/components/back-button";
-import { FavoriteButton } from "@/features/catalog/components/favorite-button";
+import { ProductPurchaseActions } from "@/features/catalog/components/product-purchase-actions";
 import { ItemPreview } from "@/features/catalog/components/item-preview";
+import { CatalogCard } from "@/features/catalog/components/catalog-card";
+import { ProductRail } from "@/features/catalog/components/product-rail";
+import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { getFortniteCosmoPreview } from "@/features/catalog/infrastructure/fortnite-cosmo-preview";
 
-export default async function ItemPage({ params }: { params: Promise<{ mainId: string }> }) {
+export default async function ItemPage({
+  params,
+}: {
+  params: Promise<{ mainId: string }>;
+}) {
   const { mainId } = await params;
   const catalog = await getCatalogService();
-  const item = await catalog.find(decodeURIComponent(mainId));
+  const items = await catalog.list();
+  const item = items.find(
+    (candidate) => candidate.mainId === decodeURIComponent(mainId),
+  );
   if (!item) notFound();
-  const purchasable = canPurchase(item);
   const preview = await getFortniteCosmoPreview(item.officialUrl, item.name);
+  const discountPercentage =
+    item.regularPriceVbucks > item.finalPriceVbucks
+      ? Math.round((1 - item.finalPriceVbucks / item.regularPriceVbucks) * 100)
+      : null;
+  const collectionItems = item.collaboration
+    ? items.filter(
+        (candidate) =>
+          candidate.mainId !== item.mainId &&
+          candidate.collaboration === item.collaboration,
+      )
+    : [];
+  const excludedIds = new Set([
+    item.mainId,
+    ...collectionItems.map((candidate) => candidate.mainId),
+  ]);
+  const relatedItems = items
+    .filter(
+      (candidate) =>
+        !excludedIds.has(candidate.mainId) && canPurchase(candidate),
+    )
+    .sort(
+      (left, right) =>
+        Number(right.type === item.type) - Number(left.type === item.type),
+    )
+    .slice(0, 8);
 
   return (
-    <section className="detail-shell">
-      <div className="detail-navigation"><BackButton /></div>
-      <ItemPreview imageUrl={item.imageUrl} name={item.name} rarity={item.rarity} videoUrl={preview?.videoUrl ?? item.videoUrl ?? null} />
-      <div className="detail-copy">
-        <p className="eyebrow">{item.type} · {item.rarity}</p>
-        <h1>{item.name}</h1>
-        <FavoriteButton itemId={item.mainId} itemName={item.name} variant="detail" />
-        {item.description && <p>{item.description}</p>}
-        <div className="detail-price">
-          <div><small>Precio en paVos</small><span>◉ {item.finalPriceVbucks.toLocaleString("es-MX")}</span></div>
-          <div><small>Tu precio</small><strong>{item.priceMxn === null ? "Consultar" : formatMxn(item.priceMxn)}</strong></div>
-        </div>
-        <div className="detail-assurances" aria-label="Información de compra">
-          <span>✓ Precio claro</span>
-          <span>✓ Validación previa</span>
-          <span>✓ Seguimiento</span>
-        </div>
-        {item.availableUntil && <p className="availability">Disponible hasta {new Date(item.availableUntil).toLocaleString("es-MX", { timeZone: "America/Mexico_City" })}</p>}
-        {purchasable ? (
-          <Link className="primary-button detail-cta" href={`/validar?item=${encodeURIComponent(item.mainId)}`}>Validar disponibilidad <span aria-hidden="true">→</span></Link>
-        ) : (
-          <div className="detail-unavailable">
-            <strong>Compra no disponible por ahora</strong>
-            <p>Puedes explorar este objeto, pero todavía no contamos con un agente disponible para entregarlo.</p>
-            <Link href="/#catalogo">Seguir explorando</Link>
+    <>
+      <section className="detail-shell">
+        <div className="detail-visual">
+          <div className="detail-navigation">
+            <BackButton />
           </div>
+          <ItemPreview
+            imageUrl={item.imageUrl}
+            name={item.name}
+            rarity={item.rarity}
+            videoUrl={preview?.videoUrl ?? item.videoUrl ?? null}
+          />
+        </div>
+        <div className="detail-copy">
+          <p className="eyebrow">
+            {item.collaboration ? `${item.collaboration} · ` : ""}
+            {item.type} · {item.rarity}
+          </p>
+          <h1>{item.name}</h1>
+          {item.description && <p>{item.description}</p>}
+          <section
+            className="detail-purchase-card"
+            aria-label="Información de compra"
+          >
+            <div className="detail-purchase-heading">
+              <div>
+                <p className="eyebrow">COMPRA PROTEGIDA</p>
+                <h2>Elige y agrégalo a tu carrito</h2>
+              </div>
+              {discountPercentage !== null && <span className="detail-promotion">Oferta -{discountPercentage}%</span>}
+            </div>
+            <div className="detail-price">
+              <div>
+                <small>Precio en paVos</small>
+                <span className="detail-vbucks-price">
+                  {discountPercentage !== null && (
+                    <del>
+                      ◉ {item.regularPriceVbucks.toLocaleString("es-MX")}
+                    </del>
+                  )}
+                  <b>◉ {item.finalPriceVbucks.toLocaleString("es-MX")}</b>
+                </span>
+              </div>
+              <div>
+                <strong>
+                  {item.priceMxn === null
+                    ? "Consultar"
+                    : formatMxn(item.priceMxn)}
+                  {item.priceMxn !== null && <em> MXN</em>}
+                </strong>
+              </div>
+            </div>
+          </section>
+          <ProductPurchaseActions item={item} />
+        </div>
+      </section>
+      <div className="detail-discovery">
+        {collectionItems.length > 0 && (
+          <section
+            className="detail-discovery-section"
+            aria-labelledby="collection-title"
+          >
+            <header>
+              <div>
+                <p className="eyebrow">DE LA MISMA COLECCIÓN</p>
+                <h2 id="collection-title">Completa {item.collaboration}</h2>
+              </div>
+              <span>
+                {collectionItems.length}{" "}
+                {collectionItems.length === 1 ? "objeto" : "objetos"}
+              </span>
+            </header>
+            <ProductRail label="objetos de la misma colección">
+              {collectionItems.map((candidate, index) => (
+                <CatalogCard
+                  key={candidate.mainId}
+                  item={candidate}
+                  index={index}
+                />
+              ))}
+            </ProductRail>
+          </section>
+        )}
+        {relatedItems.length > 0 && (
+          <section
+            className="detail-discovery-section"
+            aria-labelledby="related-title"
+          >
+            <header>
+              <div>
+                <p className="eyebrow">SIGUE EXPLORANDO</p>
+                <h2 id="related-title">También te puede gustar</h2>
+              </div>
+              <Link href="/#catalogo">
+                Ver todo <ArrowRight aria-hidden="true" size={16} />
+              </Link>
+            </header>
+            <ProductRail label="objetos recomendados">
+              {relatedItems.map((candidate, index) => (
+                <CatalogCard
+                  key={candidate.mainId}
+                  item={candidate}
+                  index={index}
+                />
+              ))}
+            </ProductRail>
+          </section>
         )}
       </div>
-    </section>
+    </>
   );
 }

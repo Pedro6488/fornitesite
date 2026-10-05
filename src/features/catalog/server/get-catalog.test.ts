@@ -44,10 +44,22 @@ describe("createCatalogService", () => {
     expect(item).toEqual(expect.objectContaining({
       mainId: "CID_REAL",
       name: "Objeto real",
-      offerId: null,
-      giftable: false,
+      offerId: "fortnite-offer",
+      giftable: true,
       priceMxn: 113
     }));
+  });
+
+  it("trata una API key vacía o con espacios como no configurada", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify(fortniteResponse), { status: 200 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const [item] = await createCatalogService({ fnShopApiKey: "   " }).list();
+
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(item).toEqual(expect.objectContaining({ offerId: "fortnite-offer", giftable: true }));
   });
 
   it("usa FN Shop solamente como catálogo transaccional cuando hay una API key", async () => {
@@ -63,7 +75,7 @@ describe("createCatalogService", () => {
       }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const [item] = await createCatalogService({ fnShopApiKey: "secret" }).list();
+    const [item] = await createCatalogService({ fnShopApiKey: "secret", fulfillmentMode: "fnshop" }).list();
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(item).toEqual(expect.objectContaining({
