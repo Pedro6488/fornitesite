@@ -1,10 +1,13 @@
 "use client";
 
 import { useCommerceState } from "./commerce-state-provider";
+import { BadgeCheck, ScanLine } from "lucide-react";
 
 export function IdentityNavButton() {
   const commerce = useCommerceState();
-  return <button type="button" className={`identity-nav-button ${commerce.validation?.status === "ready" ? "ready" : ""}`} onClick={commerce.openIdentity}>
-    <span aria-hidden="true" />{commerce.validation?.status === "ready" ? commerce.validation.display_name : "Validar ID"}
+  const manualReview = commerce.validation?.status === "manual_review";
+  const ready = commerce.validation?.status === "ready";
+  return <button type="button" className={`identity-nav-button ${ready ? "ready" : manualReview ? "manual" : ""}`} onClick={commerce.openIdentity}>
+    {ready ? <BadgeCheck aria-hidden="true" size={17} /> : <ScanLine aria-hidden="true" size={17} />}<span>{ready ? "ID listo" : manualReview ? "ID en revisión" : "Validar ID"}</span>
   </button>;
 }

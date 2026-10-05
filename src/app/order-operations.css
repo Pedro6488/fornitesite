@@ -1,0 +1,549 @@
+/* Order operations: a readable staff record with one auditable action area. */
+.supervisor-orders {
+  align-items: stretch;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.supervisor-orders>.admin-toolbar,
+.supervisor-orders>.notice {
+  grid-column: 1 / -1;
+}
+
+.supervisor-order {
+  align-items: stretch;
+  display: grid;
+  gap: .7rem;
+  grid-template-columns: minmax(0, 1fr);
+  height: 100%;
+  overflow: hidden;
+  padding: .85rem;
+}
+
+.supervisor-order-heading {
+  align-items: start;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.supervisor-order-heading h2 {
+  font-size: 1.2rem;
+  margin: .3rem 0 .1rem;
+}
+
+.supervisor-order-heading>div:last-child {
+  display: grid;
+  gap: .18rem;
+  justify-items: end;
+  text-align: right;
+}
+
+.supervisor-order-heading>div:last-child strong {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+
+.supervisor-order-heading>div:last-child span {
+  color: var(--muted);
+  font-size: .67rem;
+}
+
+.admin-order-progress {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-order-progress li {
+  align-items: center;
+  color: #73809f;
+  display: grid;
+  gap: .35rem;
+  justify-items: center;
+  position: relative;
+}
+
+.admin-order-progress li::before {
+  background: rgba(255, 255, 255, .1);
+  content: "";
+  height: 1px;
+  left: 0;
+  position: absolute;
+  right: 50%;
+  top: 1rem;
+}
+
+.admin-order-progress li::after {
+  background: rgba(255, 255, 255, .1);
+  content: "";
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  right: 0;
+  top: 1rem;
+}
+
+.admin-order-progress li:first-child::before,
+.admin-order-progress li:last-child::after {
+  display: none;
+}
+
+.admin-order-progress li>span {
+  align-items: center;
+  background: #0d1227;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 50%;
+  display: flex;
+  height: 1.75rem;
+  justify-content: center;
+  position: relative;
+  width: 1.75rem;
+  z-index: 1;
+}
+
+.admin-order-progress li.complete,
+.admin-order-progress li.active {
+  color: var(--cyan);
+}
+
+.admin-order-progress li.complete::before,
+.admin-order-progress li.complete::after,
+.admin-order-progress li.active::before {
+  background: rgba(85, 217, 255, .55);
+}
+
+.admin-order-progress li.complete>span {
+  background: rgba(75, 225, 154, .12);
+  border-color: rgba(75, 225, 154, .4);
+  color: #9cffcf;
+}
+
+.admin-order-progress li.active>span {
+  background: rgba(85, 217, 255, .12);
+  border-color: var(--cyan);
+}
+
+.admin-order-progress small {
+  font-size: .58rem;
+  font-weight: 800;
+}
+
+.admin-order-detail-trigger {
+  align-items: center;
+  background: rgba(7, 11, 28, .45);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: .85rem;
+  color: #c8d3ed;
+  cursor: pointer;
+  display: flex;
+  font-size: .72rem;
+  font-weight: 850;
+  justify-content: space-between;
+  min-height: 2.75rem;
+  padding: .65rem .8rem;
+  text-align: left;
+  width: 100%;
+}
+
+.admin-order-detail-trigger:hover {
+  border-color: rgba(85, 217, 255, .38);
+  color: var(--cyan);
+}
+
+.admin-order-sheet {
+  max-width: 58rem;
+  width: min(100%, 58rem);
+}
+
+.admin-order-modal-content {
+  display: grid;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.admin-order-detail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr);
+  padding: .75rem;
+}
+
+.admin-order-sheet .admin-order-detail-grid {
+  grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr);
+  padding: 0;
+}
+
+.admin-order-detail-grid section {
+  background: rgba(14, 20, 43, .78);
+  border: 1px solid rgba(126, 175, 255, .12);
+  border-radius: .8rem;
+  padding: .7rem;
+}
+
+.admin-order-detail-grid .eyebrow,
+.admin-order-history .eyebrow {
+  font-size: .57rem;
+  margin: 0 0 .55rem;
+}
+
+.admin-order-detail-grid h3 {
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-order-detail-grid dl {
+  display: grid;
+  gap: .45rem;
+  margin: .75rem 0 0;
+}
+
+.admin-order-detail-grid dl>div,
+.admin-order-items p,
+.admin-order-history>div>p {
+  align-items: center;
+  display: flex;
+  gap: .75rem;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.admin-order-detail-grid dt,
+.admin-order-detail-grid dd,
+.admin-order-items p,
+.admin-order-history>div>p {
+  font-size: .69rem;
+}
+
+.admin-order-detail-grid dt {
+  color: var(--muted);
+}
+
+.admin-order-detail-grid dd {
+  margin: 0;
+  max-width: 68%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.admin-order-items {
+  display: grid;
+  gap: .4rem;
+}
+
+.admin-order-item {
+  align-items: center;
+  background: rgba(7, 11, 28, .55);
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: .65rem;
+  color: inherit;
+  cursor: pointer;
+  display: grid;
+  gap: .55rem;
+  grid-template-columns: 2.7rem minmax(0, 1fr) auto;
+  min-height: 3.25rem;
+  padding: .3rem .45rem;
+  text-align: left;
+  transition: border-color .18s ease, background .18s ease;
+}
+
+.admin-order-item:hover,
+.admin-order-item:focus-visible {
+  background: rgba(85, 217, 255, .07);
+  border-color: rgba(85, 217, 255, .45);
+  outline: 0;
+}
+
+.admin-order-item-image {
+  background: linear-gradient(145deg, rgba(85, 217, 255, .18), rgba(126, 175, 255, .08));
+  border-radius: .5rem;
+  display: block;
+  height: 2.7rem;
+  overflow: hidden;
+  position: relative;
+  width: 2.7rem;
+}
+
+.admin-order-item-image img,
+.admin-product-preview-image img {
+  object-fit: contain;
+}
+
+.admin-order-item-image>b {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  justify-content: center;
+}
+
+.admin-order-item-copy,
+.admin-order-item-price {
+  display: grid;
+  gap: .12rem;
+  min-width: 0;
+}
+
+.admin-order-item-copy strong {
+  font-size: .7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-order-item-copy small,
+.admin-order-item-price small {
+  color: var(--muted);
+  font-size: .56rem;
+}
+
+.admin-order-item-price {
+  color: var(--accent);
+  font-size: .72rem;
+  font-weight: 900;
+  justify-items: end;
+  white-space: nowrap;
+}
+
+.admin-product-sheet {
+  max-width: 31rem;
+}
+
+.admin-product-preview {
+  display: grid;
+  gap: .85rem;
+}
+
+.admin-product-preview-image {
+  aspect-ratio: 1.35;
+  background: radial-gradient(circle at 50% 35%, rgba(85, 217, 255, .24), rgba(18, 26, 56, .96) 68%);
+  border: 1px solid rgba(126, 175, 255, .22);
+  border-radius: 1rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.admin-product-preview-image>span {
+  align-items: center;
+  display: flex;
+  font-size: 4rem;
+  height: 100%;
+  justify-content: center;
+}
+
+.admin-product-preview dl {
+  display: grid;
+  gap: .45rem;
+  margin: 0;
+}
+
+.admin-product-preview dl>div {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.admin-product-preview dt {
+  color: var(--muted);
+  font-size: .68rem;
+}
+
+.admin-product-preview dd {
+  font-size: .72rem;
+  font-weight: 850;
+  margin: 0;
+  max-width: 70%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.admin-product-preview .primary-button {
+  margin: 0;
+  text-align: center;
+  width: 100%;
+}
+
+.admin-payment-proof {
+  align-items: center;
+  background: rgba(255, 213, 31, .07);
+  border: 1px solid rgba(255, 213, 31, .22);
+  border-radius: .7rem;
+  display: grid;
+  gap: .55rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  margin-top: .8rem;
+  padding: .7rem;
+}
+
+.admin-payment-proof.received {
+  background: rgba(75, 225, 154, .08);
+  border-color: rgba(75, 225, 154, .28);
+}
+
+.admin-payment-proof>span {
+  display: grid;
+  gap: .1rem;
+}
+
+.admin-payment-proof strong {
+  font-size: .72rem;
+}
+
+.admin-payment-proof small {
+  color: var(--muted);
+  font-size: .6rem;
+}
+
+.admin-payment-proof a {
+  color: var(--cyan);
+  font-size: .67rem;
+  font-weight: 900;
+}
+
+.admin-order-history {
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  display: grid;
+  gap: .45rem;
+  padding: .85rem 1rem 1rem;
+}
+
+.admin-order-history small {
+  color: var(--muted);
+}
+
+.admin-order-history>div {
+  display: grid;
+  gap: .18rem;
+}
+
+.admin-order-history-note {
+  border-left: 2px solid rgba(85, 217, 255, .35);
+  padding-left: .5rem;
+}
+
+.admin-order-actions.system-action-bar-contained {
+  border-top-color: rgba(126, 175, 255, .2);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin-top: auto;
+  padding-top: .65rem;
+}
+
+.admin-header-logout {
+  align-items: center;
+  background: rgba(255, 101, 119, .08);
+  border: 1px solid rgba(255, 101, 119, .35);
+  border-radius: .75rem;
+  color: #ffb0bd;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: .76rem;
+  font-weight: 850;
+  gap: .4rem;
+  justify-content: center;
+  min-height: 2.7rem;
+  padding: 0 .8rem;
+}
+
+.admin-header-logout:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.admin-order-actions button.primary {
+  background: var(--success);
+  border-color: var(--success);
+  color: #07170f;
+  font-weight: 950;
+}
+
+.admin-order-actions button.danger {
+  border-color: rgba(255, 101, 119, .4);
+  color: #ff9aab;
+}
+
+/* The public order page is a focused payment and tracking surface. */
+body:has(.order-tracking-page) .site-footer,
+body:has(.order-tracking-page) .payment-strip,
+body:has(.order-tracking-page) .mobile-navigation {
+  display: none;
+}
+
+.order-tracking-actions .primary-button,
+.order-tracking-actions .secondary-button,
+.order-tracking-actions .whatsapp-button {
+  margin: 0;
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .supervisor-orders {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-order-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-order-sheet .admin-order-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .order-tracking-page {
+    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
+  }
+
+  .order-tracking-actions.system-action-bar-viewport {
+    display: grid;
+    gap: .55rem;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  body:has(.order-tracking-page) {
+    padding-bottom: 0;
+  }
+
+  .supervisor-order-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .supervisor-order-heading>div:last-child {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .mobile-header-actions .admin-header-logout span {
+    display: none;
+  }
+
+  .mobile-header-actions .admin-header-logout {
+    min-height: 2.55rem;
+    padding: 0 .65rem;
+  }
+
+  .admin-order-progress small {
+    font-size: .51rem;
+  }
+
+  .admin-order-detail-grid,
+  .admin-order-history {
+    padding: .75rem;
+  }
+
+  .admin-order-item {
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+
+  .admin-order-item-image {
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+
+  .admin-order-item-price {
+    grid-column: 2;
+    justify-items: start;
+  }
+}

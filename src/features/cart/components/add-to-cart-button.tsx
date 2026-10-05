@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Check, ShoppingBag } from "lucide-react";
 import { addToCart } from "../application/cart-storage";
 import type { CartItemSnapshot } from "../application/cart-storage";
 import { useOptionalCommerceState } from "@/features/commerce/components/commerce-state-provider";
@@ -22,7 +23,10 @@ export function AddToCartButton({ item, compact = false, redirectTo, disabled = 
     window.setTimeout(() => setAdded(false), 1600);
   }
 
-  return <button type="button" disabled={disabled || commerce?.syncing} className={compact ? "cart-add cart-add-compact" : "primary-button"} onClick={() => void add()}>
-    {disabled ? "No disponible" : error ? "Intenta de nuevo" : added ? "Agregado ✓" : "Agregar al carrito"}
+  const label = disabled ? "No disponible" : error ? "Intenta de nuevo" : added ? "Agregado" : "Agregar al carrito";
+
+  return <button type="button" aria-label={`${label}: ${item.name}`} disabled={disabled || commerce?.syncing} className={compact ? "cart-add cart-add-compact" : "primary-button"} onClick={() => void add()}>
+    {compact && (added ? <Check aria-hidden="true" size={15} /> : <ShoppingBag aria-hidden="true" size={15} />)}
+    {label}
   </button>;
 }

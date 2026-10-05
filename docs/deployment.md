@@ -35,6 +35,7 @@ COMMERCE_SESSION_SECRET
 FORTNITE_API_BASE_URL
 FNSHOP_API_BASE_URL
 FNSHOP_API_KEY
+FULFILLMENT_MODE=manual
 ALLOW_DEMO_PROVIDERS=false
 WHATSAPP_BUSINESS_NUMBER
 CRON_SECRET
@@ -44,10 +45,12 @@ BANK_CLABE
 ```
 
 `FORTNITE_API_BASE_URL` alimenta el catálogo visual y, si se omite, usa
-`https://fortnite-api.com/v2`. `FNSHOP_API_KEY` no es necesaria para mostrar
-la tienda: habilita la coincidencia transaccional, validación y entrega. Sin
-esa clave, los objetos reales permanecen visibles como informativos y no se
-pueden comprar. `COMMERCE_SESSION_SECRET` debe ser un valor aleatorio exclusivo
+`https://fortnite-api.com/v2`. En la primera fase, `FULFILLMENT_MODE=manual`
+mantiene FN Shop fuera del catálogo y de la salud del servicio. Los objetos
+regalables de Fortnite pueden agregarse al carrito con precios calculados en
+servidor. Una fase posterior podrá usar `FULFILLMENT_MODE=fnshop` junto con
+`FNSHOP_API_KEY` para habilitar validación y entrega automáticas.
+`COMMERCE_SESSION_SECRET` debe ser un valor aleatorio exclusivo
 de cada ambiente. `ALLOW_DEMO_PROVIDERS` debe permanecer en `false` en producción.
 
 `NEXT_PUBLIC_APP_URL` utiliza `https://fornitesite.vercel.app` como respaldo

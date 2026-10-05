@@ -33,16 +33,16 @@ export type Order = Readonly<{
 const transitions: Readonly<Record<OrderStatus, readonly OrderStatus[]>> = {
   draft: ["payment_pending", "awaiting_transfer", "canceled"],
   payment_pending: ["paid", "rejected", "expired", "canceled"],
-  awaiting_transfer: ["receipt_submitted", "expired", "canceled"],
-  receipt_submitted: ["transfer_review"],
+  awaiting_transfer: ["receipt_submitted", "paid", "expired", "canceled"],
+  receipt_submitted: ["transfer_review", "paid"],
   transfer_review: ["information_required", "paid", "rejected"],
-  information_required: ["receipt_submitted", "rejected", "canceled"],
+  information_required: ["receipt_submitted", "paid", "rejected", "canceled"],
   paid: ["ready_to_send", "refund_pending", "manual_review"],
   ready_to_send: ["validating_delivery", "refund_pending", "manual_review"],
   validating_delivery: ["delivering", "manual_review", "refund_pending"],
   delivering: ["delivered", "reconciling", "manual_review"],
   reconciling: ["delivered", "manual_review"],
-  manual_review: ["ready_to_send", "refund_pending"],
+  manual_review: ["awaiting_transfer", "canceled"],
   refund_pending: ["refunded", "manual_review"],
   delivered: [], refunded: [], rejected: [], expired: [], canceled: []
 };

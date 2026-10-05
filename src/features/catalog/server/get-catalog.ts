@@ -11,6 +11,7 @@ type CatalogConfiguration = Readonly<{
   fortniteBaseUrl?: string;
   fnShopBaseUrl?: string;
   fnShopApiKey?: string;
+  fulfillmentMode?: string;
 }>;
 
 export async function getCatalogService(): Promise<CatalogService> {
@@ -23,7 +24,8 @@ export async function getCatalogService(): Promise<CatalogService> {
   return createCatalogService({
     fortniteBaseUrl: process.env.FORTNITE_API_BASE_URL,
     fnShopBaseUrl: process.env.FNSHOP_API_BASE_URL,
-    fnShopApiKey: process.env.FNSHOP_API_KEY
+    fnShopApiKey: process.env.FNSHOP_API_KEY,
+    fulfillmentMode: process.env.FULFILLMENT_MODE
   }, pricing);
 }
 
@@ -31,13 +33,15 @@ export function createCatalogService(
   configuration: CatalogConfiguration,
   pricing?: CatalogPricingProvider
 ): CatalogService {
+  const fnShopApiKey = configuration.fnShopApiKey?.trim();
+  const fnShopEnabled = configuration.fulfillmentMode === "fnshop";
   const visualCatalog = new FortniteApiCatalogProvider(
     configuration.fortniteBaseUrl || DEFAULT_FORTNITE_API_URL
   );
-  const transactionalCatalog = configuration.fnShopApiKey
+  const transactionalCatalog = fnShopEnabled && fnShopApiKey
     ? new FnShopCatalogProvider(
         configuration.fnShopBaseUrl || DEFAULT_FNSHOP_API_URL,
-        configuration.fnShopApiKey
+        fnShopApiKey
       )
     : undefined;
 

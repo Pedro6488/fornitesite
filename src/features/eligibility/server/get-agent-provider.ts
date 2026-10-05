@@ -3,7 +3,11 @@ import { DemoAgentProvider } from "../infrastructure/demo-agent-provider";
 import { FnShopAgentProvider } from "../infrastructure/fnshop-agent-provider";
 
 export function getAgentProvider(): AgentProvider {
-  const apiKey = process.env.FNSHOP_API_KEY;
+  const fulfillmentMode = process.env.FULFILLMENT_MODE ?? "manual";
+  const apiKey = process.env.FNSHOP_API_KEY?.trim();
+  if (fulfillmentMode !== "fnshop") {
+    throw new Error("La validación automática de IDs está reservada para una fase posterior.");
+  }
   if (!apiKey) {
     const demoAllowed =
       process.env.ALLOW_DEMO_PROVIDERS === "true" &&

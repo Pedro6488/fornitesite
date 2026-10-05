@@ -15,6 +15,7 @@ export class CatalogService {
       ? await this.transactionalCatalog.getCurrentCatalog()
       : [];
     const transactionById = new Map(transactionalItems.map((item) => [item.mainId, item]));
+    const hasTransactionalCatalog = Boolean(this.transactionalCatalog);
 
     const displayableItems = visualItems.filter(isCatalogItemDisplayable);
     const authoritativePrices = this.pricing ? await this.pricing.price(displayableItems) : null;
@@ -32,8 +33,8 @@ export class CatalogService {
 
       return {
         ...item,
-        offerId: transaction?.offerId ?? null,
-        giftable: Boolean(transaction?.giftable),
+        offerId: hasTransactionalCatalog ? transaction?.offerId ?? null : item.offerId,
+        giftable: hasTransactionalCatalog ? Boolean(transaction?.giftable) : item.giftable,
         availableUntil: transaction?.availableUntil ?? item.availableUntil,
         priceMxn
       };

@@ -7,7 +7,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await staff.database
     .from("orders")
-    .select("id,created_at,customer_email,epic_display_name,epic_account_id,recipient_platform,contact_whatsapp,amount_mxn_cents,status,order_items(item_name,quantity,unit_amount_mxn_cents),transfer_receipts(id,storage_path,mime_type,created_at)")
+    .select("id,created_at,customer_email,epic_display_name,epic_account_id,recipient_platform,contact_whatsapp,amount_mxn_cents,status,order_items(item_main_id,item_name,item_image_url,vbucks_price,quantity,unit_amount_mxn_cents),transfer_receipts(id,storage_path,mime_type,created_at)")
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: "No fue posible consultar pedidos." }, { status: 503 });

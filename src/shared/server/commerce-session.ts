@@ -117,7 +117,14 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
   }
 
   await database.from("orders").update({ user_id: userId }).in("commerce_session_id", [currentSessionId, ...sourceIds]).is("user_id", null);
-  await database.from("game_id_validations").update({ user_id: userId }).in("commerce_session_id", [currentSessionId, ...sourceIds]).is("user_id", null);
+  await database.from("game_id_validations").update({ user_id: userId, commerce_session_id: currentSessionId }).in("commerce_session_id", sourceIds);
+  await database.from("game_id_validations").update({ user_id: userId }).eq("commerce_session_id", currentSessionId).is("user_id", null);
+  const { data: activeValidation } = await database.from("game_id_validations")
+    .select("id").eq("commerce_session_id", currentSessionId)
+    .order("last_checked_at", { ascending: false }).limit(1).maybeSingle<{ id: string }>();
+  if (activeValidation) {
+    await database.from("commerce_sessions").update({ active_game_id_validation_id: activeValidation.id }).eq("id", currentSessionId);
+  }
   await database.from("commerce_sessions").update({ merged_into: currentSessionId }).in("id", sourceIds);
 }
 

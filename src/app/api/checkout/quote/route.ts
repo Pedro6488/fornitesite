@@ -41,22 +41,27 @@ export async function POST(request: Request) {
     }
     const resolved = items.map((item) => item!);
     const totalVbucks = resolved.reduce((sum, item) => sum + item.finalPriceVbucks, 0);
-    const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
-    const state = validationStatus(agents);
-    await database.from("game_id_validations").update({
-      status: state.status,
-      giftable_at: state.giftableAt,
-      agents_snapshot: agents,
-      last_checked_at: new Date().toISOString()
-    }).eq("id", validation.id);
-    const selectedAgent = selectBestAgentForCart(agents, totalVbucks, resolved.length);
-    if (!selectedAgent) {
-      const message = state.status === "waiting"
-        ? "El ID es válido, pero todavía debe cumplirse la espera de 48 horas."
-        : state.status === "pending_friendship"
-          ? "El ID es válido, pero aún debes aceptar la solicitud de amistad en Fortnite."
-          : "No existe un agente con amistad, saldo y cupo suficientes para este carrito.";
-      return attachCommerceCookie(NextResponse.json({ error: message, code: "recipient_not_ready", validationStatus: state.status }), session);
+    const manualReview = validation.status === "manual_review";
+    let selectedAgentId: string | null = null;
+    if (!manualReview) {
+      const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
+      const state = validationStatus(agents);
+      await database.from("game_id_validations").update({
+        status: state.status,
+        giftable_at: state.giftableAt,
+        agents_snapshot: agents,
+        last_checked_at: new Date().toISOString()
+      }).eq("id", validation.id);
+      const selectedAgent = selectBestAgentForCart(agents, totalVbucks, resolved.length);
+      if (!selectedAgent) {
+        const message = state.status === "waiting"
+          ? "El ID es válido, pero todavía debe cumplirse la espera de 48 horas."
+          : state.status === "pending_friendship"
+            ? "El ID es válido, pero aún debes aceptar la solicitud de amistad en Fortnite."
+            : "No existe un agente con amistad, saldo y cupo suficientes para este carrito.";
+        return attachCommerceCookie(NextResponse.json({ error: message, code: "recipient_not_ready", validationStatus: state.status }), session);
+      }
+      selectedAgentId = selectedAgent.id;
     }
 
     const amountMxnCents = resolved.reduce((sum, item) => sum + Math.round(item.priceMxn! * 100), 0);
@@ -66,7 +71,7 @@ export async function POST(request: Request) {
       validation_id: validation.id,
       amount_mxn_cents: amountMxnCents,
       total_vbucks: totalVbucks,
-      selected_agent_id: selectedAgent.id,
+      selected_agent_id: selectedAgentId,
       expires_at: expiresAt
     }).select("id,expires_at").single();
     if (quoteError || !quote) throw quoteError ?? new Error("No se guardó la cotización.");

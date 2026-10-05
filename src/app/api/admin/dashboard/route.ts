@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 async function summary(database: NonNullable<Awaited<ReturnType<typeof authorizeStaff>>>["database"]) {
   const abandonedBefore = new Date(Date.now() - 24 * 60 * 60_000).toISOString();
   const [orders, receipts, activeCarts, abandonedCarts, favorites] = await Promise.all([
-    database.from("orders").select("id", { count: "exact", head: true }).in("status", ["awaiting_transfer", "receipt_submitted", "transfer_review", "information_required", "paid", "ready_to_send", "validating_delivery", "delivering"]),
+    database.from("orders").select("id", { count: "exact", head: true }).in("status", ["manual_review", "awaiting_transfer", "receipt_submitted", "transfer_review", "information_required", "paid", "ready_to_send", "validating_delivery", "delivering"]),
     database.from("orders").select("id", { count: "exact", head: true }).in("status", ["receipt_submitted", "transfer_review"]),
     database.from("shopping_carts").select("id", { count: "exact", head: true }).eq("status", "active").gte("updated_at", abandonedBefore),
     database.from("shopping_carts").select("id", { count: "exact", head: true }).eq("status", "active").lt("updated_at", abandonedBefore),

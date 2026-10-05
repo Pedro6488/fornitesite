@@ -38,7 +38,7 @@ export async function POST(request: Request) {
       return attachCommerceCookie(NextResponse.json({ error: "La cotización venció. Actualiza la revisión antes de confirmar." }, { status: 409 }), context.session);
     }
     const { data: validation } = await context.database.from("game_id_validations")
-      .select("id,epic_account_id").eq("id", parsed.data.validationId)
+      .select("id,epic_account_id,status").eq("id", parsed.data.validationId)
       .eq("commerce_session_id", context.session.id).maybeSingle();
     if (!validation) return attachCommerceCookie(NextResponse.json({ error: "El ID validado ya no está disponible." }, { status: 409 }), context.session);
 
@@ -53,19 +53,21 @@ export async function POST(request: Request) {
       return attachCommerceCookie(NextResponse.json({ error: "Uno de los objetos dejó de estar disponible. Genera una nueva cotización." }, { status: 409 }), context.session);
     }
 
-    const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
-    const state = validationStatus(agents);
-    const selectedAgent = selectBestAgentForCart(agents, quote.total_vbucks, quoteLines.length);
-    await context.database.from("game_id_validations").update({
-      status: state.status,
-      giftable_at: state.giftableAt,
-      agents_snapshot: agents,
-      last_checked_at: new Date().toISOString()
-    }).eq("id", validation.id);
-    if (!selectedAgent) {
-      return attachCommerceCookie(NextResponse.json({ error: "El ID, saldo o capacidad cambiaron. Vuelve a revisar el pedido." }, { status: 409 }), context.session);
+    if (validation.status !== "manual_review") {
+      const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
+      const state = validationStatus(agents);
+      const selectedAgent = selectBestAgentForCart(agents, quote.total_vbucks, quoteLines.length);
+      await context.database.from("game_id_validations").update({
+        status: state.status,
+        giftable_at: state.giftableAt,
+        agents_snapshot: agents,
+        last_checked_at: new Date().toISOString()
+      }).eq("id", validation.id);
+      if (!selectedAgent) {
+        return attachCommerceCookie(NextResponse.json({ error: "El ID, saldo o capacidad cambiaron. Vuelve a revisar el pedido." }, { status: 409 }), context.session);
+      }
+      await context.database.from("checkout_quotes").update({ selected_agent_id: selectedAgent.id }).eq("id", quote.id);
     }
-    await context.database.from("checkout_quotes").update({ selected_agent_id: selectedAgent.id }).eq("id", quote.id);
 
     const { data, error } = await context.database.rpc("create_order_from_quote", {
       p_quote_id: parsed.data.quoteId,

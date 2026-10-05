@@ -3,6 +3,8 @@
 import { useMemo, useState, type FormEvent } from "react";
 import type { Order, OrderStatus as OrderState } from "../domain/order";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
+import { PurchaseConfetti } from "@/shared/components/purchase-confetti";
+import { SystemActionBar } from "@/shared/components/system-action-bar";
 
 const statusCopy: Record<OrderState, string> = {
   draft: "Preparando pedido",
@@ -59,15 +61,16 @@ export function OrderStatus({ initialOrder, bank, whatsappNumber, appUrl }: { in
   }
 
   return <div className="order-status-card">
+    <PurchaseConfetti />
     <div className="order-summary"><div><p className="eyebrow">PEDIDO {order.id.slice(0, 8).toUpperCase()}</p><h2>Resumen de compra</h2><span>Para {order.epicDisplayName}</span></div><strong>{formatMxn(order.amountMxnCents / 100)}</strong></div>
     <div className="order-items-summary">{(order.items ?? []).map((item, index) => <p key={`${item.itemName}-${index}`}><span>{item.itemName}</span><strong>{formatMxn(item.unitAmountMxnCents / 100)}</strong></p>)}</div>
-    <div className="recipient-id-notice"><span>ID DE ENTREGA VALIDADO</span><strong>{order.epicDisplayName}</strong><p>Este es el ID que recibirá el pedido y no puede cambiarse después de confirmar.</p></div>
+    <div className="recipient-id-notice"><span>{order.status === "manual_review" ? "ID DE ENTREGA EN REVISIÓN" : "ID DE ENTREGA VALIDADO"}</span><strong>{order.epicDisplayName}</strong><p>{order.status === "manual_review" ? "Revisaremos este ID antes de solicitarte el pago. Te avisaremos cuando quede aprobado." : "Este es el ID que recibirá el pedido y no puede cambiarse después de confirmar."}</p></div>
     <div className={`canonical-order-status status-${order.status}`}><span>ESTADO DEL PEDIDO</span><strong>{statusCopy[order.status]}</strong></div>
     {canUpload && <>
       <div className="bank-details"><p><span>Banco</span><strong>{bank.name}</strong></p><p><span>Beneficiario</span><strong>{bank.beneficiary}</strong></p><p><span>CLABE</span><strong>{bank.clabe}</strong></p><p><span>Concepto</span><strong>PEDIDO-{order.id.slice(0, 8).toUpperCase()}</strong></p></div>
-      <form className="receipt-form" onSubmit={uploadTicket}><label>Comprobante de pago<input name="ticket" type="file" required accept="image/jpeg,image/png,application/pdf" /></label><button className="primary-button" disabled={loading}>{loading ? "Subiendo…" : order.status === "information_required" ? "Enviar nuevo comprobante" : "Subir comprobante"}</button></form>
+      <form id="receipt-upload-form" className="receipt-form" onSubmit={uploadTicket}><label>Comprobante de pago<input name="ticket" type="file" required accept="image/jpeg,image/png,application/pdf" /></label></form>
     </>}
-    <div className="post-sale-actions">{whatsappHref && <a className="whatsapp-button" href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => void trackWhatsapp()}>Continuar por WhatsApp <span>↗</span></a>}{!canUpload && order.status !== "delivered" && <button className="secondary-button" onClick={() => void refresh()}>Actualizar estado</button>}</div>
+    {(canUpload || whatsappHref || order.status !== "delivered") && <SystemActionBar className="post-sale-actions order-tracking-actions">{canUpload && <button form="receipt-upload-form" className="primary-button" disabled={loading}>{loading ? "Subiendo…" : order.status === "information_required" ? "Enviar nuevo comprobante" : "Subir comprobante"}</button>}{whatsappHref && <a className="whatsapp-button" href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => void trackWhatsapp()}>Continuar por WhatsApp <span>↗</span></a>}{!canUpload && order.status !== "delivered" && <button className="secondary-button" onClick={() => void refresh()}>Actualizar estado</button>}</SystemActionBar>}
     {message && <p className={`notice ${message.startsWith("Comprobante") ? "success" : "error"}`}>{message}</p>}
   </div>;
 }

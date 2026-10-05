@@ -13,7 +13,7 @@ export type IdentityValidation = Readonly<{
   submitted_id: string;
   epic_account_id: string;
   display_name: string;
-  status: "pending_friendship" | "waiting" | "ready" | "blocked";
+  status: "pending_friendship" | "waiting" | "ready" | "manual_review" | "blocked";
   giftable_at: string | null;
   last_checked_at: string;
 }>;
@@ -23,11 +23,13 @@ type CommerceState = Readonly<{
   syncing: boolean;
   cartItemIds: readonly string[];
   favoriteItemIds: ReadonlySet<string>;
+  validations: readonly IdentityValidation[];
   validation: IdentityValidation | null;
   identityOpen: boolean;
   openIdentity: () => void;
   closeIdentity: () => void;
   validateIdentity: (displayName: string, platform: IdentityPlatform) => Promise<string | null>;
+  selectValidation: (validationId: string) => Promise<string | null>;
   requestFriendship: () => Promise<string | null>;
   addCartItem: (itemId: string) => Promise<string | null>;
   removeCartItem: (itemId: string) => Promise<string | null>;
@@ -63,7 +65,9 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [syncing, setSyncing] = useState(false);
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [favoriteItemIds, setFavoriteItemIds] = useState<Set<string>>(new Set());
-  const [validation, setValidation] = useState<IdentityValidation | null>(null);
+  const [validations, setValidations] = useState<IdentityValidation[]>([]);
+  const [activeValidationId, setActiveValidationId] = useState<string | null>(null);
+  const validation = useMemo(() => validations.find((entry) => entry.id === activeValidationId) ?? null, [activeValidationId, validations]);
   const [identityOpen, setIdentityOpen] = useState(false);
   const openIdentity = useCallback(() => setIdentityOpen(true), []);
   const closeIdentity = useCallback(() => setIdentityOpen(false), []);
@@ -85,7 +89,8 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         if (!response.ok) throw new Error(body.error);
         setCartItemIds(body.cartItemIds ?? []);
         setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
-        setValidation(body.validation ?? null);
+        setValidations(body.validations ?? (body.validation ? [body.validation] : []));
+        setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
         window.localStorage.removeItem(LEGACY_CART_KEY);
         window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
       } catch {
@@ -156,11 +161,29 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error);
-      setValidation(body.validation);
+      setValidations((current) => [body.validation, ...current.filter((entry) => entry.id !== body.validation.id)]);
+      setActiveValidationId(body.validation.id);
       return null;
     } catch (error) { return error instanceof Error ? error.message : "No fue posible validar el ID."; }
     finally { setSyncing(false); }
   }, []);
+
+  const selectValidation = useCallback(async (validationId: string) => {
+    if (validationId === activeValidationId) return null;
+    setSyncing(true);
+    try {
+      const response = await fetch("/api/identity/active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ validationId })
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error);
+      setActiveValidationId(body.activeValidationId);
+      return null;
+    } catch (error) { return error instanceof Error ? error.message : "No fue posible cambiar el ID."; }
+    finally { setSyncing(false); }
+  }, [activeValidationId]);
 
   const requestFriendship = useCallback(async () => {
     if (!validation) return "Primero valida tu ID.";
@@ -173,19 +196,19 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error);
-      setValidation({ ...validation, status: "pending_friendship" });
+      setValidations((current) => current.map((entry) => entry.id === validation.id ? { ...entry, status: "pending_friendship" } : entry));
       return null;
     } catch (error) { return error instanceof Error ? error.message : "No fue posible enviar la solicitud."; }
     finally { setSyncing(false); }
   }, [validation]);
 
   const value = useMemo<CommerceState>(() => ({
-    ready, syncing, cartItemIds, favoriteItemIds, validation, identityOpen,
+    ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen,
     openIdentity,
     closeIdentity,
-    validateIdentity, requestFriendship, addCartItem, removeCartItem, toggleFavorite,
+    validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite,
     clearCart
-  }), [ready, syncing, cartItemIds, favoriteItemIds, validation, identityOpen, openIdentity, closeIdentity, validateIdentity, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
+  }), [ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }

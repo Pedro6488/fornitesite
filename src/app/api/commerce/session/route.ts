@@ -31,16 +31,19 @@ export async function POST(request: Request) {
     if (error) return attachCommerceCookie(NextResponse.json({ error: "No fue posible migrar favoritos." }, { status: 503 }), session);
   }
 
-  const [{ data: cartItems }, { data: favorites }, { data: validation }] = await Promise.all([
+  const [{ data: cartItems }, { data: favorites }, { data: validations }, { data: sessionState }] = await Promise.all([
     database.from("shopping_cart_items").select("item_main_id").eq("cart_id", cartId).order("added_at"),
     database.from("customer_favorites").select("item_main_id").eq("commerce_session_id", session.id).order("created_at"),
     database.from("game_id_validations").select("id,platform,submitted_id,epic_account_id,display_name,status,giftable_at,last_checked_at")
-      .eq("commerce_session_id", session.id).order("created_at", { ascending: false }).limit(1).maybeSingle()
+      .eq("commerce_session_id", session.id).order("last_checked_at", { ascending: false }),
+    database.from("commerce_sessions").select("active_game_id_validation_id").eq("id", session.id).maybeSingle()
   ]);
+  const activeValidationId = sessionState?.active_game_id_validation_id ?? validations?.[0]?.id ?? null;
   return attachCommerceCookie(NextResponse.json({
     cartItemIds: (cartItems ?? []).map((item) => item.item_main_id),
     favoriteItemIds: (favorites ?? []).map((item) => item.item_main_id),
-    validation: validation ?? null,
+    validations: validations ?? [],
+    activeValidationId,
     authenticated: Boolean(session.user)
   }), session);
 }

@@ -17,6 +17,9 @@ export async function POST(request: Request) {
     .eq("commerce_session_id", context.session.id).maybeSingle();
   if (!validation) return attachCommerceCookie(NextResponse.json({ error: "El ID no pertenece a esta sesión." }, { status: 404 }), context.session);
   if (validation.status === "ready") return attachCommerceCookie(NextResponse.json({ ok: true, alreadyReady: true }), context.session);
+  if (validation.status === "manual_review") {
+    return attachCommerceCookie(NextResponse.json({ ok: true, manualReview: true }), context.session);
+  }
   try {
     const { data: priorRequest } = await context.database.from("friend_request_records")
       .select("requested_at").eq("epic_account_id", validation.epic_account_id).maybeSingle();
