@@ -321,3 +321,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .catalog-grid, .favorites-grid { grid-template-columns: 1fr; }
   .item-art { aspect-ratio: 1.08; }
 }
+
+/* Pricing administration */
+.price-form-heading, .price-list-heading { align-items: center; display: flex; gap: .75rem; justify-content: space-between; }
+.price-form-heading h2, .price-list-heading h2 { font-size: 1rem; margin: .15rem 0 0; }
+.price-list-heading { border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: .7rem; }
+.price-list-heading > span { background: rgba(85,217,255,.1); border-radius: 999px; color: var(--cyan); font-size: .62rem; font-weight: 850; padding: .35rem .55rem; white-space: nowrap; }
+.price-cancel { background: transparent; border: 1px solid rgba(255,255,255,.16); border-radius: .55rem; color: var(--muted); cursor: pointer; font-size: .68rem; min-height: 2.35rem; padding: .45rem .65rem; }
+.price-lists article span b { display: block; font-size: .9rem; }
+.price-lists article > strong { color: var(--accent); font-size: 1rem; white-space: nowrap; }
+.price-lists article > strong small { color: var(--muted); font-size: .65rem; }
+.price-rule-actions { display: flex; flex-wrap: wrap; gap: .4rem; justify-content: end; }
+.price-lists article button { padding: .4rem .55rem; }
+.price-rule-actions button:first-child { border-color: rgba(85,217,255,.4); color: var(--cyan); }
+.selected-price-item { align-items: center; background: rgba(85,217,255,.07); border: 1px solid rgba(85,217,255,.24); border-radius: .8rem; display: flex; gap: .7rem; min-height: 4.4rem; overflow: hidden; padding: .45rem .65rem; }
+.selected-price-item img, .selected-price-item > span { background: rgba(255,255,255,.06); border-radius: .55rem; height: 3.25rem; object-fit: contain; width: 3.25rem; }
+.selected-price-item > span { align-items: center; color: var(--cyan); display: flex; font-size: 1.4rem; justify-content: center; }
+.selected-price-item > div { display: grid; gap: .2rem; min-width: 0; }
+.selected-price-item strong { font-size: .82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.selected-price-item small { color: var(--muted); font-size: .66rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 600px) {
+  .price-rule-actions { grid-column: 1 / -1; justify-content: stretch; }
+  .price-rule-actions button { flex: 1; }
+}

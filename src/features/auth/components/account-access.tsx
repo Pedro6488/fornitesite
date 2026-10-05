@@ -15,9 +15,10 @@ function orderLabel(status: string) {
   return "Pendiente de pago";
 }
 
-export function AccountAccess({ nextPath = "/cuenta" }: { nextPath?: string }) {
+export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { nextPath?: string; adminAccess?: boolean }) {
   const commerce = useCommerceState();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [orders, setOrders] = useState<CustomerOrder[] | null>(null);
   const supabase = useMemo(() => getSupabaseBrowser(), []);
@@ -38,6 +39,12 @@ export function AccountAccess({ nextPath = "/cuenta" }: { nextPath?: string }) {
   async function sendLink(event: FormEvent) {
     event.preventDefault();
     if (!supabase) { setMessage("El acceso todavía no está configurado."); return; }
+    if (adminAccess) {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) { setMessage("Correo o contraseña incorrectos."); return; }
+      window.location.assign(nextPath);
+      return;
+    }
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}` }
@@ -55,6 +62,8 @@ export function AccountAccess({ nextPath = "/cuenta" }: { nextPath?: string }) {
     </div>
     <section className="orders-panel"><div className="orders-heading"><div><p className="eyebrow">MIS COMPRAS</p><h3>Estado de tus pedidos</h3></div><Link href="/#catalogo">Ir a la tienda</Link></div>{orders.length === 0 ? <p className="empty-orders">Aún no tienes pedidos asociados a esta cuenta.</p> : orders.map((order) => <Link className="account-order" key={order.id} href={`/pedidos/${order.id}?access=${order.public_token}`}><span>{order.item_name}<small>{new Date(order.created_at).toLocaleDateString("es-MX")}</small></span><strong className={`order-${order.status}`}>{orderLabel(order.status)}</strong></Link>)}</section>
   </div>;
+
+  if (adminAccess) return <form className="account-card register-card" onSubmit={sendLink}><p className="eyebrow">ACCESO RESTRINGIDO</p><h2>Panel de administración</h2><p>Ingresa con el correo y la contraseña de una cuenta autorizada.</p><label>Correo de administrador<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" autoComplete="email" /></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /></label><button className="primary-button">Entrar al panel</button>{message && <p className="notice">{message}</p>}<small className="account-note">Solo las cuentas con rol de administrador pueden continuar.</small></form>;
 
   return <form className="account-card register-card" onSubmit={sendLink}><p className="eyebrow">REGÍSTRATE O INICIA SESIÓN</p><h2>Tu cuenta SigfriedLootBox</h2><p>Usamos un enlace seguro por correo, sin contraseñas. Iniciar sesión es opcional: te permite sincronizar favoritos, carrito e historial entre dispositivos.</p><label>Correo electrónico<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" /></label><button className="primary-button">Enviar enlace seguro</button>{message && <p className="notice">{message}</p>}<button className="identity-account-button" type="button" onClick={commerce.openIdentity}>Validar mi ID sin crear cuenta</button><small className="account-note">Para comprar como invitado sólo necesitas un ID entregable y WhatsApp.</small></form>;
 }
