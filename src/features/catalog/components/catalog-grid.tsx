@@ -64,7 +64,7 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CatalogCategory>("Todos");
-  const [mode, setMode] = useState<CatalogDiscoveryMode>("all");
+  const [mode, setMode] = useState<CatalogDiscoveryMode>("new");
   const [sort, setSort] = useState<CatalogSort>("newest");
   const [collaboration, setCollaboration] = useState<string | null>(null);
   const [availability, setAvailability] = useState<CatalogAvailability>("all");

@@ -31,11 +31,12 @@ NEXT_PUBLIC_APP_URL
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 SUPABASE_SERVICE_ROLE_KEY
+COMMERCE_SESSION_SECRET
 FORTNITE_API_BASE_URL
 FNSHOP_API_BASE_URL
 FNSHOP_API_KEY
-MERCADO_PAGO_ACCESS_TOKEN
-MERCADO_PAGO_WEBHOOK_SECRET
+ALLOW_DEMO_PROVIDERS=false
+WHATSAPP_BUSINESS_NUMBER
 CRON_SECRET
 BANK_NAME
 BANK_BENEFICIARY
@@ -46,24 +47,26 @@ BANK_CLABE
 `https://fortnite-api.com/v2`. `FNSHOP_API_KEY` no es necesaria para mostrar
 la tienda: habilita la coincidencia transaccional, validación y entrega. Sin
 esa clave, los objetos reales permanecen visibles como informativos y no se
-pueden comprar.
+pueden comprar. `COMMERCE_SESSION_SECRET` debe ser un valor aleatorio exclusivo
+de cada ambiente. `ALLOW_DEMO_PROVIDERS` debe permanecer en `false` en producción.
 
 `NEXT_PUBLIC_APP_URL` utiliza `https://fornitesite.vercel.app` como respaldo
 cuando no está definida. En previews y desarrollo se debe configurar de forma
 explícita con el dominio correspondiente para que los retornos de pago apunten
 al ambiente correcto.
 
-No reutilices credenciales entre QA y producción. Registra en Mercado Pago el webhook `https://DOMINIO/api/webhooks/mercado-pago`.
+No reutilices credenciales entre QA y producción. La transferencia bancaria es
+el único método de pago expuesto; WhatsApp funciona únicamente como postventa.
 
 ## Liberación
 
 1. Feature commits en `development`.
-2. Ejecutar CI y prueba manual del flujo demo.
+2. Ejecutar CI y pruebas del flujo comercial con proveedores QA.
 3. Merge commit `development → qa-release`.
 4. Aplicar migraciones al Supabase QA.
-5. Probar catálogo, amistad, Mercado Pago sandbox, transferencia y regalo controlado.
+5. Probar catálogo, amistad de 48 horas, cotización, transferencia, comprobante privado y entrega controlada.
 6. Merge commit `qa-release → main`.
 7. Aplicar migraciones de producción.
-8. Verificar `/health`, cron, webhook y logs.
+8. Verificar `/health`, limpieza programada, RLS, URLs firmadas y logs.
 
-La autorización comercial de Epic/FN Shop y la aprobación del giro por Mercado Pago siguen siendo gates externos obligatorios.
+La autorización comercial de Epic/FN Shop sigue siendo un gate externo obligatorio.

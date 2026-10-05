@@ -4,7 +4,7 @@ import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { BackButton } from "@/shared/components/back-button";
 import { FavoriteButton } from "@/features/catalog/components/favorite-button";
-import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
+import { ProductPurchaseActions } from "@/features/catalog/components/product-purchase-actions";
 import { ItemPreview } from "@/features/catalog/components/item-preview";
 import { getFortniteCosmoPreview } from "@/features/catalog/infrastructure/fortnite-cosmo-preview";
 
@@ -23,7 +23,7 @@ export default async function ItemPage({ params }: { params: Promise<{ mainId: s
       {item.description && <p>{item.description}</p>}
       <div className="detail-price"><div><small>Precio en paVos</small><span>◉ {item.finalPriceVbucks.toLocaleString("es-MX")}</span></div><div><small>Tu precio</small><strong>{item.priceMxn === null ? "Consultar" : formatMxn(item.priceMxn)}</strong></div></div>
       <div className="detail-assurances"><span>✓ Precio claro</span><span>✓ Seguimiento</span></div>
-      <AddToCartButton item={item} redirectTo="/#catalogo" />
+      <ProductPurchaseActions item={item} />
     </div>
   </section>;
 }

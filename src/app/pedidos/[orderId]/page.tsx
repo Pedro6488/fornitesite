@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { SupabaseOrderRepository } from "@/features/orders/infrastructure/supabase-order-repository";
 import { OrderStatus } from "@/features/orders/components/order-status";
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
+import { getAppUrl } from "@/shared/server/app-url";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,6 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
       <h1>Pago y seguimiento.</h1>
       <p>Consulta tu compra, realiza el pago y anexa el comprobante para enviarlo a un administrador.</p>
     </div>
-    <OrderStatus initialOrder={order} bank={{ name: process.env.BANK_NAME ?? "Configurar banco", beneficiary: process.env.BANK_BENEFICIARY ?? "Configurar beneficiario", clabe: process.env.BANK_CLABE ?? "Configurar CLABE" }} />
+    <OrderStatus initialOrder={order} bank={{ name: process.env.BANK_NAME ?? "Configurar banco", beneficiary: process.env.BANK_BENEFICIARY ?? "Configurar beneficiario", clabe: process.env.BANK_CLABE ?? "Configurar CLABE" }} whatsappNumber={process.env.WHATSAPP_BUSINESS_NUMBER?.replace(/\D/g, "") ?? null} appUrl={getAppUrl()} />
   </section>;
 }

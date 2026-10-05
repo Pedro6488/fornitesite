@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { evaluateAgent, selectBestAgent, type DeliveryAgent } from "./delivery-agent";
+import { evaluateAgent, evaluateAgentForCart, selectBestAgent, selectBestAgentForCart, type DeliveryAgent } from "./delivery-agent";
 
 const ready = (overrides: Partial<DeliveryAgent> = {}): DeliveryAgent => ({
   id: "a", publicAlias: "Agente 1", vbucksBalance: 2_000, giftsUsed: 0, giftsLimit: 5,
@@ -18,4 +18,11 @@ describe("agent eligibility", () => {
     expect(selected?.id).toBe("best");
   });
   it("devuelve null cuando nadie cumple", () => expect(selectBestAgent([ready({ vbucksBalance: 10 })], 1_500)).toBeNull());
+  it("rechaza un agente sin cupo para todas las líneas del carrito", () => {
+    expect(evaluateAgentForCart(ready({ giftsUsed: 4 }), 1_000, 2).available).toBe(false);
+  });
+  it("elige un agente con saldo y cupo para el carrito completo", () => {
+    const selected = selectBestAgentForCart([ready({ id: "full", giftsUsed: 4 }), ready({ id: "roomy", vbucksBalance: 5_000 })], 2_000, 3);
+    expect(selected?.id).toBe("roomy");
+  });
 });

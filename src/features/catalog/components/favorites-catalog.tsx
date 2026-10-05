@@ -5,22 +5,28 @@ import { useEffect, useMemo, useState } from "react";
 import { readFavoriteIds, subscribeToFavorites } from "../application/favorite-storage";
 import type { CatalogItem } from "../domain/catalog-item";
 import { CatalogCard } from "./catalog-card";
+import { useOptionalCommerceState } from "@/features/commerce/components/commerce-state-provider";
 
 export function FavoritesCatalog({ items }: { items: readonly CatalogItem[] }) {
+  const commerce = useOptionalCommerceState();
   const [favoriteIds, setFavoriteIds] = useState<ReadonlySet<string> | null>(null);
 
   useEffect(() => {
+    if (commerce) return;
     const syncFavorites = () => setFavoriteIds(readFavoriteIds());
-    syncFavorites();
-    return subscribeToFavorites(syncFavorites);
-  }, []);
+    const frame = window.requestAnimationFrame(syncFavorites);
+    const unsubscribe = subscribeToFavorites(syncFavorites);
+    return () => { window.cancelAnimationFrame(frame); unsubscribe(); };
+  }, [commerce]);
+
+  const resolvedFavoriteIds = commerce ? commerce.favoriteItemIds : favoriteIds;
 
   const favorites = useMemo(
-    () => favoriteIds ? items.filter((item) => favoriteIds.has(item.mainId)) : [],
-    [favoriteIds, items]
+    () => resolvedFavoriteIds ? items.filter((item) => resolvedFavoriteIds.has(item.mainId)) : [],
+    [resolvedFavoriteIds, items]
   );
 
-  if (favoriteIds === null) {
+  if (resolvedFavoriteIds === null) {
     return <div className="favorites-loading" aria-label="Cargando favoritos" />;
   }
 
@@ -43,7 +49,7 @@ export function FavoritesCatalog({ items }: { items: readonly CatalogItem[] }) {
       </div>
       <div className="catalog-grid favorites-grid">
         {favorites.map((item, index) => (
-          <CatalogCard item={item} index={index} key={item.mainId} />
+          <CatalogCard item={item} index={index} key={item.mainId} initialFavorite />
         ))}
       </div>
     </>

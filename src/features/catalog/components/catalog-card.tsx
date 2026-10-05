@@ -10,9 +10,11 @@ import { AddToCartButton } from "@/features/cart/components/add-to-cart-button";
 export function CatalogCard({
   item,
   index,
+  initialFavorite = false,
 }: {
   item: CatalogItem;
   index: number;
+  initialFavorite?: boolean;
 }) {
   const purchasable = canPurchase(item);
   const category = getCatalogCategory(item);
@@ -65,8 +67,11 @@ export function CatalogCard({
           </div>
         </div>
       </Link>
-      <AddToCartButton item={item} compact />
-      <FavoriteButton itemId={item.mainId} itemName={item.name} />
+      <div className="catalog-card-actions">
+        <AddToCartButton item={item} compact disabled={!purchasable} />
+        <Link className="catalog-detail-link" href={`/objetos/${encodeURIComponent(item.mainId)}`} prefetch={false}>Ver detalle</Link>
+      </div>
+      <FavoriteButton itemId={item.mainId} itemName={item.name} initialFavorite={initialFavorite} />
     </article>
   );
 }

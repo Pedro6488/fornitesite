@@ -1,10 +1,12 @@
 import { calculateMxnPrice, UnsupportedVbucksPriceError } from "@/features/pricing/domain/price-calculator";
+import type { CatalogPricingProvider } from "@/features/pricing/infrastructure/supabase-pricing-provider";
 import { isCatalogItemDisplayable, type CatalogItem, type CatalogProvider } from "../domain/catalog-item";
 
 export class CatalogService {
   constructor(
     private readonly visualCatalog: CatalogProvider,
-    private readonly transactionalCatalog?: CatalogProvider
+    private readonly transactionalCatalog?: CatalogProvider,
+    private readonly pricing?: CatalogPricingProvider
   ) {}
 
   async list(): Promise<readonly CatalogItem[]> {
@@ -14,14 +16,18 @@ export class CatalogService {
       : [];
     const transactionById = new Map(transactionalItems.map((item) => [item.mainId, item]));
 
-    const enrichedItems = visualItems.filter(isCatalogItemDisplayable).map((item) => {
+    const displayableItems = visualItems.filter(isCatalogItemDisplayable);
+    const authoritativePrices = this.pricing ? await this.pricing.price(displayableItems) : null;
+    const enrichedItems = displayableItems.map((item) => {
       const transaction = transactionById.get(item.mainId);
-      let priceMxn: number | null = null;
+      let priceMxn: number | null = authoritativePrices?.get(item.mainId) ?? null;
 
-      try {
-        priceMxn = calculateMxnPrice(item.finalPriceVbucks);
-      } catch (error) {
-        if (!(error instanceof UnsupportedVbucksPriceError)) throw error;
+      if (!authoritativePrices) {
+        try {
+          priceMxn = calculateMxnPrice(item.finalPriceVbucks);
+        } catch (error) {
+          if (!(error instanceof UnsupportedVbucksPriceError)) throw error;
+        }
       }
 
       return {

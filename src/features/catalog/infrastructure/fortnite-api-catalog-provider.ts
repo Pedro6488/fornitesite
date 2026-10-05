@@ -22,7 +22,7 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
   constructor(private readonly baseUrl: string) {}
 
   async getCurrentCatalog(): Promise<readonly CatalogItem[]> {
-    const response = await fetch(`${this.baseUrl}/shop`, { cache: "no-store" });
+    const response = await fetch(`${this.baseUrl}/shop`, { next: { revalidate: 300 } });
     if (!response.ok) throw new Error(`Fortnite-API respondió ${response.status}.`);
     const payload = record(await response.json());
     const data = record(payload.data);

@@ -13,7 +13,7 @@ export type Order = Readonly<{
   id: string;
   publicToken: string;
   status: OrderStatus;
-  customerEmail: string;
+  customerEmail: string | null;
   epicAccountId: string;
   epicDisplayName: string;
   itemMainId: string;
@@ -23,6 +23,8 @@ export type Order = Readonly<{
   vbucksPrice: number;
   amountMxnCents: number;
   paymentMethod: PaymentMethod;
+  recipientPlatform?: "epic" | "xbl" | "psn" | "nintendo";
+  contactWhatsapp?: string | null;
   supervisorStatus?: SupervisorStatus;
   items?: readonly OrderLine[];
   createdAt: string;
@@ -40,7 +42,7 @@ const transitions: Readonly<Record<OrderStatus, readonly OrderStatus[]>> = {
   validating_delivery: ["delivering", "manual_review", "refund_pending"],
   delivering: ["delivered", "reconciling", "manual_review"],
   reconciling: ["delivered", "manual_review"],
-  manual_review: ["ready_to_send", "refund_pending", "canceled"],
+  manual_review: ["ready_to_send", "refund_pending"],
   refund_pending: ["refunded", "manual_review"],
   delivered: [], refunded: [], rejected: [], expired: [], canceled: []
 };
