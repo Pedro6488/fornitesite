@@ -7,6 +7,18 @@ import { getRequestUser } from "./request-user";
 export const COMMERCE_COOKIE = "slb_commerce";
 const MAX_AGE = 60 * 60 * 24 * 30;
 
+export class CommerceConfigurationError extends Error {}
+
+export function commerceErrorResponse(error: unknown, operation: string): NextResponse {
+  console.error(`commerce.${operation}.failed`, error);
+  const configurationFailure = error instanceof CommerceConfigurationError;
+  return NextResponse.json({
+    error: configurationFailure
+      ? "La configuración de compra aún no está completa. Intenta de nuevo más tarde."
+      : "No fue posible conectar con el servicio de compra. Intenta de nuevo."
+  }, { status: configurationFailure ? 503 : 500 });
+}
+
 export type CommerceSession = Readonly<{
   id: string;
   token: string;
@@ -26,7 +38,7 @@ function cookieValue(request: Request): string | null {
 function tokenHash(token: string): string {
   const configuredSecret = process.env.COMMERCE_SESSION_SECRET?.trim();
   if (!configuredSecret && process.env.NODE_ENV === "production") {
-    throw new Error("COMMERCE_SESSION_SECRET es obligatorio en producción.");
+    throw new CommerceConfigurationError("COMMERCE_SESSION_SECRET es obligatorio en producción.");
   }
   const pepper = configuredSecret ?? "local-development-only";
   return createHash("sha256").update(`${pepper}:${token}`).digest("hex");

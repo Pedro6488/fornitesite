@@ -60,6 +60,13 @@ async function authHeaders(): Promise<HeadersInit> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function responseBody(response: Response): Promise<Record<string, any>> {
+  const body = await response.json().catch(() => null);
+  return body && typeof body === "object"
+    ? body as Record<string, any>
+    : { error: "El servicio respondió sin detalles. Intenta de nuevo." };
+}
+
 export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -84,7 +91,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
           headers: { "Content-Type": "application/json", ...(await authHeaders()) },
           body: JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites })
         });
-        const body = await response.json();
+        const body = await responseBody(response);
         if (!active) return;
         if (!response.ok) throw new Error(body.error);
         setCartItemIds(body.cartItemIds ?? []);
@@ -114,7 +121,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ itemIds: next })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error ?? "No fue posible guardar el carrito.");
       setCartItemIds(body.itemIds);
       return null;
@@ -142,7 +149,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ itemMainId: itemId })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       return null;
     } catch (error) {
@@ -159,7 +166,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ displayName, platform })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       setValidations((current) => [body.validation, ...current.filter((entry) => entry.id !== body.validation.id)]);
       setActiveValidationId(body.validation.id);
@@ -177,7 +184,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ validationId })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       setActiveValidationId(body.activeValidationId);
       return null;
@@ -194,7 +201,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ validationId: validation.id })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       setValidations((current) => current.map((entry) => entry.id === validation.id ? { ...entry, status: "pending_friendship" } : entry));
       return null;
