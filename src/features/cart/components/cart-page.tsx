@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Check, ShieldCheck, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
@@ -10,13 +11,20 @@ import { useCommerceState } from "@/features/commerce/components/commerce-state-
 import { SystemActionBar } from "@/shared/components/system-action-bar";
 
 export function CartPage({ items }: { items: readonly CatalogItem[] }) {
+  const router = useRouter();
   const commerce = useCommerceState();
   const [message, setMessage] = useState<string | null>(null);
+  const [openingCheckout, setOpeningCheckout] = useState(false);
   const lines = useMemo(() => commerce.cartItemIds.flatMap((id) => { const item = items.find((candidate) => candidate.mainId === id); return item ? [{ item }] : []; }), [commerce.cartItemIds, items]);
   const total = lines.reduce((sum, line) => sum + (line.item.priceMxn ?? 0), 0);
   const canContinue = lines.length > 0 && lines.every(({ item }) => item.priceMxn !== null && item.offerId && item.giftable);
   const idSubmitted = commerce.validation?.status === "manual_review" || commerce.validation?.status === "ready";
   async function remove(itemId: string) { setMessage(await commerce.removeCartItem(itemId)); }
+  function continueToCheckout() {
+    if (!canContinue || openingCheckout) return;
+    setOpeningCheckout(true);
+    router.push("/checkout");
+  }
 
   return <section className="cart-page">
     <header className="cart-heading"><div><p className="eyebrow">TU CARRITO</p><h1>Tu selección</h1><p>{lines.length === 1 ? "1 objeto listo para continuar." : `${lines.length} objetos listos para continuar.`}</p></div><span><ShieldCheck aria-hidden="true" size={18} />Compra protegida y precio confirmado antes de pagar</span></header>
@@ -37,11 +45,11 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
         <div className="cart-summary-row"><span>Objetos</span><strong>{lines.length}</strong></div>
         <div className="cart-summary-total"><span>Total estimado</span><strong>{formatMxn(total)} <small>MXN</small></strong></div>
         <p className="cart-summary-note"><ShieldCheck aria-hidden="true" size={17} />{commerce.validation?.status === "manual_review" ? "Tu ID ya fue enviado. La espera de 48 horas se registra una sola vez." : idSubmitted ? "Tu ID está listo; confirmaremos el precio antes de crear la orden." : "En el siguiente paso agregarás tu ID y confirmaremos el precio."}</p>
-        {canContinue ? <Link className="primary-button" href="/checkout">Continuar compra <ArrowRight aria-hidden="true" size={17} /></Link> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
+        {canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={continueToCheckout}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
         <div className="cart-next-steps" aria-label="Siguientes pasos"><span><b><Check aria-hidden="true" size={12} /></b>Carrito</span><span className={idSubmitted ? "complete" : ""}><b>{idSubmitted ? <Check aria-hidden="true" size={12} /> : "2"}</b>{idSubmitted ? "ID enviado" : "Agregar ID"}</span><span><b>3</b>Contacto y orden</span></div>
         <Link className="cart-secondary" href="/#catalogo">Seguir comprando</Link>
       </aside>
-      <SystemActionBar className="mobile-cart-checkout"><span><small>Total del carrito</small><strong>{formatMxn(total)}</strong></span>{canContinue ? <Link href="/checkout">Continuar compra <ArrowRight aria-hidden="true" size={16} /></Link> : <button disabled>No disponible</button>}</SystemActionBar>
+      <SystemActionBar className="mobile-cart-checkout" primaryFull><span><small>Resumen de compra</small><strong>{formatMxn(total)}</strong><em>{lines.length} {lines.length === 1 ? "objeto" : "objetos"} · precio se confirma antes de ordenar</em></span>{canContinue ? <button type="button" disabled={openingCheckout} onClick={continueToCheckout}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button disabled>No disponible</button>}</SystemActionBar>
     </div>}
   </section>;
 }

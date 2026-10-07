@@ -8,6 +8,7 @@ type OrderRow = {
   supervisor_status?: SupervisorStatus;
   recipient_platform?: "epic" | "xbl" | "psn" | "nintendo";
   contact_whatsapp?: string | null;
+  metadata?: { notes?: string | null } | null;
   order_items?: { item_name: string; quantity: number; unit_amount_mxn_cents: number }[];
 };
 
@@ -47,5 +48,6 @@ function mapRow(row: OrderRow): Order {
     offerId: row.offer_id, itemName: row.item_name, itemImageUrl: row.item_image_url, vbucksPrice: row.vbucks_price,
     amountMxnCents: row.amount_mxn_cents, paymentMethod: row.payment_method, recipientPlatform: row.recipient_platform,
     contactWhatsapp: row.contact_whatsapp, supervisorStatus: row.supervisor_status ?? "pending_confirmation",
+    statusNote: row.metadata?.notes ?? null,
     items: (row.order_items?.map((item): OrderLine => ({ itemName: item.item_name, quantity: item.quantity, unitAmountMxnCents: item.unit_amount_mxn_cents })) ?? [{ itemName: row.item_name, quantity: 1, unitAmountMxnCents: row.amount_mxn_cents }]), createdAt: row.created_at };
 }

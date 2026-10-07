@@ -16,6 +16,7 @@ export function ProductPurchaseActions({ item }: { item: CatalogItem }) {
   const purchasable = canPurchase(item);
   const inCart = commerce.ready && commerce.cartItemIds.includes(item.mainId);
   const manualReview = commerce.validation?.status === "manual_review";
+  const waiting = commerce.validation?.status === "waiting";
   const ready = commerce.validation?.status === "ready";
   const [editingIdentity, setEditingIdentity] = useState(false);
   const [displayName, setDisplayName] = useState("");
@@ -39,10 +40,10 @@ export function ProductPurchaseActions({ item }: { item: CatalogItem }) {
   }
 
   return <div className="product-purchase-actions">
-    <div className={`product-identity-status ${ready ? "ready" : manualReview ? "manual" : ""}`}>
-      <span aria-hidden="true">{ready ? "✓" : manualReview ? "◌" : "◎"}</span>
-      <div><strong>{ready || manualReview ? commerce.validation?.display_name : "Agrega tu ID cuando quieras"}</strong><small>{ready ? "Listo para recibir objetos" : manualReview ? "ID enviado · espera única de 48 horas" : "Puedes continuar sin validarlo ahora"}</small></div>
-      <button type="button" onClick={toggleIdentityEditor}>{editingIdentity ? "Cerrar" : ready || manualReview ? "Cambiar" : "Agregar ID"}</button>
+    <div className={`product-identity-status ${ready ? "ready" : waiting ? "waiting" : manualReview ? "manual" : ""}`}>
+      <span aria-hidden="true">{ready ? "✓" : waiting ? "◷" : manualReview ? "!" : "◎"}</span>
+      <div><strong>{ready || waiting || manualReview ? commerce.validation?.display_name : "Agrega tu ID cuando quieras"}</strong><small>{ready ? "ID validado · listo para recibir objetos" : waiting ? "Solicitud enviada · las 48 horas están corriendo" : manualReview ? "ID enviado · pendiente de revisión del equipo" : "Puedes continuar sin validarlo ahora"}</small></div>
+      <button type="button" onClick={toggleIdentityEditor}>{editingIdentity ? "Cerrar" : ready || waiting || manualReview ? "Cambiar" : "Agregar ID"}</button>
     </div>
     {editingIdentity && <form className="product-inline-identity" onSubmit={saveIdentity}>
       <div><label>ID o gamertag<input required minLength={3} maxLength={32} autoComplete="off" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Tu usuario en Fortnite" /></label><label>Plataforma<span className="select-control"><select value={platform} onChange={(event) => setPlatform(event.target.value as IdentityPlatform)}><option value="epic">Epic Games</option><option value="xbl">Xbox</option><option value="psn">PlayStation</option><option value="nintendo">Nintendo Switch</option></select><ChevronDown aria-hidden="true" size={16} /></span></label></div>

@@ -26,6 +26,7 @@ export type Order = Readonly<{
   recipientPlatform?: "epic" | "xbl" | "psn" | "nintendo";
   contactWhatsapp?: string | null;
   supervisorStatus?: SupervisorStatus;
+  statusNote?: string | null;
   items?: readonly OrderLine[];
   createdAt: string;
 }>;

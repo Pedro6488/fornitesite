@@ -31,6 +31,14 @@ export async function POST(request: Request) {
     .select("id,epic_account_id,display_name,platform,status")
     .eq("id", parsed.data.validationId).eq("commerce_session_id", session.id).maybeSingle();
   if (!validation) return attachCommerceCookie(NextResponse.json({ error: "Valida el ID que recibirá los objetos." }, { status: 409 }), session);
+  if (validation.status !== "ready") {
+    const message = validation.status === "waiting"
+      ? "La solicitud de amistad ya fue enviada; espera a que se cumplan las 48 horas."
+      : validation.status === "manual_review"
+        ? "Tu ID está esperando la revisión del equipo antes de solicitar amistad."
+        : "Este ID todavía no está listo para recibir objetos.";
+    return attachCommerceCookie(NextResponse.json({ error: message, code: "recipient_not_ready", validationStatus: validation.status }, { status: 409 }), session);
+  }
 
   try {
     const catalogItems = await (await getCatalogService()).list();
@@ -41,9 +49,8 @@ export async function POST(request: Request) {
     }
     const resolved = items.map((item) => item!);
     const totalVbucks = resolved.reduce((sum, item) => sum + item.finalPriceVbucks, 0);
-    const manualReview = validation.status === "manual_review";
     let selectedAgentId: string | null = null;
-    if (!manualReview) {
+    if (process.env.FULFILLMENT_MODE === "fnshop") {
       const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
       const state = validationStatus(agents);
       await database.from("game_id_validations").update({

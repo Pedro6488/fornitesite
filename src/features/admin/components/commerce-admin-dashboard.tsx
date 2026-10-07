@@ -3,9 +3,10 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { SupervisorOrders } from "@/features/orders/components/supervisor-orders";
+import { IdentityReviewQueue } from "@/features/admin/components/identity-review-queue";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
-type Tab = "summary" | "orders" | "carts" | "favorites" | "prices";
+type Tab = "summary" | "orders" | "identities" | "carts" | "favorites" | "prices";
 type Metrics = { pendingOrders: number; receiptsToReview: number; activeCarts: number; abandonedCarts: number; favorites: number };
 type Cart = { id: string; status: string; updated_at: string; abandoned: boolean; estimatedAmountMxnCents: number; shopping_cart_items: { item_main_id: string }[]; validation: null | { display_name: string; platform: string; status: string }; commerce_sessions: null | { whatsapp: string | null; user_id: string | null } };
 type FavoriteDetail = { item_main_id: string; commerce_session_id: string; created_at: string; commerce_sessions: null | { user_id: string | null } };
@@ -31,7 +32,7 @@ export function CommerceAdminDashboard() {
   }, [supabase]);
 
   const load = useCallback(async (activeTab: Tab) => {
-    if (activeTab === "orders") return;
+    if (activeTab === "orders" || activeTab === "identities") return;
     const requestId = ++loadRequest.current;
     setMessage(null); setData(null); setLoadedTab(null);
     try {
@@ -47,10 +48,11 @@ export function CommerceAdminDashboard() {
 
   return <section className="admin-dashboard">
     <header className="admin-dashboard-heading"><div><p className="eyebrow">OPERACIÓN SEGURA</p><h1>Panel de comercio</h1><p>Pedidos, intención de compra y precios desde una sola fuente.</p></div><button onClick={() => void load(tab)}>Actualizar</button></header>
-    <nav className="admin-tabs" aria-label="Secciones del dashboard">{(["summary", "orders", "carts", "favorites", "prices"] as Tab[]).map((value) => <button key={value} className={tab === value ? "active" : ""} onClick={() => setTab(value)}>{({ summary: "Resumen", orders: "Pedidos", carts: "Carritos", favorites: "Favoritos", prices: "Precios" } as const)[value]}</button>)}</nav>
+    <nav className="admin-tabs" aria-label="Secciones del dashboard">{(["summary", "orders", "identities", "carts", "favorites", "prices"] as Tab[]).map((value) => <button key={value} className={tab === value ? "active" : ""} onClick={() => setTab(value)}>{({ summary: "Resumen", orders: "Pedidos", identities: "Revisión de IDs", carts: "Carritos", favorites: "Favoritos", prices: "Precios" } as const)[value]}</button>)}</nav>
     {message && <p className="notice error">{message}</p>}
     {tab === "summary" && loadedTab === "summary" && data && <Summary metrics={data.metrics as Metrics} />}
     {tab === "orders" && <SupervisorOrders />}
+    {tab === "identities" && <IdentityReviewQueue />}
     {tab === "carts" && loadedTab === "carts" && data && <Carts carts={(data.carts as Cart[] | undefined) ?? []} />}
     {tab === "favorites" && loadedTab === "favorites" && data && <Favorites ranking={(data.ranking as { itemMainId: string; count: number }[] | undefined) ?? []} favorites={(data.favorites as FavoriteDetail[] | undefined) ?? []} />}
     {tab === "prices" && loadedTab === "prices" && data && <Prices data={{ rules: (data.rules as PriceRule[] | undefined) ?? [], overrides: (data.overrides as PriceOverride[] | undefined) ?? [] }} request={request} reload={() => load("prices")} />}
