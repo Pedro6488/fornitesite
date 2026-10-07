@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BadgeCheck, CircleAlert, Clock3, RefreshCw, ScanLine } from "lucide-react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
+import { AdminActionModal } from "@/shared/components/admin-action-modal";
 
 type IdentityReview = {
   id: string; platform: string; submitted_id: string; epic_account_id: string; display_name: string;
@@ -23,6 +24,7 @@ export function IdentityReviewQueue() {
   const [message, setMessage] = useState("Cargando IDs…");
   const [updating, setUpdating] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [pendingReview, setPendingReview] = useState<{ validation: IdentityReview; status: "waiting" | "ready" | "blocked" } | null>(null);
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const session = (await supabase?.auth.getSession())?.data.session;
@@ -46,14 +48,10 @@ export function IdentityReviewQueue() {
 
   useEffect(() => { void load(); }, [load]);
 
-  async function review(validation: IdentityReview, status: "waiting" | "ready" | "blocked") {
-    const notes = status === "blocked" ? window.prompt("Motivo para bloquear el ID")?.trim() : status === "waiting" ? window.prompt("Nota interna opcional: solicitud de amistad enviada")?.trim() : window.prompt("Nota interna opcional para la aprobación")?.trim();
-    if (status === "blocked" && (!notes || notes.length < 3)) return;
-    if (status === "waiting" && !window.confirm(`¿Confirmas que enviaste la solicitud de amistad a ${validation.display_name}? Iniciaremos las 48 horas.`)) return;
-    if (status === "ready" && !window.confirm(`¿Confirmas que ${validation.display_name} está listo para recibir futuras entregas?`)) return;
+  async function review(validation: IdentityReview, status: "waiting" | "ready" | "blocked", notes: string) {
     setUpdating(validation.id);
     try {
-      await request(`/api/admin/validations/${validation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, notes }) });
+      await request(`/api/admin/validations/${validation.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, notes: notes || undefined }) });
       await load();
     } catch (error) { setMessage(error instanceof Error ? error.message : "No fue posible guardar la revisión."); }
     finally { setUpdating(null); }
@@ -64,8 +62,9 @@ export function IdentityReviewQueue() {
   return <section className="identity-review-queue">
     <header className="identity-review-heading"><div><p className="eyebrow">IDENTIDADES DE ENTREGA</p><h2>Revisión de IDs</h2><p>Aprueba IDs con 48 horas cumplidas o que ya recibieron una entrega.</p></div><button type="button" className="identity-review-refresh" disabled={loading || Boolean(updating)} onClick={() => void load()}><RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button></header>
     {message && <p className="notice">{message}</p>}
-    {pending.length > 0 && <div className="identity-review-grid">{pending.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={updating === entry.id} onReview={review} />)}</div>}
-    {ready.length > 0 && <section className="identity-approved-list"><p className="eyebrow">YA VALIDADOS</p><div>{ready.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={false} onReview={review} />)}</div></section>}
+    {pending.length > 0 && <div className="identity-review-grid">{pending.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={updating === entry.id} onReview={(validation, status) => setPendingReview({ validation, status })} />)}</div>}
+    {ready.length > 0 && <section className="identity-approved-list"><p className="eyebrow">YA VALIDADOS</p><div>{ready.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={false} onReview={(validation, status) => setPendingReview({ validation, status })} />)}</div></section>}
+    <AdminActionModal open={Boolean(pendingReview)} onClose={() => setPendingReview(null)} title={pendingReview?.status === "waiting" ? "Enviar solicitud de amistad" : pendingReview?.status === "ready" ? "Marcar ID como listo" : "Bloquear ID de entrega"} description={pendingReview?.status === "waiting" ? `Confirmas que enviaste la solicitud a ${pendingReview.validation.display_name}. Las 48 horas iniciarán ahora.` : pendingReview?.status === "ready" ? `${pendingReview.validation.display_name} quedará listo para recibir futuras entregas.` : pendingReview ? `Este ID no podrá utilizarse para entregas: ${pendingReview.validation.display_name}.` : ""} confirmLabel={pendingReview?.status === "waiting" ? "Enviar solicitud" : pendingReview?.status === "ready" ? "Marcar como listo" : "Bloquear ID"} tone={pendingReview?.status === "blocked" ? "danger" : "primary"} notesLabel={pendingReview?.status === "blocked" ? "Motivo del bloqueo" : "Nota interna (opcional)"} notesPlaceholder={pendingReview?.status === "blocked" ? "Explica por qué este ID no puede utilizarse." : "Agrega una nota para el equipo si es necesaria."} notesRequired={pendingReview?.status === "blocked"} busy={Boolean(updating)} onConfirm={(notes) => { if (!pendingReview) return; const next = pendingReview; setPendingReview(null); void review(next.validation, next.status, notes); }} />
   </section>;
 }
 

@@ -593,6 +593,52 @@
 
 .ticket-pdf { background: transparent; border: 1px solid rgba(85, 217, 255, .4); color: var(--cyan); }
 
+.admin-action-sheet { max-width: 31rem; }
+
+.admin-action-form { display: grid; gap: .9rem; }
+
+.admin-action-form label {
+  color: #d6def1;
+  display: grid;
+  font-size: .72rem;
+  font-weight: 800;
+  gap: .42rem;
+}
+
+.admin-action-form label>span { color: var(--muted); font-weight: 500; }
+
+.admin-action-form textarea {
+  background: rgba(5, 8, 21, .7);
+  border: 1px solid rgba(164, 190, 239, .28);
+  border-radius: .72rem;
+  color: #f6f8ff;
+  font: inherit;
+  min-height: 6rem;
+  padding: .7rem;
+  resize: vertical;
+}
+
+.admin-action-form>div { display: flex; gap: .55rem; justify-content: flex-end; }
+
+.admin-action-cancel,
+.admin-action-confirm {
+  border-radius: .68rem;
+  cursor: pointer;
+  font-size: .74rem;
+  font-weight: 900;
+  min-height: 2.7rem;
+  padding: .55rem .85rem;
+}
+
+.admin-action-cancel { background: transparent; border: 1px solid rgba(255, 255, 255, .18); color: #dce5f7; }
+
+.admin-action-confirm { background: var(--cyan); border: 1px solid var(--cyan); color: #08111a; }
+
+.admin-action-confirm.danger { background: #ff6577; border-color: #ff6577; color: #23070b; }
+
+.admin-action-cancel:disabled,
+.admin-action-confirm:disabled { cursor: wait; opacity: .55; }
+
 .identity-review-card dl {
   display: grid;
   gap: .42rem;

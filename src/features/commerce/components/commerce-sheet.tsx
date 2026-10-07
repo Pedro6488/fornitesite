@@ -22,7 +22,7 @@ export function CommerceSheet({ open, onClose, titleId, eyebrow, title, descript
     const handleKeys = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
       if (event.key !== "Tab" || !sheetRef.current) return;
-      const focusable = [...sheetRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href]')];
+      const focusable = [...sheetRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), a[href]')];
       const first = focusable[0];
       const last = focusable.at(-1);
       if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
@@ -30,7 +30,7 @@ export function CommerceSheet({ open, onClose, titleId, eyebrow, title, descript
     };
     document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeys);
-    const frame = window.requestAnimationFrame(() => sheetRef.current?.querySelector<HTMLElement>("input, button")?.focus());
+    const frame = window.requestAnimationFrame(() => sheetRef.current?.querySelector<HTMLElement>("input, textarea, button")?.focus());
     return () => {
       document.body.style.overflow = previous;
       window.cancelAnimationFrame(frame);

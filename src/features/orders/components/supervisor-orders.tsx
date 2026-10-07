@@ -7,6 +7,7 @@ import { BadgeCheck, ChevronDown, FileCheck2, PackageCheck, RefreshCw, Search, S
 import { CommerceSheet } from "@/features/commerce/components/commerce-sheet";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
+import { AdminActionModal } from "@/shared/components/admin-action-modal";
 import type { OrderStatus } from "../domain/order";
 
 const labels: Record<OrderStatus, string> = {
@@ -99,6 +100,7 @@ export function SupervisorOrders() {
   const loadRequest = useRef(0);
   const [selectedItem, setSelectedItem] = useState<OrderItem | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [pendingAction, setPendingAction] = useState<{ order: Order; status: OrderStatus } | null>(null);
 
   const load = useCallback(async () => {
     const requestId = ++loadRequest.current;
@@ -124,15 +126,9 @@ export function SupervisorOrders() {
     return () => window.cancelAnimationFrame(frame);
   }, [load]);
 
-  async function update(order: Order, status: OrderStatus) {
+  async function update(order: Order, status: OrderStatus, notes?: string) {
     const session = (await supabase?.auth.getSession())?.data.session;
     if (!session) return;
-    if (status === "paid" && !window.confirm(`¿Confirmas que recibiste ${formatMoney(order.amount_mxn_cents)} del pedido #${order.id.slice(0, 8).toUpperCase()}?`)) return;
-    const requiresNotes = ["information_required", "rejected", "canceled"].includes(status);
-    const notes = requiresNotes
-      ? window.prompt("Nota para la auditoría")?.trim()
-      : status === "paid" ? "Pago confirmado manualmente por el administrador." : undefined;
-    if (requiresNotes && (!notes || notes.length < 3)) return setMessage("Escribe una nota de al menos 3 caracteres para esta transición.");
     setUpdatingId(order.id);
     try {
       const response = await fetch(`/api/admin/orders/${order.id}/status`, {
@@ -168,7 +164,7 @@ export function SupervisorOrders() {
         <header className="supervisor-order-heading"><div><span className={`order-status-pill status-${order.status}`}>{labels[order.status]}</span><h2>#{order.id.slice(0, 8).toUpperCase()}</h2><p>{new Date(order.created_at).toLocaleString("es-MX")}</p></div><div><strong>{formatMoney(order.amount_mxn_cents)}</strong><span>{order.order_items.length} {order.order_items.length === 1 ? "objeto" : "objetos"}</span></div></header>
         <ol className="admin-order-progress" aria-label="Progreso del pedido">{progressSteps.map((step, index) => { const Icon = step.icon; return <li key={step.label} className={index < progress ? "complete" : index === progress ? "active" : ""}><span><Icon aria-hidden="true" size={15} /></span><small>{step.label}</small></li>; })}</ol>
         <button type="button" className="admin-order-detail-trigger" onClick={() => setSelectedOrder(order)}>Ver operación completa <span aria-hidden="true">↗</span></button>
-        {actions.length > 0 && <SystemActionBar className="admin-order-actions" variant="contained">{actions.map((status) => <button className={status === "paid" || status === "delivered" ? "primary" : status === "canceled" || status === "rejected" ? "danger" : ""} key={status} disabled={loading || updatingId === order.id} onClick={() => void update(order, status)}>{updatingId === order.id ? "Actualizando…" : actionLabels[status] ?? labels[status]}</button>)}</SystemActionBar>}
+        {actions.length > 0 && <SystemActionBar className="admin-order-actions" variant="contained">{actions.map((status) => <button className={status === "paid" || status === "delivered" ? "primary" : status === "canceled" || status === "rejected" ? "danger" : ""} key={status} disabled={loading || updatingId === order.id} onClick={() => setPendingAction({ order, status })}>{updatingId === order.id ? "Actualizando…" : actionLabels[status] ?? labels[status]}</button>)}</SystemActionBar>}
       </article>;
     })}
     <CommerceSheet open={Boolean(selectedOrder)} onClose={() => setSelectedOrder(null)} titleId="admin-order-modal-title" eyebrow="OPERACIÓN DEL PEDIDO" title={selectedOrder ? `Pedido #${selectedOrder.id.slice(0, 8).toUpperCase()}` : "Detalle del pedido"} description={selectedOrder ? `${labels[selectedOrder.status]} · ${formatMoney(selectedOrder.amount_mxn_cents)}` : undefined} className="admin-order-sheet">
@@ -184,6 +180,7 @@ export function SupervisorOrders() {
     <CommerceSheet open={Boolean(selectedItem)} onClose={() => setSelectedItem(null)} titleId="admin-product-title" eyebrow="PRODUCTO A ENTREGAR" title={selectedItem?.item_name ?? "Detalle del producto"} description="Verifica visualmente el objeto antes de preparar la entrega." className="admin-product-sheet">
       {selectedItem && <div className="admin-product-preview"><div className="admin-product-preview-image">{selectedItem.item_image_url ? <Image src={selectedItem.item_image_url} alt={selectedItem.item_name} fill sizes="(max-width: 600px) 90vw, 420px" /> : <span aria-hidden="true">{selectedItem.item_name.slice(0, 1)}</span>}</div><dl><div><dt>Cantidad</dt><dd>{selectedItem.quantity}</dd></div><div><dt>Precio unitario</dt><dd>{formatMoney(selectedItem.unit_amount_mxn_cents)}</dd></div><div><dt>Precio en Fortnite</dt><dd>◉ {selectedItem.vbucks_price.toLocaleString("es-MX")} paVos</dd></div><div><dt>ID del objeto</dt><dd>{selectedItem.item_main_id}</dd></div></dl><Link className="primary-button" href={`/objetos/${encodeURIComponent(selectedItem.item_main_id)}`} target="_blank">Abrir detalle del producto ↗</Link></div>}
     </CommerceSheet>
+    <AdminActionModal open={Boolean(pendingAction)} onClose={() => setPendingAction(null)} title={pendingAction ? actionLabels[pendingAction.status] ?? labels[pendingAction.status] : "Confirmar operación"} description={pendingAction ? `Pedido #${pendingAction.order.id.slice(0, 8).toUpperCase()} · ${formatMoney(pendingAction.order.amount_mxn_cents)}` : ""} confirmLabel={pendingAction ? actionLabels[pendingAction.status] ?? labels[pendingAction.status] : "Confirmar"} tone={pendingAction?.status === "canceled" || pendingAction?.status === "rejected" ? "danger" : "primary"} notesLabel={pendingAction && ["information_required", "rejected", "canceled"].includes(pendingAction.status) ? "Motivo para el cliente" : undefined} notesPlaceholder="Explica brevemente el motivo de esta operación." notesRequired={Boolean(pendingAction && ["information_required", "rejected", "canceled"].includes(pendingAction.status))} busy={Boolean(updatingId)} onConfirm={(notes) => { if (!pendingAction) return; const next = pendingAction; setPendingAction(null); void update(next.order, next.status, notes || (next.status === "paid" ? "Pago confirmado manualmente por el administrador." : undefined)); }} />
   </div>;
 }
 
