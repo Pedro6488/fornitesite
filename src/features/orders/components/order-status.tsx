@@ -39,18 +39,34 @@ export function OrderStatus({ initialOrder, bank, whatsappNumber, appUrl }: { in
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(copy)}`;
   }, [appUrl, order.id, order.publicToken, whatsappNumber]);
 
-  async function refresh() {
-    const response = await fetch(`/api/orders/${order.id}?access=${order.publicToken}`, { cache: "no-store" });
-    if (response.ok) setOrder((await response.json()).order);
+  async function refresh(showLoading = false) {
+    if (showLoading) setLoading(true);
+    try {
+      const response = await fetch(`/api/orders/${order.id}?access=${order.publicToken}`, { cache: "no-store" });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error ?? "No fue posible actualizar el pedido.");
+      setOrder(body.order);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible actualizar el pedido.");
+    } finally {
+      if (showLoading) setLoading(false);
+    }
   }
 
   async function uploadTicket(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setMessage(null);
     const form = new FormData(event.currentTarget); form.set("access", order.publicToken);
-    const response = await fetch(`/api/orders/${order.id}/payment-ticket`, { method: "POST", body: form });
-    const body = await response.json(); setLoading(false);
-    setMessage(response.ok ? "Comprobante recibido. Un administrador lo revisará." : body.error);
-    if (response.ok) await refresh();
+    try {
+      const response = await fetch(`/api/orders/${order.id}/payment-ticket`, { method: "POST", body: form });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error ?? "No fue posible subir el comprobante.");
+      setMessage("Comprobante recibido. Un administrador lo revisará.");
+      await refresh();
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "No fue posible subir el comprobante.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function trackWhatsapp() {
@@ -66,11 +82,12 @@ export function OrderStatus({ initialOrder, bank, whatsappNumber, appUrl }: { in
     <div className="order-items-summary">{(order.items ?? []).map((item, index) => <p key={`${item.itemName}-${index}`}><span>{item.itemName}</span><strong>{formatMxn(item.unitAmountMxnCents / 100)}</strong></p>)}</div>
     <div className="recipient-id-notice"><span>{order.status === "manual_review" ? "ID DE ENTREGA EN REVISIÓN" : "ID DE ENTREGA VALIDADO"}</span><strong>{order.epicDisplayName}</strong><p>{order.status === "manual_review" ? "Revisaremos este ID antes de solicitarte el pago. Te avisaremos cuando quede aprobado." : "Este es el ID que recibirá el pedido y no puede cambiarse después de confirmar."}</p></div>
     <div className={`canonical-order-status status-${order.status}`}><span>ESTADO DEL PEDIDO</span><strong>{statusCopy[order.status]}</strong></div>
+    {order.status === "canceled" && <div className="order-cancellation-note" role="status"><span>MOTIVO DE LA CANCELACIÓN</span><strong>{order.statusNote || "El administrador canceló el pedido. Contáctanos por WhatsApp si necesitas ayuda."}</strong></div>}
     {canUpload && <>
       <div className="bank-details"><p><span>Banco</span><strong>{bank.name}</strong></p><p><span>Beneficiario</span><strong>{bank.beneficiary}</strong></p><p><span>CLABE</span><strong>{bank.clabe}</strong></p><p><span>Concepto</span><strong>PEDIDO-{order.id.slice(0, 8).toUpperCase()}</strong></p></div>
       <form id="receipt-upload-form" className="receipt-form" onSubmit={uploadTicket}><label>Comprobante de pago<input name="ticket" type="file" required accept="image/jpeg,image/png,application/pdf" /></label></form>
     </>}
-    {(canUpload || whatsappHref || order.status !== "delivered") && <SystemActionBar className="post-sale-actions order-tracking-actions">{canUpload && <button form="receipt-upload-form" className="primary-button" disabled={loading}>{loading ? "Subiendo…" : order.status === "information_required" ? "Enviar nuevo comprobante" : "Subir comprobante"}</button>}{whatsappHref && <a className="whatsapp-button" href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => void trackWhatsapp()}>Continuar por WhatsApp <span>↗</span></a>}{!canUpload && order.status !== "delivered" && <button className="secondary-button" onClick={() => void refresh()}>Actualizar estado</button>}</SystemActionBar>}
+    {(canUpload || whatsappHref || order.status !== "delivered") && <SystemActionBar className="post-sale-actions order-tracking-actions">{canUpload && <button form="receipt-upload-form" className="primary-button" disabled={loading}>{loading ? "Subiendo…" : order.status === "information_required" ? "Enviar nuevo comprobante" : "Subir comprobante"}</button>}{whatsappHref && <a className="whatsapp-button" href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => void trackWhatsapp()}>Continuar por WhatsApp <span>↗</span></a>}{!canUpload && order.status !== "delivered" && <button className="secondary-button" disabled={loading} onClick={() => void refresh(true)}>{loading ? "Actualizando…" : "Actualizar estado"}</button>}</SystemActionBar>}
     {message && <p className={`notice ${message.startsWith("Comprobante") ? "success" : "error"}`}>{message}</p>}
   </div>;
 }

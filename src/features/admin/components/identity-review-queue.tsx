@@ -22,6 +22,7 @@ export function IdentityReviewQueue() {
   const [validations, setValidations] = useState<IdentityReview[]>([]);
   const [message, setMessage] = useState("Cargando IDs…");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const session = (await supabase?.auth.getSession())?.data.session;
@@ -33,19 +34,22 @@ export function IdentityReviewQueue() {
   }, [supabase]);
 
   const load = useCallback(async () => {
+    setLoading(true);
     setMessage("Cargando IDs…");
     try {
       const body = await request("/api/admin/validations");
       setValidations(body.validations ?? []);
       setMessage(body.validations?.length ? "" : "No hay IDs para revisar todavía.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "No fue posible cargar los IDs."); }
+    finally { setLoading(false); }
   }, [request]);
 
   useEffect(() => { void load(); }, [load]);
 
-  async function review(validation: IdentityReview, status: "ready" | "blocked") {
-    const notes = status === "blocked" ? window.prompt("Motivo para bloquear el ID")?.trim() : window.prompt("Nota interna opcional para la aprobación")?.trim();
+  async function review(validation: IdentityReview, status: "waiting" | "ready" | "blocked") {
+    const notes = status === "blocked" ? window.prompt("Motivo para bloquear el ID")?.trim() : status === "waiting" ? window.prompt("Nota interna opcional: solicitud de amistad enviada")?.trim() : window.prompt("Nota interna opcional para la aprobación")?.trim();
     if (status === "blocked" && (!notes || notes.length < 3)) return;
+    if (status === "waiting" && !window.confirm(`¿Confirmas que enviaste la solicitud de amistad a ${validation.display_name}? Iniciaremos las 48 horas.`)) return;
     if (status === "ready" && !window.confirm(`¿Confirmas que ${validation.display_name} está listo para recibir futuras entregas?`)) return;
     setUpdating(validation.id);
     try {
@@ -58,21 +62,21 @@ export function IdentityReviewQueue() {
   const pending = validations.filter((entry) => entry.status !== "ready");
   const ready = validations.filter((entry) => entry.status === "ready");
   return <section className="identity-review-queue">
-    <header className="identity-review-heading"><div><p className="eyebrow">IDENTIDADES DE ENTREGA</p><h2>Revisión de IDs</h2><p>Aprueba IDs con 48 horas cumplidas o que ya recibieron una entrega.</p></div><button type="button" className="secondary-button" onClick={() => void load()}><RefreshCw aria-hidden="true" size={16} />Actualizar</button></header>
+    <header className="identity-review-heading"><div><p className="eyebrow">IDENTIDADES DE ENTREGA</p><h2>Revisión de IDs</h2><p>Aprueba IDs con 48 horas cumplidas o que ya recibieron una entrega.</p></div><button type="button" className="identity-review-refresh" disabled={loading || Boolean(updating)} onClick={() => void load()}><RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button></header>
     {message && <p className="notice">{message}</p>}
     {pending.length > 0 && <div className="identity-review-grid">{pending.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={updating === entry.id} onReview={review} />)}</div>}
     {ready.length > 0 && <section className="identity-approved-list"><p className="eyebrow">YA VALIDADOS</p><div>{ready.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={false} onReview={review} />)}</div></section>}
   </section>;
 }
 
-function IdentityReviewCard({ validation, updating, onReview }: { validation: IdentityReview; updating: boolean; onReview: (validation: IdentityReview, status: "ready" | "blocked") => void }) {
+function IdentityReviewCard({ validation, updating, onReview }: { validation: IdentityReview; updating: boolean; onReview: (validation: IdentityReview, status: "waiting" | "ready" | "blocked") => void }) {
   const delivered = validation.orders.some((order) => order.status === "delivered");
   const ReadyIcon = validation.status === "ready" ? BadgeCheck : validation.status === "blocked" ? CircleAlert : validation.giftable_at ? Clock3 : ScanLine;
   return <article className={`identity-review-card status-${validation.status}`}>
     <header><span className="identity-review-icon"><ReadyIcon aria-hidden="true" size={18} /></span><div><span className="order-status-pill">{statusText[validation.status]}</span><h3>{validation.display_name}</h3><p>{validation.platform} · {validation.submitted_id}</p></div></header>
     <dl><div><dt>ID de entrega</dt><dd>{validation.epic_account_id}</dd></div><div><dt>Solicitado</dt><dd>{new Date(validation.created_at).toLocaleString("es-MX")}</dd></div>{validation.giftable_at && <div><dt>48 horas</dt><dd>{new Date(validation.giftable_at).toLocaleString("es-MX")}</dd></div>}<div><dt>Pedidos</dt><dd>{validation.orders.length} {delivered ? "· ya recibió entrega" : ""}</dd></div></dl>
     {validation.review_note && <p className="identity-review-note">{validation.review_note}</p>}
-    {validation.status !== "ready" && <div className="identity-review-actions"><button className="primary-button" disabled={updating} onClick={() => onReview(validation, "ready")}>{updating ? "Guardando…" : "Aprobar ID"}</button><button className="danger" disabled={updating} onClick={() => onReview(validation, "blocked")}>Bloquear</button></div>}
+    {validation.status !== "ready" && <div className="identity-review-actions">{validation.status === "manual_review" && <button className="identity-review-action send" disabled={updating} onClick={() => onReview(validation, "waiting")}>{updating ? "Guardando…" : "Enviar solicitud"}</button>}<button className="identity-review-action approve" disabled={updating} onClick={() => onReview(validation, "ready")}>{updating ? "Guardando…" : validation.status === "waiting" ? "Marcar listo" : "Aprobar ID"}</button><button className="identity-review-action danger" disabled={updating} onClick={() => onReview(validation, "blocked")}>{updating ? "Guardando…" : "Bloquear"}</button></div>}
     {validation.status === "ready" && <p className="identity-approved-copy"><BadgeCheck aria-hidden="true" size={15} />ID validado{validation.reviewed_at ? ` · ${new Date(validation.reviewed_at).toLocaleDateString("es-MX")}` : ""}</p>}
   </article>;
 }

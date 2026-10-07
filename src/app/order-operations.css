@@ -472,6 +472,30 @@
   margin: 0;
 }
 
+.identity-review-refresh {
+  align-items: center;
+  align-self: center;
+  background: transparent;
+  border: 1px solid rgba(85, 217, 255, .42);
+  border-radius: .65rem;
+  color: var(--cyan);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .72rem;
+  font-weight: 850;
+  gap: .38rem;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: .5rem .8rem;
+}
+
+.identity-review-refresh:disabled,
+.identity-review-action:disabled {
+  cursor: wait;
+  opacity: .55;
+}
+
 .identity-review-grid,
 .identity-approved-list>div {
   display: grid;
@@ -527,6 +551,48 @@
   color: #8effc9;
 }
 
+.delivery-ticket-actions {
+  align-items: center;
+  background: rgba(255, 213, 31, .06);
+  border: 1px solid rgba(255, 213, 31, .23);
+  border-radius: .9rem;
+  display: grid;
+  gap: .75rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: .85rem;
+}
+
+.delivery-ticket-actions .eyebrow { margin: 0 0 .25rem; }
+
+.delivery-ticket-actions h3 { font-size: .88rem; margin: 0; }
+
+.delivery-ticket-actions p:not(.eyebrow),
+.delivery-ticket-actions>small {
+  color: var(--muted);
+  font-size: .68rem;
+  line-height: 1.4;
+  margin: .2rem 0 0;
+}
+
+.delivery-ticket-actions>small { grid-column: 1 / -1; margin: 0; }
+
+.delivery-ticket-buttons { display: flex; flex-wrap: wrap; gap: .45rem; justify-content: flex-end; }
+
+.delivery-ticket-buttons button {
+  border-radius: .65rem;
+  cursor: pointer;
+  font-size: .7rem;
+  font-weight: 900;
+  min-height: 2.5rem;
+  padding: .5rem .75rem;
+}
+
+.delivery-ticket-buttons button:disabled { cursor: wait; opacity: .55; }
+
+.ticket-image { background: var(--accent); border: 1px solid var(--accent); color: #15120a; }
+
+.ticket-pdf { background: transparent; border: 1px solid rgba(85, 217, 255, .4); color: var(--cyan); }
+
 .identity-review-card dl {
   display: grid;
   gap: .42rem;
@@ -565,24 +631,41 @@
 }
 
 .identity-review-actions {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: .55rem;
-  grid-template-columns: minmax(0, 1fr) minmax(6.5rem, .45fr);
+  justify-content: flex-end;
 }
 
-.identity-review-actions .primary-button,
-.identity-review-actions .danger {
+.identity-review-action {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: .68rem;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: .72rem;
+  font-weight: 900;
+  justify-content: center;
   margin: 0;
-  min-height: 2.7rem;
+  min-height: 2.55rem;
+  padding: .5rem .8rem;
+  white-space: nowrap;
 }
 
-.identity-review-actions .danger {
+.identity-review-action.send {
+  background: var(--accent);
+  color: #17120a;
+}
+
+.identity-review-action.approve {
+  background: var(--cyan);
+  color: #08111a;
+}
+
+.identity-review-action.danger {
   background: transparent;
   border: 1px solid rgba(255, 101, 119, .45);
-  border-radius: .72rem;
   color: #ff9aac;
-  cursor: pointer;
-  font-weight: 850;
 }
 
 .identity-approved-list {
@@ -672,6 +755,15 @@ body:has(.order-tracking-page) .mobile-navigation {
     align-items: stretch;
     flex-direction: column;
   }
+
+  .delivery-ticket-actions {
+    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .delivery-ticket-buttons { justify-content: stretch; }
+
+  .delivery-ticket-buttons button { flex: 1 1 9rem; }
 
   .supervisor-order-heading>div:last-child {
     justify-items: start;

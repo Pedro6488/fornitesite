@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       .select("id,epic_account_id,status").eq("id", parsed.data.validationId)
       .eq("commerce_session_id", context.session.id).maybeSingle();
     if (!validation) return attachCommerceCookie(NextResponse.json({ error: "El ID validado ya no está disponible." }, { status: 409 }), context.session);
+    if (validation.status !== "ready") return attachCommerceCookie(NextResponse.json({ error: "El ID de entrega aún no está listo. Actualiza su estado antes de confirmar." }, { status: 409 }), context.session);
 
     const quoteLines = Array.isArray(quote.checkout_quote_items) ? quote.checkout_quote_items : [];
     const catalog = await (await getCatalogService()).list();
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
       return attachCommerceCookie(NextResponse.json({ error: "Uno de los objetos dejó de estar disponible. Genera una nueva cotización." }, { status: 409 }), context.session);
     }
 
-    if (validation.status !== "manual_review") {
+    if (process.env.FULFILLMENT_MODE === "fnshop") {
       const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
       const state = validationStatus(agents);
       const selectedAgent = selectBestAgentForCart(agents, quote.total_vbucks, quoteLines.length);

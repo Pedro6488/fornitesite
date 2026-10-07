@@ -29,6 +29,8 @@ export async function POST(request: Request) {
       );
     const { database, session } = context;
 
+    await database.rpc("advance_delivery_identity_waits", { p_session_id: session.id });
+
     const cartId = await ensureActiveCart(database, session.id);
     if (parsed.data.cartItemIds.length) {
       const { error } = await database.from("shopping_cart_items").upsert(

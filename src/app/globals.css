@@ -1265,6 +1265,12 @@ h1 {
   width: 100%;
 }
 
+.cart-add.is-added,
+.primary-button.is-added {
+  background: #ff5f70;
+  color: #21070b;
+}
+
 .catalog-card {
   position: relative;
 }
@@ -2252,6 +2258,12 @@ legend {
   display: grid;
   font-size: .82rem;
   gap: .2rem;
+}
+
+.account-order b {
+  color: #f7f8ff;
+  font-size: .8rem;
+  letter-spacing: .025em;
 }
 
 .account-order small {
@@ -3499,6 +3511,24 @@ select:focus-visible {
   flex: 0 0 auto;
 }
 
+.identity-saved-list button.identity-status-manual_review {
+  border-color: rgba(255, 101, 119, .34);
+}
+
+.identity-saved-list button.identity-status-manual_review svg { color: #ff8d9a; }
+
+.identity-saved-list button.identity-status-waiting {
+  border-color: rgba(255, 213, 31, .38);
+}
+
+.identity-saved-list button.identity-status-waiting svg { color: var(--accent); }
+
+.identity-saved-list button.identity-status-ready {
+  border-color: rgba(75, 225, 154, .38);
+}
+
+.identity-saved-list button.identity-status-ready svg { color: #9cffcf; }
+
 .identity-saved-list button span {
   display: grid;
   gap: .13rem;
@@ -3611,6 +3641,28 @@ select:focus-visible {
   background: rgba(75, 225, 154, .17);
   color: #9cffcf;
 }
+
+.identity-result.identity-waiting {
+  background: rgba(255, 213, 31, .08);
+  border-color: rgba(255, 213, 31, .33);
+}
+
+.identity-result.identity-waiting>span {
+  background: rgba(255, 213, 31, .15);
+  color: var(--accent);
+}
+
+.identity-result.identity-manual_review {
+  background: rgba(255, 101, 119, .08);
+  border-color: rgba(255, 101, 119, .32);
+}
+
+.identity-result.identity-manual_review>span {
+  background: rgba(255, 101, 119, .14);
+  color: #ff9ba6;
+}
+
+.identity-countdown { color: #fff1a7 !important; font-weight: 800; }
 
 .catalog-card {
   display: flex;
@@ -3809,6 +3861,18 @@ select:focus-visible {
   border-color: rgba(75, 225, 154, .27);
 }
 
+.checkout-gate.waiting {
+  background: rgba(255, 213, 31, .08);
+  border-color: rgba(255, 213, 31, .34);
+}
+
+.checkout-gate.review {
+  background: rgba(255, 101, 119, .08);
+  border-color: rgba(255, 101, 119, .31);
+}
+
+.checkout-gate.review small { color: #ff9ba6; }
+
 .checkout-auth-choice {
   align-items: center;
   background: #0d1227;
@@ -3897,6 +3961,27 @@ select:focus-visible {
 .canonical-order-status.status-expired {
   background: rgba(255, 101, 119, .1);
   border-color: rgba(255, 101, 119, .3);
+}
+
+.order-cancellation-note {
+  background: rgba(255, 101, 119, .09);
+  border: 1px solid rgba(255, 101, 119, .32);
+  border-radius: .9rem;
+  display: grid;
+  gap: .35rem;
+  padding: 1rem;
+}
+
+.order-cancellation-note span {
+  color: #ffadb5;
+  font-size: .65rem;
+  font-weight: 900;
+}
+
+.order-cancellation-note strong {
+  color: #fff3f4;
+  font-size: .85rem;
+  line-height: 1.45;
 }
 
 .post-sale-actions {
@@ -4521,7 +4606,19 @@ select:focus-visible {
 
 .identity-nav-button.manual,
 .product-identity-status.manual {
-  border-color: rgba(85, 217, 255, .36);
+  border-color: rgba(255, 101, 119, .4);
+}
+
+.identity-nav-button.manual {
+  background: rgba(255, 101, 119, .1);
+  color: #ffadb5;
+}
+
+.identity-nav-button.waiting,
+.product-identity-status.waiting {
+  background: rgba(255, 213, 31, .1);
+  border-color: rgba(255, 213, 31, .4);
+  color: #fff1a7;
 }
 
 .identity-manual_review {

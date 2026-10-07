@@ -253,3 +253,80 @@
     display: none;
   }
 }
+
+/* The primary transactional action is never a small secondary control on a
+   phone. It forms the lower row of the fixed action sheet. */
+@media (max-width: 800px) {
+  .system-action-bar-viewport.system-action-bar-primary-full {
+    align-items: stretch;
+    background: rgba(9, 14, 32, .985);
+    border: 1px solid rgba(126, 175, 255, .34);
+    border-bottom: 0;
+    border-radius: 1.2rem 1.2rem 0 0;
+    bottom: 0 !important;
+    box-shadow: 0 -1rem 2.4rem rgba(0, 0, 0, .42);
+    display: grid;
+    gap: .65rem;
+    grid-template-columns: minmax(0, 1fr);
+    left: 0 !important;
+    margin: 0;
+    padding: .9rem max(1rem, env(safe-area-inset-left)) calc(.9rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-right));
+    position: fixed;
+    right: 0 !important;
+    width: 100%;
+    z-index: 90;
+  }
+
+  .system-action-bar-viewport.system-action-bar-primary-full > span {
+    display: grid;
+    gap: .14rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .system-action-bar-viewport.system-action-bar-primary-full > .primary-button,
+  .system-action-bar-viewport.system-action-bar-primary-full > a:not(.cart-secondary),
+  .system-action-bar-viewport.system-action-bar-primary-full > button {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    font-size: .88rem;
+    font-weight: 950;
+    min-height: 3.55rem;
+    width: 100%;
+  }
+
+  .system-action-bar-viewport.system-action-bar-primary-full > span small {
+    color: #b9c5e2;
+    font-size: .68rem;
+    font-weight: 850;
+    letter-spacing: .035em;
+    text-transform: uppercase;
+  }
+
+  .system-action-bar-viewport.system-action-bar-primary-full > span strong {
+    color: var(--accent);
+    font-size: 1.5rem;
+    letter-spacing: -.035em;
+    line-height: 1;
+  }
+
+  .system-action-bar-viewport.system-action-bar-primary-full > span em {
+    color: #9eaccb;
+    font-size: .68rem;
+    font-style: normal;
+    line-height: 1.35;
+  }
+
+  .system-action-bar-viewport.system-action-bar-primary-full > .cart-secondary {
+    justify-self: center;
+    margin: 0;
+    min-height: 2rem;
+  }
+
+  .checkout-flow:has(.system-action-bar-primary-full),
+  .cart-page:has(.system-action-bar-primary-full) {
+    padding-bottom: calc(12rem + env(safe-area-inset-bottom));
+  }
+}

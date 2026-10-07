@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
 
-const schema = z.object({ status: z.enum(["ready", "blocked"]), notes: z.string().trim().max(500).optional() })
+const schema = z.object({ status: z.enum(["waiting", "ready", "blocked"]), notes: z.string().trim().max(500).optional() })
   .refine((value) => value.status !== "blocked" || Boolean(value.notes && value.notes.length >= 3), { message: "Indica el motivo del bloqueo.", path: ["notes"] });
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ validationId: string }> }) {
