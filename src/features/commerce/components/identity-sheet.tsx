@@ -47,7 +47,7 @@ export function IdentitySheet() {
       </div>}
       {commerce.validation ? <div className={`identity-result identity-${commerce.validation.status}`} aria-live="polite">
         <span>{commerce.validation.status === "ready" ? <BadgeCheck aria-hidden="true" size={19} /> : commerce.validation.status === "blocked" ? <CircleAlert aria-hidden="true" size={19} /> : <ScanLine aria-hidden="true" size={19} />}</span>
-        <div><strong>{commerce.validation.display_name}</strong><small>{statusCopy[commerce.validation.status]}</small>{commerce.validation.giftable_at && <small>Disponible aproximadamente: {new Date(commerce.validation.giftable_at).toLocaleString("es-MX")}</small>}</div>
+        <div><strong>{commerce.validation.display_name}</strong><small>{statusCopy[commerce.validation.status]}</small>{commerce.validation.giftable_at && commerce.validation.status !== "ready" && <small>Disponible aproximadamente: {new Date(commerce.validation.giftable_at).toLocaleString("es-MX")}</small>}</div>
       </div> : <p className="sheet-description">Agrega el ID que recibirá los objetos. Por ahora nuestro equipo lo revisará manualmente antes de solicitar tu pago.</p>}
       {(!commerce.validation || editingIdentity) && <form className="identity-form" onSubmit={submit}>
         <div className="identity-form-title"><span><Plus aria-hidden="true" size={15} />Agregar o actualizar</span><small>Lo guardamos para que el equipo confirme la entrega.</small></div>
@@ -57,6 +57,7 @@ export function IdentitySheet() {
       </form>}
       {commerce.validation && !editingIdentity && <button type="button" className="identity-add-another" onClick={addAnotherIdentity}><Plus aria-hidden="true" size={15} />Agregar otro ID</button>}
       {commerce.validation?.status === "pending_friendship" && <button className="secondary-button" disabled={commerce.syncing} onClick={addFriend}>Enviar solicitud de amistad</button>}
+      {commerce.validation && <button type="button" className="secondary-button" disabled={commerce.syncing} onClick={() => void commerce.refresh()}>Actualizar estado</button>}
       {canContinue && <button className="primary-button identity-continue" onClick={commerce.closeIdentity}>Usar este ID y continuar</button>}
       {message && <p className="notice error" role="alert">{message}</p>}
   </CommerceSheet>;

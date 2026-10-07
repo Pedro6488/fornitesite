@@ -26,6 +26,7 @@ type CommerceState = Readonly<{
   validations: readonly IdentityValidation[];
   validation: IdentityValidation | null;
   identityOpen: boolean;
+  refresh: () => Promise<void>;
   openIdentity: () => void;
   closeIdentity: () => void;
   validateIdentity: (displayName: string, platform: IdentityPlatform) => Promise<string | null>;
@@ -80,36 +81,36 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const closeIdentity = useCallback(() => setIdentityOpen(false), []);
   const clearCart = useCallback(() => setCartItemIds([]), []);
 
-  useEffect(() => {
-    let active = true;
-    void (async () => {
-      const cart = legacyCartIds();
-      const favorites = legacyFavoriteIds();
-      try {
-        const response = await fetch("/api/commerce/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          body: JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites })
-        });
-        const body = await responseBody(response);
-        if (!active) return;
-        if (!response.ok) throw new Error(body.error);
-        setCartItemIds(body.cartItemIds ?? []);
-        setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
-        setValidations(body.validations ?? (body.validation ? [body.validation] : []));
-        setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
-        window.localStorage.removeItem(LEGACY_CART_KEY);
-        window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
-      } catch {
-        if (!active) return;
-        setCartItemIds(cart);
-        setFavoriteItemIds(new Set(favorites));
-      } finally {
-        if (active) setReady(true);
-      }
-    })();
-    return () => { active = false; };
+  const refresh = useCallback(async () => {
+    const cart = legacyCartIds();
+    const favorites = legacyFavoriteIds();
+    try {
+      const response = await fetch("/api/commerce/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
+        body: JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites })
+      });
+      const body = await responseBody(response);
+      if (!response.ok) throw new Error(body.error);
+      setCartItemIds(body.cartItemIds ?? []);
+      setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
+      setValidations(body.validations ?? (body.validation ? [body.validation] : []));
+      setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
+      window.localStorage.removeItem(LEGACY_CART_KEY);
+      window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
+    } catch {
+      setCartItemIds(cart);
+      setFavoriteItemIds(new Set(favorites));
+    } finally { setReady(true); }
   }, []);
+
+  useEffect(() => {
+    void refresh();
+    const interval = window.setInterval(() => void refresh(), 30_000);
+    const onFocus = () => void refresh();
+    window.addEventListener("focus", onFocus);
+    return () => { window.clearInterval(interval); window.removeEventListener("focus", onFocus); };
+  }, [refresh]);
 
   const persistCart = useCallback(async (next: string[]) => {
     const previous = cartItemIds;
@@ -210,12 +211,12 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   }, [validation]);
 
   const value = useMemo<CommerceState>(() => ({
-    ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen,
+    ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
     openIdentity,
     closeIdentity,
     validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite,
     clearCart
-  }), [ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
+  }), [ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }

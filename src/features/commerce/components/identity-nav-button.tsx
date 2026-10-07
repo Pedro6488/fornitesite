@@ -8,6 +8,6 @@ export function IdentityNavButton() {
   const manualReview = commerce.validation?.status === "manual_review";
   const ready = commerce.validation?.status === "ready";
   return <button type="button" className={`identity-nav-button ${ready ? "ready" : manualReview ? "manual" : ""}`} onClick={commerce.openIdentity}>
-    {ready ? <BadgeCheck aria-hidden="true" size={17} /> : <ScanLine aria-hidden="true" size={17} />}<span>{ready ? "ID listo" : manualReview ? "ID en revisión" : "Validar ID"}</span>
+    {ready ? <BadgeCheck aria-hidden="true" size={17} /> : <ScanLine aria-hidden="true" size={17} />}<span>{ready ? "ID validado" : manualReview ? "ID en revisión" : "Validar ID"}</span>
   </button>;
 }

@@ -60,7 +60,7 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
   if (orders) return <div className="account-dashboard">
     <div className="account-welcome"><div><p className="eyebrow">MI DASHBOARD</p><h2>Tu cuenta está lista.</h2></div><button type="button" onClick={() => void supabase?.auth.signOut().then(() => window.location.reload())}>Cerrar sesión</button></div>
     <div className="dashboard-grid">
-      <button type="button" className="dashboard-card profile-card" onClick={commerce.openIdentity}><span className="dashboard-icon">◎</span><div><small>ID PARA RECIBIR</small><strong>{commerce.validation?.display_name ?? "Agregar mi ID"}</strong><p>{commerce.validation?.status === "ready" ? "Listo para comprar" : commerce.validation?.status === "manual_review" ? "En revisión manual →" : "Agregar ID →"}</p></div></button>
+      <button type="button" className="dashboard-card profile-card" onClick={commerce.openIdentity}><span className="dashboard-icon">◎</span><div><small>ID PARA RECIBIR</small><strong>{commerce.validation?.display_name ?? "Agregar mi ID"}</strong><p>{commerce.validation?.status === "ready" ? "ID validado · listo para comprar" : commerce.validation?.status === "manual_review" ? "En revisión manual →" : "Agregar ID →"}</p></div></button>
       <Link href="/favoritos" className="dashboard-card"><span className="dashboard-icon">♡</span><div><small>FAVORITOS</small><strong>{commerce.favoriteItemIds.size} objetos</strong><p>Ver disponibilidad →</p></div></Link>
       <section className="dashboard-card"><span className="dashboard-icon">✓</span><div><small>OBJETOS RECIBIDOS</small><strong>{orders.filter((order) => order.status === "delivered").length}</strong><p>Entregas confirmadas</p></div></section>
     </div>

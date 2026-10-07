@@ -34,6 +34,9 @@ export async function POST(request: Request) {
         .select("requested_at").eq("epic_account_id", epicAccountId).maybeSingle();
       const requestedAt = priorRequest?.requested_at ?? new Date().toISOString();
       const giftableAt = new Date(new Date(requestedAt).getTime() + 48 * 60 * 60_000).toISOString();
+      const { data: existing } = await context.database.from("game_id_validations")
+        .select("id,status,giftable_at").eq("commerce_session_id", context.session.id).eq("epic_account_id", epicAccountId).maybeSingle();
+      const keepsApproval = existing?.status === "ready";
       const payload = {
         commerce_session_id: context.session.id,
         user_id: context.session.user?.id ?? null,
@@ -41,14 +44,12 @@ export async function POST(request: Request) {
         submitted_id: parsed.data.displayName,
         epic_account_id: epicAccountId,
         display_name: parsed.data.displayName,
-        status: "manual_review",
-        giftable_at: giftableAt,
+        status: keepsApproval ? "ready" : "manual_review",
+        giftable_at: keepsApproval ? existing?.giftable_at ?? null : giftableAt,
         provider: "manual",
         agents_snapshot: [],
         last_checked_at: new Date().toISOString()
       };
-      const { data: existing } = await context.database.from("game_id_validations")
-        .select("id").eq("commerce_session_id", context.session.id).eq("epic_account_id", epicAccountId).maybeSingle();
       const operation = existing
         ? context.database.from("game_id_validations").update(payload).eq("id", existing.id)
         : context.database.from("game_id_validations").insert(payload);

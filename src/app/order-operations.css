@@ -450,6 +450,159 @@
   opacity: .65;
 }
 
+.identity-review-queue {
+  display: grid;
+  gap: 1rem;
+}
+
+.identity-review-heading {
+  align-items: end;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.identity-review-heading h2 {
+  margin: .15rem 0;
+}
+
+.identity-review-heading p:not(.eyebrow) {
+  color: var(--muted);
+  font-size: .78rem;
+  margin: 0;
+}
+
+.identity-review-grid,
+.identity-approved-list>div {
+  display: grid;
+  gap: .85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.identity-review-card {
+  background: rgba(20, 28, 58, .86);
+  border: 1px solid rgba(126, 175, 255, .2);
+  border-radius: 1rem;
+  display: grid;
+  gap: .85rem;
+  padding: .9rem;
+}
+
+.identity-review-card.status-ready {
+  border-color: rgba(75, 225, 154, .34);
+}
+
+.identity-review-card>header {
+  align-items: center;
+  display: flex;
+  gap: .65rem;
+}
+
+.identity-review-card h3 {
+  font-size: 1rem;
+  margin: .32rem 0 .1rem;
+  overflow-wrap: anywhere;
+}
+
+.identity-review-card header p {
+  color: var(--muted);
+  font-size: .67rem;
+  margin: 0;
+}
+
+.identity-review-icon {
+  align-items: center;
+  background: rgba(85, 217, 255, .1);
+  border: 1px solid rgba(85, 217, 255, .22);
+  border-radius: .7rem;
+  color: var(--cyan);
+  display: flex;
+  height: 2.55rem;
+  justify-content: center;
+  width: 2.55rem;
+}
+
+.identity-review-card.status-ready .identity-review-icon,
+.identity-approved-copy {
+  color: #8effc9;
+}
+
+.identity-review-card dl {
+  display: grid;
+  gap: .42rem;
+  margin: 0;
+}
+
+.identity-review-card dl>div {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.identity-review-card dt,
+.identity-review-card dd {
+  font-size: .68rem;
+  margin: 0;
+}
+
+.identity-review-card dt { color: var(--muted); }
+
+.identity-review-card dd {
+  font-weight: 800;
+  max-width: 66%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.identity-review-note {
+  background: rgba(85, 217, 255, .07);
+  border-left: 2px solid rgba(85, 217, 255, .45);
+  color: #cbd6ef;
+  font-size: .68rem;
+  margin: 0;
+  padding: .45rem .55rem;
+}
+
+.identity-review-actions {
+  display: grid;
+  gap: .55rem;
+  grid-template-columns: minmax(0, 1fr) minmax(6.5rem, .45fr);
+}
+
+.identity-review-actions .primary-button,
+.identity-review-actions .danger {
+  margin: 0;
+  min-height: 2.7rem;
+}
+
+.identity-review-actions .danger {
+  background: transparent;
+  border: 1px solid rgba(255, 101, 119, .45);
+  border-radius: .72rem;
+  color: #ff9aac;
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.identity-approved-list {
+  border-top: 1px solid rgba(126, 175, 255, .18);
+  display: grid;
+  gap: .7rem;
+  padding-top: 1rem;
+}
+
+.identity-approved-list>.eyebrow { margin: 0; }
+
+.identity-approved-copy {
+  align-items: center;
+  display: flex;
+  font-size: .68rem;
+  font-weight: 850;
+  gap: .35rem;
+  margin: 0;
+}
+
 .admin-order-actions button.primary {
   background: var(--success);
   border-color: var(--success);
@@ -485,6 +638,11 @@ body:has(.order-tracking-page) .mobile-navigation {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .identity-review-grid,
+  .identity-approved-list>div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .admin-order-sheet .admin-order-detail-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -506,6 +664,11 @@ body:has(.order-tracking-page) .mobile-navigation {
   }
 
   .supervisor-order-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .identity-review-heading {
     align-items: stretch;
     flex-direction: column;
   }
