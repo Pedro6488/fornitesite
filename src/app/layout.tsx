@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   UserRound,
 } from "lucide-react";
+import { Analytics } from "@vercel/analytics/next";
 import { CartLink } from "@/features/cart/components/cart-link";
 import { CommerceStateProvider } from "@/features/commerce/components/commerce-state-provider";
 import { IdentitySheet } from "@/features/commerce/components/identity-sheet";
@@ -142,6 +143,7 @@ export default function RootLayout({
           <MobileNavigation />
           <IdentitySheet />
         </CommerceStateProvider>
+        <Analytics />
       </body>
     </html>
   );
