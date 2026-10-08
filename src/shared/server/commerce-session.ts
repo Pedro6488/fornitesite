@@ -59,9 +59,9 @@ export async function requireCommerceSession(request: Request): Promise<{
   const user = await getRequestUser(request, database);
   const { data: foundSession } = await database
     .from("commerce_sessions")
-    .select("id,user_id,merged_into")
+    .select("id,user_id,merged_into,last_seen_at")
     .eq("anonymous_token_hash", hash)
-    .maybeSingle<{ id: string; user_id: string | null; merged_into: string | null }>();
+    .maybeSingle<{ id: string; user_id: string | null; merged_into: string | null; last_seen_at: string }>();
 
   // Never let a session already linked to one account cross an auth boundary.
   // This protects shared browsers after sign-out and when another user signs in.
@@ -75,6 +75,7 @@ export async function requireCommerceSession(request: Request): Promise<{
   // Old devices may still carry the token of a session that was merged after
   // login. Always operate on its canonical session to avoid recreating carts.
   let id = existing?.merged_into ?? existing?.id;
+  const shouldMergeUser = Boolean(user && (!existing || existing.user_id !== user.id));
   if (!id) {
     const { data, error } = await database
       .from("commerce_sessions")
@@ -84,13 +85,19 @@ export async function requireCommerceSession(request: Request): Promise<{
     if (error || !data) throw error ?? new Error("No fue posible crear la sesión comercial.");
     id = data.id;
   } else {
-    await database.from("commerce_sessions").update({
-      last_seen_at: new Date().toISOString(),
+    const lastSeenAt = new Date(existing?.last_seen_at ?? 0).getTime();
+    const shouldTouchSession = !Number.isFinite(lastSeenAt) || Date.now() - lastSeenAt >= 15 * 60_000;
+    const updates = {
+      ...(shouldTouchSession ? { last_seen_at: new Date().toISOString() } : {}),
       ...(user && !existing?.user_id ? { user_id: user.id } : {})
-    }).eq("id", id);
+    };
+    if (Object.keys(updates).length) {
+      const affectedSessionIds = existing?.merged_into ? [existing.id, id] : [id];
+      await database.from("commerce_sessions").update(updates).in("id", affectedSessionIds);
+    }
   }
 
-  if (user) await mergeUserCommerce(database, id, user.id);
+  if (user && shouldMergeUser) await mergeUserCommerce(database, id, user.id);
   return { database, session: { id, token, isNew: token !== existingToken, user } };
 }
 

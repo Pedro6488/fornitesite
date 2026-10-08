@@ -12,9 +12,9 @@ const schema = z.object({
   favoriteItemIds: z.array(z.string().min(1).max(180)).max(200).default([]),
 });
 
-export async function POST(request: Request) {
+async function sessionResponse(request: Request, migrateLegacyState: boolean) {
   try {
-    const payload = await request.json().catch(() => ({}));
+    const payload = migrateLegacyState ? await request.json().catch(() => ({})) : {};
     const parsed = schema.safeParse(payload);
     if (!parsed.success)
       return NextResponse.json(
@@ -29,7 +29,10 @@ export async function POST(request: Request) {
       );
     const { database, session } = context;
 
-    await database.rpc("advance_delivery_identity_waits", { p_session_id: session.id });
+    if (new URL(request.url).searchParams.get("advanceIdentity") === "1") {
+      const { error } = await database.rpc("advance_delivery_identity_waits", { p_session_id: session.id });
+      if (error) throw error;
+    }
 
     const { data: existingCart } = await database
       .from("shopping_carts")
@@ -126,4 +129,12 @@ export async function POST(request: Request) {
   } catch (error) {
     return commerceErrorResponse(error, "session");
   }
+}
+
+export async function GET(request: Request) {
+  return sessionResponse(request, false);
+}
+
+export async function POST(request: Request) {
+  return sessionResponse(request, true);
 }

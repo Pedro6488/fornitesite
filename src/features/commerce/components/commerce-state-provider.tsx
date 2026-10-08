@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
 const LEGACY_CART_KEY = "sigfriedlootbox:cart";
@@ -26,7 +26,7 @@ type CommerceState = Readonly<{
   validations: readonly IdentityValidation[];
   validation: IdentityValidation | null;
   identityOpen: boolean;
-  refresh: () => Promise<void>;
+  refresh: (options?: { advanceIdentity?: boolean }) => Promise<void>;
   openIdentity: () => void;
   closeIdentity: () => void;
   validateIdentity: (displayName: string, platform: IdentityPlatform) => Promise<string | null>;
@@ -77,18 +77,26 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [activeValidationId, setActiveValidationId] = useState<string | null>(null);
   const validation = useMemo(() => validations.find((entry) => entry.id === activeValidationId) ?? null, [activeValidationId, validations]);
   const [identityOpen, setIdentityOpen] = useState(false);
+  const lastRefreshAt = useRef(0);
+  const refreshing = useRef(false);
   const openIdentity = useCallback(() => setIdentityOpen(true), []);
   const closeIdentity = useCallback(() => setIdentityOpen(false), []);
   const clearCart = useCallback(() => setCartItemIds([]), []);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (options?: { advanceIdentity?: boolean }) => {
+    if (refreshing.current) return;
+    refreshing.current = true;
     const cart = legacyCartIds();
     const favorites = legacyFavoriteIds();
+    const migratingLegacyState = cart.length > 0 || favorites.length > 0;
+    let completed = false;
     try {
-      const response = await fetch("/api/commerce/session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-        body: JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites })
+      const query = options?.advanceIdentity ? "?advanceIdentity=1" : "";
+      const response = await fetch(`/api/commerce/session${query}`, {
+        method: migratingLegacyState ? "POST" : "GET",
+        headers: { ...(migratingLegacyState ? { "Content-Type": "application/json" } : {}), ...(await authHeaders()) },
+        body: migratingLegacyState ? JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites }) : undefined,
+        cache: "no-store"
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
@@ -98,18 +106,41 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
       window.localStorage.removeItem(LEGACY_CART_KEY);
       window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
+      completed = true;
     } catch {
       setCartItemIds(cart);
       setFavoriteItemIds(new Set(favorites));
-    } finally { setReady(true); }
+    } finally {
+      if (completed) lastRefreshAt.current = Date.now();
+      refreshing.current = false;
+      setReady(true);
+    }
   }, []);
 
   useEffect(() => {
     void refresh();
-    const interval = window.setInterval(() => void refresh(), 30_000);
-    const onFocus = () => void refresh();
+    const refreshIfStale = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastRefreshAt.current < 5 * 60_000) return;
+      void refresh();
+    };
+    const onFocus = () => refreshIfStale();
+    const onVisibilityChange = () => refreshIfStale();
     window.addEventListener("focus", onFocus);
-    return () => { window.clearInterval(interval); window.removeEventListener("focus", onFocus); };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    const supabase = getSupabaseBrowser();
+    const { data: authListener } = supabase?.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      lastRefreshAt.current = 0;
+      window.setTimeout(() => void refresh(), 0);
+    }) ?? { data: { subscription: null } };
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      authListener.subscription?.unsubscribe();
+    };
   }, [refresh]);
 
   const persistCart = useCallback(async (next: string[]) => {

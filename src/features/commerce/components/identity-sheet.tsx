@@ -33,11 +33,25 @@ export function IdentitySheet() {
   const canContinue = commerce.validation?.status === "ready";
 
   useEffect(() => {
+    if (!commerce.identityOpen) return;
+    void commerce.refresh({ advanceIdentity: true });
+  }, [commerce.identityOpen, commerce.refresh]);
+
+  useEffect(() => {
     if (!commerce.identityOpen || commerce.validation?.status !== "waiting") return;
     setNow(Date.now());
     const interval = window.setInterval(() => setNow(Date.now()), 60_000);
-    return () => window.clearInterval(interval);
-  }, [commerce.identityOpen, commerce.validation?.status]);
+    const remaining = commerce.validation.giftable_at
+      ? new Date(commerce.validation.giftable_at).getTime() - Date.now()
+      : null;
+    const completion = remaining === null
+      ? null
+      : window.setTimeout(() => void commerce.refresh({ advanceIdentity: true }), Math.max(0, remaining) + 500);
+    return () => {
+      window.clearInterval(interval);
+      if (completion !== null) window.clearTimeout(completion);
+    };
+  }, [commerce.identityOpen, commerce.refresh, commerce.validation?.giftable_at, commerce.validation?.status]);
   async function submit(event: FormEvent) {
     event.preventDefault();
     const nextMessage = await commerce.validateIdentity(displayName, platform);
@@ -73,7 +87,7 @@ export function IdentitySheet() {
       </form>}
       {commerce.validation && !editingIdentity && <button type="button" className="identity-add-another" onClick={addAnotherIdentity}><Plus aria-hidden="true" size={15} />Agregar otro ID</button>}
       {commerce.validation?.status === "pending_friendship" && <button className="secondary-button" disabled={commerce.syncing} onClick={addFriend}>Enviar solicitud de amistad</button>}
-      {commerce.validation && <button type="button" className="secondary-button" disabled={commerce.syncing} onClick={() => void commerce.refresh()}>Actualizar estado</button>}
+      {commerce.validation && <button type="button" className="secondary-button" disabled={commerce.syncing} onClick={() => void commerce.refresh({ advanceIdentity: true })}>Actualizar estado</button>}
       {canContinue && <button className="primary-button identity-continue" onClick={commerce.closeIdentity}>Usar este ID y continuar</button>}
       {message && <p className="notice error" role="alert">{message}</p>}
   </CommerceSheet>;
