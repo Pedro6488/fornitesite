@@ -5,10 +5,13 @@ export async function GET(request: Request) {
   const staff = await authorizeStaff(request);
   if (!staff) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
   const { data, error } = await staff.database.from("game_id_validations")
-    .select("id,platform,submitted_id,epic_account_id,display_name,status,giftable_at,last_checked_at,created_at,user_id,reviewed_at,review_note,commerce_session_id,commerce_sessions!inner(merged_into)")
+    .select("id,platform,submitted_id,epic_account_id,display_name,status,giftable_at,last_checked_at,created_at,user_id,reviewed_at,review_note,commerce_session_id,commerce_sessions!game_id_validations_commerce_session_id_fkey!inner(merged_into)")
     .is("commerce_sessions.merged_into", null)
     .order("last_checked_at", { ascending: false }).limit(250);
-  if (error) return NextResponse.json({ error: "No fue posible consultar los IDs." }, { status: 503 });
+  if (error) {
+    console.error("admin.validations.query.failed", error);
+    return NextResponse.json({ error: "No fue posible consultar los IDs." }, { status: 503 });
+  }
   const validationIds = (data ?? []).map((entry) => entry.id);
   const { data: orders } = validationIds.length
     ? await staff.database.from("orders").select("id,recipient_validation_id,status,created_at,item_name").in("recipient_validation_id", validationIds).order("created_at", { ascending: false })
