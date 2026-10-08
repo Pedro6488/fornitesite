@@ -4180,6 +4180,12 @@ select:focus-visible {
   gap: 1rem;
   grid-template-columns: .8fr 1.2fr;
   padding: 1rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-data-card > div {
+  min-width: 0;
 }
 
 .admin-data-card h2 {
@@ -4191,6 +4197,7 @@ select:focus-visible {
   color: var(--muted);
   font-size: .72rem;
   margin: .25rem 0;
+  overflow-wrap: anywhere;
 }
 
 .admin-ranking {

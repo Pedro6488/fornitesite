@@ -13,10 +13,14 @@ import { getFortniteCosmoPreview } from "@/features/catalog/infrastructure/fortn
 
 export default async function ItemPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ mainId: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { mainId } = await params;
+  const { from } = await searchParams;
+  const fromAdmin = from === "/admin";
   const catalog = await getCatalogService();
   const items = await catalog.list();
   const item = items.find(
@@ -55,7 +59,7 @@ export default async function ItemPage({
       <section className="detail-shell">
         <div className="detail-visual">
           <div className="detail-navigation">
-            <BackButton />
+            <BackButton fallbackHref={fromAdmin ? "/admin" : "/#catalogo"} label={fromAdmin ? "Volver al panel" : "Volver al catálogo"} preferFallback={fromAdmin} />
           </div>
           <ItemPreview
             imageUrl={item.imageUrl}
