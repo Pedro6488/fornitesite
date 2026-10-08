@@ -70,6 +70,8 @@ const progressSteps = [
   { label: "Entregado", icon: FileCheck2 }
 ] as const;
 
+const paidOrderStatuses: readonly OrderStatus[] = ["paid", "ready_to_send", "validating_delivery", "delivering", "reconciling", "delivered"];
+
 type OrderItem = { item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number };
 type HistoryEvent = { action: string; created_at: string; after_data: { status?: string; notes?: string } | null };
 type Order = {
@@ -94,6 +96,8 @@ export function SupervisorOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [message, setMessage] = useState("Cargando pedidos…");
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -108,7 +112,10 @@ export function SupervisorOrders() {
     const session = (await supabase?.auth.getSession())?.data.session;
     if (!session) { setMessage("Inicia sesión con una cuenta administradora."); setLoading(false); return; }
     try {
-      const response = await fetch("/api/admin/orders", { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store" });
+      const parameters = new URLSearchParams();
+      if (fromDate) parameters.set("from", fromDate);
+      if (toDate) parameters.set("to", toDate);
+      const response = await fetch(`/api/admin/orders${parameters.size ? `?${parameters}` : ""}`, { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store" });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error ?? "No fue posible cargar los pedidos.");
       if (requestId !== loadRequest.current) return;
@@ -119,7 +126,7 @@ export function SupervisorOrders() {
     } finally {
       if (requestId === loadRequest.current) setLoading(false);
     }
-  }, [supabase]);
+  }, [fromDate, supabase, toDate]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => void load());
@@ -153,9 +160,25 @@ export function SupervisorOrders() {
     (statusFilter === "all" || order.status === statusFilter)
     && `${order.id} ${order.epic_display_name} ${order.epic_account_id} ${order.contact_whatsapp} ${order.order_items.map((item) => item.item_name).join(" ")}`.toLowerCase().includes(query.toLowerCase())
   );
+  const soldMxnCents = visible.filter((order) => paidOrderStatuses.includes(order.status)).reduce((total, order) => total + order.amount_mxn_cents, 0);
 
   return <div className="supervisor-orders">
-    <div className="admin-toolbar"><label className="admin-search"><Search aria-hidden="true" size={17} /><input type="search" aria-label="Buscar pedidos" placeholder="Buscar por pedido, ID, WhatsApp u objeto" value={query} onChange={(event) => setQuery(event.target.value)} /></label><span className="select-control"><select aria-label="Filtrar por estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as OrderStatus | "all")}><option value="all">Todos los estados</option>{(Object.keys(labels) as OrderStatus[]).map((status) => <option value={status} key={status}>{labels[status]}</option>)}</select><ChevronDown aria-hidden="true" size={17} /></span><button className="secondary-button" disabled={loading || Boolean(updatingId)} onClick={() => void load()}><RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button></div>
+    <div className="admin-toolbar">
+<label className="admin-search">
+<Search aria-hidden="true" size={17} />
+<input type="search" aria-label="Buscar pedidos" placeholder="Buscar por pedido, ID, WhatsApp u objeto" value={query} onChange={(event) => setQuery(event.target.value)} />
+</label>
+<span className="select-control">
+<select aria-label="Filtrar por estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as OrderStatus | "all")}>
+<option value="all">Todos los estados</option>{(Object.keys(labels) as OrderStatus[]).map((status) => <option value={status} key={status}>{labels[status]}</option>)}</select>
+<ChevronDown aria-hidden="true" size={17} />
+</span>
+<label className="admin-date-filter">Desde<input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => setFromDate(event.target.value)} /></label>
+<label className="admin-date-filter">Hasta<input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => setToDate(event.target.value)} /></label>
+<button className="secondary-button" disabled={loading || Boolean(updatingId)} onClick={() => void load()}>
+<RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button>
+</div>
+    <section className="admin-sales-summary" aria-label="Resumen de ventas filtrado"><div><small>VENTAS CONFIRMADAS</small><strong>{formatMoney(soldMxnCents)}</strong><span>{visible.filter((order) => paidOrderStatuses.includes(order.status)).length} pedidos pagados{fromDate || toDate ? " en el periodo elegido" : " en total"}</span></div>{(fromDate || toDate) && <button type="button" onClick={() => { setFromDate(""); setToDate(""); }}>Limpiar fechas</button>}</section>
     {message && <p className="notice">{message}</p>}
     {visible.map((order) => {
       const progress = progressByStatus[order.status] ?? -1;
@@ -178,7 +201,7 @@ export function SupervisorOrders() {
       </div>}
     </CommerceSheet>
     <CommerceSheet open={Boolean(selectedItem)} onClose={() => setSelectedItem(null)} titleId="admin-product-title" eyebrow="PRODUCTO A ENTREGAR" title={selectedItem?.item_name ?? "Detalle del producto"} description="Verifica visualmente el objeto antes de preparar la entrega." className="admin-product-sheet">
-      {selectedItem && <div className="admin-product-preview"><div className="admin-product-preview-image">{selectedItem.item_image_url ? <Image src={selectedItem.item_image_url} alt={selectedItem.item_name} fill sizes="(max-width: 600px) 90vw, 420px" /> : <span aria-hidden="true">{selectedItem.item_name.slice(0, 1)}</span>}</div><dl><div><dt>Cantidad</dt><dd>{selectedItem.quantity}</dd></div><div><dt>Precio unitario</dt><dd>{formatMoney(selectedItem.unit_amount_mxn_cents)}</dd></div><div><dt>Precio en Fortnite</dt><dd>◉ {selectedItem.vbucks_price.toLocaleString("es-MX")} paVos</dd></div><div><dt>ID del objeto</dt><dd>{selectedItem.item_main_id}</dd></div></dl><Link className="primary-button" href={`/objetos/${encodeURIComponent(selectedItem.item_main_id)}`} target="_blank">Abrir detalle del producto ↗</Link></div>}
+      {selectedItem && <div className="admin-product-preview"><div className="admin-product-preview-image">{selectedItem.item_image_url ? <Image src={selectedItem.item_image_url} alt={selectedItem.item_name} fill sizes="(max-width: 600px) 90vw, 420px" /> : <span aria-hidden="true">{selectedItem.item_name.slice(0, 1)}</span>}</div><dl><div><dt>Cantidad</dt><dd>{selectedItem.quantity}</dd></div><div><dt>Precio unitario</dt><dd>{formatMoney(selectedItem.unit_amount_mxn_cents)}</dd></div><div><dt>Precio en Fortnite</dt><dd>◉ {selectedItem.vbucks_price.toLocaleString("es-MX")} paVos</dd></div><div><dt>ID del objeto</dt><dd>{selectedItem.item_main_id}</dd></div></dl><Link className="primary-button" href={`/objetos/${encodeURIComponent(selectedItem.item_main_id)}?from=${encodeURIComponent("/admin")}`} target="_blank">Abrir detalle del producto ↗</Link></div>}
     </CommerceSheet>
     <AdminActionModal open={Boolean(pendingAction)} onClose={() => setPendingAction(null)} title={pendingAction ? actionLabels[pendingAction.status] ?? labels[pendingAction.status] : "Confirmar operación"} description={pendingAction ? `Pedido #${pendingAction.order.id.slice(0, 8).toUpperCase()} · ${formatMoney(pendingAction.order.amount_mxn_cents)}` : ""} confirmLabel={pendingAction ? actionLabels[pendingAction.status] ?? labels[pendingAction.status] : "Confirmar"} tone={pendingAction?.status === "canceled" || pendingAction?.status === "rejected" ? "danger" : "primary"} notesLabel={pendingAction && ["information_required", "rejected", "canceled"].includes(pendingAction.status) ? "Motivo para el cliente" : undefined} notesPlaceholder="Explica brevemente el motivo de esta operación." notesRequired={Boolean(pendingAction && ["information_required", "rejected", "canceled"].includes(pendingAction.status))} busy={Boolean(updatingId)} onConfirm={(notes) => { if (!pendingAction) return; const next = pendingAction; setPendingAction(null); void update(next.order, next.status, notes || (next.status === "paid" ? "Pago confirmado manualmente por el administrador." : undefined)); }} />
   </div>;
@@ -188,16 +211,41 @@ const paidTicketStatuses: readonly OrderStatus[] = ["paid", "ready_to_send", "va
 
 function DeliveryTicketActions({ order }: { order: Order }) {
   const [creating, setCreating] = useState<"image" | "pdf" | null>(null);
+  const [ticketError, setTicketError] = useState<string | null>(null);
   const ready = paidTicketStatuses.includes(order.status);
 
   async function downloadImage() {
     setCreating("image");
+    setTicketError(null);
     try {
       const canvas = await createTicketCanvas(order);
+      const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) => value ? resolve(value) : reject(new Error("No fue posible crear la imagen.")), "image/png"));
+      const filename = `ticket-pedido-${order.id.slice(0, 8).toUpperCase()}.png`;
+      const file = new File([blob], filename, { type: "image/png" });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: `Ticket pedido #${order.id.slice(0, 8).toUpperCase()}` });
+          return;
+        } catch (error) {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          // Some mobile browsers report file sharing support but reject it
+          // after generating the canvas. The link fallback still lets users
+          // download it or open it and save it from the image viewer.
+        }
+      }
+      const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.download = `ticket-pedido-${order.id.slice(0, 8).toUpperCase()}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.download = filename;
+      link.href = objectUrl;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.style.display = "none";
+      document.body.appendChild(link);
       link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) setTicketError("No fue posible compartir o descargar la imagen. Intenta nuevamente.");
     } finally { setCreating(null); }
   }
 
@@ -215,7 +263,8 @@ function DeliveryTicketActions({ order }: { order: Order }) {
 
   return <section className="delivery-ticket-actions">
     <div><p className="eyebrow">TICKET PARA EL CLIENTE</p><h3>Comprobante de compra y entrega</h3><p>Incluye el pedido, total, receptor y todos los objetos que deben entregarse.</p></div>
-    <div className="delivery-ticket-buttons"><button type="button" className="ticket-image" disabled={!ready || creating !== null} onClick={() => void downloadImage()}>{creating === "image" ? "Generando imagen…" : "Descargar imagen"}</button><button type="button" className="ticket-pdf" disabled={!ready || creating !== null} onClick={savePdf}>{creating === "pdf" ? "Abriendo PDF…" : "Guardar como PDF"}</button></div>
+    <div className="delivery-ticket-buttons"><button type="button" className="ticket-image" disabled={!ready || creating !== null} onClick={() => void downloadImage()}>{creating === "image" ? "Generando imagen…" : "Compartir o descargar imagen"}</button><button type="button" className="ticket-pdf" disabled={!ready || creating !== null} onClick={savePdf}>{creating === "pdf" ? "Abriendo PDF…" : "Guardar como PDF"}</button></div>
+    {ticketError && <small className="notice error">{ticketError}</small>}
     {!ready && <small>El ticket queda disponible cuando el pago esté confirmado.</small>}
   </section>;
 }

@@ -17,10 +17,13 @@ async function summary(database: NonNullable<Awaited<ReturnType<typeof authorize
   const [orders, receipts, activeCarts, abandonedCarts, favorites] = await Promise.all([
     database.from("orders").select("id", { count: "exact", head: true }).in("status", ["manual_review", "awaiting_transfer", "receipt_submitted", "transfer_review", "information_required", "paid", "ready_to_send", "validating_delivery", "delivering"]),
     database.from("orders").select("id", { count: "exact", head: true }).in("status", ["receipt_submitted", "transfer_review"]),
-    database.from("shopping_carts").select("id", { count: "exact", head: true }).eq("status", "active").gte("updated_at", abandonedBefore),
-    database.from("shopping_carts").select("id", { count: "exact", head: true }).eq("status", "active").lt("updated_at", abandonedBefore),
-    database.from("customer_favorites").select("id", { count: "exact", head: true })
+    database.from("shopping_carts").select("id,commerce_sessions!inner(merged_into),shopping_cart_items!inner(id)", { count: "exact", head: true }).eq("status", "active").is("commerce_sessions.merged_into", null).gte("updated_at", abandonedBefore),
+    database.from("shopping_carts").select("id,commerce_sessions!inner(merged_into),shopping_cart_items!inner(id)", { count: "exact", head: true }).eq("status", "active").is("commerce_sessions.merged_into", null).lt("updated_at", abandonedBefore),
+    database.from("customer_favorites").select("id,commerce_sessions!inner(merged_into)", { count: "exact", head: true }).is("commerce_sessions.merged_into", null)
   ]);
+  if (orders.error || receipts.error || activeCarts.error || abandonedCarts.error || favorites.error) {
+    return NextResponse.json({ error: "No fue posible calcular el resumen." }, { status: 503 });
+  }
   return NextResponse.json({ metrics: {
     pendingOrders: orders.count ?? 0,
     receiptsToReview: receipts.count ?? 0,
@@ -32,7 +35,9 @@ async function summary(database: NonNullable<Awaited<ReturnType<typeof authorize
 
 async function carts(database: NonNullable<Awaited<ReturnType<typeof authorizeStaff>>>["database"]) {
   const { data, error } = await database.from("shopping_carts")
-    .select("id,status,created_at,updated_at,commerce_session_id,shopping_cart_items(item_main_id,quantity),commerce_sessions(whatsapp,user_id)")
+    .select("id,status,created_at,updated_at,commerce_session_id,shopping_cart_items!inner(item_main_id,quantity),commerce_sessions!inner(whatsapp,user_id,merged_into)")
+    .eq("status", "active")
+    .is("commerce_sessions.merged_into", null)
     .order("updated_at", { ascending: false }).limit(200);
   if (error) return NextResponse.json({ error: "No fue posible consultar carritos." }, { status: 503 });
   let prices = new Map<string, number>();
@@ -52,10 +57,16 @@ async function carts(database: NonNullable<Awaited<ReturnType<typeof authorizeSt
 }
 
 async function favorites(database: NonNullable<Awaited<ReturnType<typeof authorizeStaff>>>["database"]) {
-  const { data, error } = await database.from("customer_favorites").select("item_main_id,commerce_session_id,created_at,commerce_sessions(user_id)").order("created_at", { ascending: false }).limit(1000);
+  const { data, error } = await database.from("customer_favorites").select("item_main_id,commerce_session_id,created_at,commerce_sessions!inner(user_id,merged_into)").is("commerce_sessions.merged_into", null).order("created_at", { ascending: false }).limit(1000);
   if (error) return NextResponse.json({ error: "No fue posible consultar favoritos." }, { status: 503 });
+  let itemNames = new Map<string, string>();
+  try {
+    itemNames = new Map((await (await getCatalogService()).list()).map((item) => [item.mainId, item.name]));
+  } catch (catalogError) {
+    console.error("admin.favorites.catalog.failed", catalogError);
+  }
   const counts = new Map<string, number>();
   for (const favorite of data ?? []) counts.set(favorite.item_main_id, (counts.get(favorite.item_main_id) ?? 0) + 1);
-  const ranking = [...counts].map(([itemMainId, count]) => ({ itemMainId, count })).sort((a, b) => b.count - a.count);
-  return NextResponse.json({ favorites: data ?? [], ranking });
+  const ranking = [...counts].map(([itemMainId, count]) => ({ itemMainId, itemName: itemNames.get(itemMainId) ?? itemMainId, count })).sort((a, b) => b.count - a.count);
+  return NextResponse.json({ favorites: (data ?? []).map((favorite) => ({ ...favorite, itemName: itemNames.get(favorite.item_main_id) ?? favorite.item_main_id })), ranking });
 }

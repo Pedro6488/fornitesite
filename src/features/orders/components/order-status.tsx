@@ -27,7 +27,7 @@ const statusCopy: Record<OrderState, string> = {
   canceled: "Pedido cancelado"
 };
 
-export function OrderStatus({ initialOrder, bank, whatsappNumber, appUrl }: { initialOrder: Order; bank: { name: string; beneficiary: string; clabe: string }; whatsappNumber: string | null; appUrl: string }) {
+export function OrderStatus({ initialOrder, bank, whatsappNumber, appUrl }: { initialOrder: Order; bank: { name: string; beneficiary: string; clabe: string; concept: string; paypal: string }; whatsappNumber: string | null; appUrl: string }) {
   const [order, setOrder] = useState(initialOrder);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -84,7 +84,7 @@ export function OrderStatus({ initialOrder, bank, whatsappNumber, appUrl }: { in
     <div className={`canonical-order-status status-${order.status}`}><span>ESTADO DEL PEDIDO</span><strong>{statusCopy[order.status]}</strong></div>
     {order.status === "canceled" && <div className="order-cancellation-note" role="status"><span>MOTIVO DE LA CANCELACIÓN</span><strong>{order.statusNote || "El administrador canceló el pedido. Contáctanos por WhatsApp si necesitas ayuda."}</strong></div>}
     {canUpload && <>
-      <div className="bank-details"><p><span>Banco</span><strong>{bank.name}</strong></p><p><span>Beneficiario</span><strong>{bank.beneficiary}</strong></p><p><span>CLABE</span><strong>{bank.clabe}</strong></p><p><span>Concepto</span><strong>PEDIDO-{order.id.slice(0, 8).toUpperCase()}</strong></p></div>
+      <div className="bank-details"><p><span>Banco</span><strong>{bank.name}</strong></p><p><span>Beneficiario</span><strong>{bank.beneficiary}</strong></p><p><span>CLABE</span><strong>{bank.clabe}</strong></p><p><span>Concepto</span><strong>{bank.concept}</strong></p><p><span>PayPal</span><strong>{bank.paypal}</strong></p><small>Usa el folio PEDIDO-{order.id.slice(0, 8).toUpperCase()} en la nota o comprobante.</small></div>
       <form id="receipt-upload-form" className="receipt-form" onSubmit={uploadTicket}><label>Comprobante de pago<input name="ticket" type="file" required accept="image/jpeg,image/png,application/pdf" /></label></form>
     </>}
     {(canUpload || whatsappHref || order.status !== "delivered") && <SystemActionBar className="post-sale-actions order-tracking-actions">{canUpload && <button form="receipt-upload-form" className="primary-button" disabled={loading}>{loading ? "Subiendo…" : order.status === "information_required" ? "Enviar nuevo comprobante" : "Subir comprobante"}</button>}{whatsappHref && <a className="whatsapp-button" href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => void trackWhatsapp()}>Continuar por WhatsApp <span>↗</span></a>}{!canUpload && order.status !== "delivered" && <button className="secondary-button" disabled={loading} onClick={() => void refresh(true)}>{loading ? "Actualizando…" : "Actualizar estado"}</button>}</SystemActionBar>}

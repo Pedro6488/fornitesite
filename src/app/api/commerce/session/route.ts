@@ -31,8 +31,15 @@ export async function POST(request: Request) {
 
     await database.rpc("advance_delivery_identity_waits", { p_session_id: session.id });
 
-    const cartId = await ensureActiveCart(database, session.id);
+    const { data: existingCart } = await database
+      .from("shopping_carts")
+      .select("id")
+      .eq("commerce_session_id", session.id)
+      .eq("status", "active")
+      .maybeSingle<{ id: string }>();
+    let cartId = existingCart?.id ?? null;
     if (parsed.data.cartItemIds.length) {
+      cartId ??= await ensureActiveCart(database, session.id);
       const { error } = await database.from("shopping_cart_items").upsert(
         [...new Set(parsed.data.cartItemIds)].map((itemMainId) => ({
           cart_id: cartId,
@@ -77,11 +84,13 @@ export async function POST(request: Request) {
       { data: validations },
       { data: sessionState },
     ] = await Promise.all([
-      database
-        .from("shopping_cart_items")
-        .select("item_main_id")
-        .eq("cart_id", cartId)
-        .order("added_at"),
+      cartId
+        ? database
+          .from("shopping_cart_items")
+          .select("item_main_id")
+          .eq("cart_id", cartId)
+          .order("added_at")
+        : Promise.resolve({ data: [] as { item_main_id: string }[] }),
       database
         .from("customer_favorites")
         .select("item_main_id")

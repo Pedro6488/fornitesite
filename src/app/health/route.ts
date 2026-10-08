@@ -5,7 +5,6 @@ export function GET() {
   const required = [
     "NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
     "COMMERCE_SESSION_SECRET", "WHATSAPP_BUSINESS_NUMBER",
-    "BANK_NAME", "BANK_BENEFICIARY", "BANK_CLABE",
     ...(fulfillmentMode === "fnshop" ? ["FNSHOP_API_KEY"] : [])
   ];
   const missing = required.filter((name) => !process.env[name]?.trim());

@@ -3515,19 +3515,25 @@ select:focus-visible {
   border-color: rgba(255, 101, 119, .34);
 }
 
-.identity-saved-list button.identity-status-manual_review svg { color: #ff8d9a; }
+.identity-saved-list button.identity-status-manual_review svg {
+  color: #ff8d9a;
+}
 
 .identity-saved-list button.identity-status-waiting {
   border-color: rgba(255, 213, 31, .38);
 }
 
-.identity-saved-list button.identity-status-waiting svg { color: var(--accent); }
+.identity-saved-list button.identity-status-waiting svg {
+  color: var(--accent);
+}
 
 .identity-saved-list button.identity-status-ready {
   border-color: rgba(75, 225, 154, .38);
 }
 
-.identity-saved-list button.identity-status-ready svg { color: #9cffcf; }
+.identity-saved-list button.identity-status-ready svg {
+  color: #9cffcf;
+}
 
 .identity-saved-list button span {
   display: grid;
@@ -3662,7 +3668,10 @@ select:focus-visible {
   color: #ff9ba6;
 }
 
-.identity-countdown { color: #fff1a7 !important; font-weight: 800; }
+.identity-countdown {
+  color: #fff1a7 !important;
+  font-weight: 800;
+}
 
 .catalog-card {
   display: flex;
@@ -3871,7 +3880,9 @@ select:focus-visible {
   border-color: rgba(255, 101, 119, .31);
 }
 
-.checkout-gate.review small { color: #ff9ba6; }
+.checkout-gate.review small {
+  color: #ff9ba6;
+}
 
 .checkout-auth-choice {
   align-items: center;
@@ -4052,6 +4063,11 @@ select:focus-visible {
   padding: .6rem .9rem;
 }
 
+/* El footer público no pertenece a la superficie de operación administrativa. */
+body:has(.admin-dashboard) .site-footer {
+  display: none;
+}
+
 .admin-tabs {
   background: rgba(21, 26, 49, .92);
   border: 1px solid rgba(255, 255, 255, .09);
@@ -4180,6 +4196,12 @@ select:focus-visible {
   gap: 1rem;
   grid-template-columns: .8fr 1.2fr;
   padding: 1rem;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-data-card>div {
+  min-width: 0;
 }
 
 .admin-data-card h2 {
@@ -4191,6 +4213,7 @@ select:focus-visible {
   color: var(--muted);
   font-size: .72rem;
   margin: .25rem 0;
+  overflow-wrap: anywhere;
 }
 
 .admin-ranking {
@@ -4987,7 +5010,196 @@ select:focus-visible {
   justify-content: center;
 }
 
+.supervisor-orders .admin-toolbar {
+  grid-template-columns: minmax(15rem, 1fr) minmax(10rem, .4fr) repeat(2, minmax(8rem, .28fr)) auto;
+}
+
+.admin-date-filter {
+  color: var(--muted);
+  display: grid;
+  font-size: .64rem;
+  font-weight: 850;
+  gap: .25rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.admin-date-filter input {
+  background: #0d1227;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: .65rem;
+  color: var(--text);
+  font: inherit;
+  letter-spacing: normal;
+  min-height: 3rem;
+  padding: 0 .65rem;
+  text-transform: none;
+}
+
+.admin-sales-summary {
+  align-items: center;
+  background: linear-gradient(120deg, rgba(255, 213, 31, .1), rgba(85, 217, 255, .06));
+  border: 1px solid rgba(255, 213, 31, .22);
+  border-radius: .9rem;
+  display: flex;
+  justify-content: space-between;
+  margin: .9rem 0;
+  padding: .85rem 1rem;
+}
+
+.admin-sales-summary div {
+  display: grid;
+  gap: .15rem;
+}
+
+.admin-sales-summary small,
+.admin-sales-summary span {
+  color: var(--muted);
+  font-size: .7rem;
+}
+
+.admin-sales-summary small {
+  color: var(--accent);
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.admin-sales-summary strong {
+  color: var(--accent);
+  font-size: 1.45rem;
+}
+
+.admin-sales-summary button {
+  background: transparent;
+  border: 1px solid rgba(85, 217, 255, .4);
+  border-radius: .6rem;
+  color: var(--cyan);
+  cursor: pointer;
+  font-size: .72rem;
+  font-weight: 850;
+  padding: .6rem .8rem;
+}
+
+.admin-favorites-panel {
+  background: var(--panel);
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.admin-favorites-panel>header {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  display: flex;
+  justify-content: space-between;
+  padding: .9rem 1rem;
+}
+
+.admin-favorites-panel h2 {
+  font-size: 1rem;
+  margin: .18rem 0 0;
+}
+
+.admin-favorites-panel>header>span {
+  color: var(--cyan);
+  font-size: .7rem;
+  font-weight: 850;
+}
+
+.favorite-ranking-list article,
+.favorite-detail-list article {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  display: grid;
+  gap: .75rem;
+  min-width: 0;
+  padding: .78rem 1rem;
+}
+
+.favorite-ranking-list article {
+  grid-template-columns: 2rem minmax(0, 1fr) auto;
+}
+
+.favorite-rank {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 850;
+}
+
+.favorite-ranking-list strong,
+.favorite-detail-list strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.favorite-ranking-list article>span:nth-child(2) {
+  display: grid;
+  gap: .16rem;
+  min-width: 0;
+}
+
+.favorite-ranking-list small,
+.favorite-detail-list em {
+  color: var(--muted);
+  font-size: .62rem;
+  font-style: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.favorite-ranking-list b {
+  color: var(--accent);
+  font-size: .9rem;
+}
+
+.favorite-detail-list article {
+  grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+}
+
+.favorite-detail-list article>div {
+  display: grid;
+  gap: .24rem;
+  min-width: 0;
+}
+
+.favorite-detail-list small {
+  color: var(--muted);
+  font-size: .6rem;
+  font-weight: 850;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.favorite-detail-list article>div:last-child strong {
+  color: var(--accent);
+}
+
 @media (max-width: 600px) {
+  .supervisor-orders .admin-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-date-filter input {
+    width: 100%;
+  }
+
+  .admin-sales-summary {
+    align-items: stretch;
+    flex-direction: column;
+    gap: .7rem;
+  }
+
+  .admin-sales-summary button {
+    width: 100%;
+  }
+
+  .favorite-detail-list article {
+    grid-template-columns: 1fr;
+  }
+
   .utility-bar-inner {
     justify-content: center;
     min-height: 2.25rem;
@@ -5782,6 +5994,7 @@ select:focus-visible {
 
   .mobile-header-actions {
     display: flex;
+    gap: .5rem;
   }
 
   .mobile-header-actions .identity-nav-button {
