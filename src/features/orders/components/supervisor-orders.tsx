@@ -70,6 +70,8 @@ const progressSteps = [
   { label: "Entregado", icon: FileCheck2 }
 ] as const;
 
+const paidOrderStatuses: readonly OrderStatus[] = ["paid", "ready_to_send", "validating_delivery", "delivering", "reconciling", "delivered"];
+
 type OrderItem = { item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number };
 type HistoryEvent = { action: string; created_at: string; after_data: { status?: string; notes?: string } | null };
 type Order = {
@@ -94,6 +96,8 @@ export function SupervisorOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">("all");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [message, setMessage] = useState("Cargando pedidos…");
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -108,7 +112,10 @@ export function SupervisorOrders() {
     const session = (await supabase?.auth.getSession())?.data.session;
     if (!session) { setMessage("Inicia sesión con una cuenta administradora."); setLoading(false); return; }
     try {
-      const response = await fetch("/api/admin/orders", { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store" });
+      const parameters = new URLSearchParams();
+      if (fromDate) parameters.set("from", fromDate);
+      if (toDate) parameters.set("to", toDate);
+      const response = await fetch(`/api/admin/orders${parameters.size ? `?${parameters}` : ""}`, { headers: { Authorization: `Bearer ${session.access_token}` }, cache: "no-store" });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error ?? "No fue posible cargar los pedidos.");
       if (requestId !== loadRequest.current) return;
@@ -119,7 +126,7 @@ export function SupervisorOrders() {
     } finally {
       if (requestId === loadRequest.current) setLoading(false);
     }
-  }, [supabase]);
+  }, [fromDate, supabase, toDate]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => void load());
@@ -153,9 +160,25 @@ export function SupervisorOrders() {
     (statusFilter === "all" || order.status === statusFilter)
     && `${order.id} ${order.epic_display_name} ${order.epic_account_id} ${order.contact_whatsapp} ${order.order_items.map((item) => item.item_name).join(" ")}`.toLowerCase().includes(query.toLowerCase())
   );
+  const soldMxnCents = visible.filter((order) => paidOrderStatuses.includes(order.status)).reduce((total, order) => total + order.amount_mxn_cents, 0);
 
   return <div className="supervisor-orders">
-    <div className="admin-toolbar"><label className="admin-search"><Search aria-hidden="true" size={17} /><input type="search" aria-label="Buscar pedidos" placeholder="Buscar por pedido, ID, WhatsApp u objeto" value={query} onChange={(event) => setQuery(event.target.value)} /></label><span className="select-control"><select aria-label="Filtrar por estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as OrderStatus | "all")}><option value="all">Todos los estados</option>{(Object.keys(labels) as OrderStatus[]).map((status) => <option value={status} key={status}>{labels[status]}</option>)}</select><ChevronDown aria-hidden="true" size={17} /></span><button className="secondary-button" disabled={loading || Boolean(updatingId)} onClick={() => void load()}><RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button></div>
+    <div className="admin-toolbar">
+<label className="admin-search">
+<Search aria-hidden="true" size={17} />
+<input type="search" aria-label="Buscar pedidos" placeholder="Buscar por pedido, ID, WhatsApp u objeto" value={query} onChange={(event) => setQuery(event.target.value)} />
+</label>
+<span className="select-control">
+<select aria-label="Filtrar por estado" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as OrderStatus | "all")}>
+<option value="all">Todos los estados</option>{(Object.keys(labels) as OrderStatus[]).map((status) => <option value={status} key={status}>{labels[status]}</option>)}</select>
+<ChevronDown aria-hidden="true" size={17} />
+</span>
+<label className="admin-date-filter">Desde<input type="date" value={fromDate} max={toDate || undefined} onChange={(event) => setFromDate(event.target.value)} /></label>
+<label className="admin-date-filter">Hasta<input type="date" value={toDate} min={fromDate || undefined} onChange={(event) => setToDate(event.target.value)} /></label>
+<button className="secondary-button" disabled={loading || Boolean(updatingId)} onClick={() => void load()}>
+<RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button>
+</div>
+    <section className="admin-sales-summary" aria-label="Resumen de ventas filtrado"><div><small>VENTAS CONFIRMADAS</small><strong>{formatMoney(soldMxnCents)}</strong><span>{visible.filter((order) => paidOrderStatuses.includes(order.status)).length} pedidos pagados{fromDate || toDate ? " en el periodo elegido" : " en total"}</span></div>{(fromDate || toDate) && <button type="button" onClick={() => { setFromDate(""); setToDate(""); }}>Limpiar fechas</button>}</section>
     {message && <p className="notice">{message}</p>}
     {visible.map((order) => {
       const progress = progressByStatus[order.status] ?? -1;
