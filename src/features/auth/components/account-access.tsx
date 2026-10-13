@@ -20,6 +20,8 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactConsent, setContactConsent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [orders, setOrders] = useState<CustomerOrder[] | null>(null);
@@ -56,7 +58,15 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
     else {
       const { error } = await supabase.auth.signInWithPassword({ email: body.login, password });
       if (error) setMessage("La cuenta se creó, pero no pudimos iniciar sesión.");
-      else { window.location.assign(nextPath); return; }
+      else {
+        if (contactEmail) {
+          const token = (await supabase.auth.getSession()).data.session?.access_token;
+          const contactResponse = await fetch("/api/customer-email", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ email: contactEmail, consent: contactConsent }) });
+          const contactBody = await contactResponse.json().catch(() => ({}));
+          if (!contactResponse.ok) { setMessage(contactBody.error ?? "La cuenta se creó, pero no pudimos guardar el correo."); setSubmitting(false); return; }
+        }
+        window.location.assign(nextPath); return;
+      }
     }
     setSubmitting(false);
   }
@@ -74,5 +84,5 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
 
   if (adminAccess) return <form className="account-card register-card" onSubmit={authenticate}><p className="eyebrow">ACCESO RESTRINGIDO</p><h2>Panel de administración</h2><p>Ingresa con el correo y la contraseña de una cuenta autorizada.</p><label>Correo de administrador<input type="email" required value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="tu@correo.com" autoComplete="email" /></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /></label><button className="primary-button" disabled={submitting}>{submitting ? "Entrando…" : "Entrar al panel"}</button>{message && <p className="notice">{message}</p>}<small className="account-note">Solo las cuentas con rol de administrador pueden continuar.</small></form>;
 
-  return <form className="account-card register-card" onSubmit={authenticate}><p className="eyebrow">{authMode === "login" ? "INICIA SESIÓN" : "CREA TU CUENTA"}</p><h2>Tu cuenta SigfriedLootBox</h2><p>Usa un nombre de usuario y contraseña para conservar tu ID validado, favoritos, carrito e historial. No enviamos correos.</p><label>Nombre de usuario<input type="text" required minLength={3} maxLength={authMode === "register" ? 24 : 120} pattern={authMode === "register" ? "[A-Za-z0-9_-]{3,24}" : undefined} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="tu_usuario" autoComplete="username" /></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={authMode === "login" ? "current-password" : "new-password"} /></label><button className="primary-button" disabled={submitting}>{submitting ? "Procesando…" : authMode === "login" ? "Iniciar sesión" : "Crear cuenta"}</button>{message && <p className="notice">{message}</p>}<button className="identity-account-button" type="button" onClick={() => { setAuthMode((current) => current === "login" ? "register" : "login"); setMessage(null); }}>{authMode === "login" ? "Crear una cuenta" : "Ya tengo cuenta"}</button><button className="identity-account-button" type="button" onClick={commerce.openIdentity}>Validar mi ID sin crear cuenta</button><small className="account-note">No necesitas correo. Tu nombre de usuario identifica la cuenta.</small></form>;
+  return <form className="account-card register-card" onSubmit={authenticate}><p className="eyebrow">{authMode === "login" ? "INICIA SESIÓN" : "CREA TU CUENTA"}</p><h2>Tu cuenta SigfriedLootBox</h2><p>Usa un nombre de usuario y contraseña para conservar tu ID validado, favoritos, carrito e historial.</p><label>Nombre de usuario<input type="text" required minLength={3} maxLength={authMode === "register" ? 24 : 120} pattern={authMode === "register" ? "[A-Za-z0-9_-]{3,24}" : undefined} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="tu_usuario" autoComplete="username" /></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={authMode === "login" ? "current-password" : "new-password"} /></label>{authMode === "register" && <><label>Correo electrónico <span>(opcional)</span><input type="email" value={contactEmail} onChange={(event) => setContactEmail(event.target.value)} placeholder="tu@correo.com" autoComplete="email" /></label><label className="account-email-consent"><input type="checkbox" checked={contactConsent} onChange={(event) => setContactConsent(event.target.checked)} />Acepto recibir bienvenida y recordatorios de carrito.</label></>}<button className="primary-button" disabled={submitting}>{submitting ? "Procesando…" : authMode === "login" ? "Iniciar sesión" : "Crear cuenta"}</button>{message && <p className="notice">{message}</p>}<button className="identity-account-button" type="button" onClick={() => { setAuthMode((current) => current === "login" ? "register" : "login"); setMessage(null); }}>{authMode === "login" ? "Crear una cuenta" : "Ya tengo cuenta"}</button><button className="identity-account-button" type="button" onClick={commerce.openIdentity}>Validar mi ID sin crear cuenta</button><small className="account-note">El correo es opcional y se verifica antes de enviar recordatorios.</small></form>;
 }

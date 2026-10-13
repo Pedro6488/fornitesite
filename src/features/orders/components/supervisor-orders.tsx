@@ -91,7 +91,7 @@ type Order = {
 
 const formatMoney = (cents: number) => (cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
 
-export function SupervisorOrders() {
+export function SupervisorOrders({ focusOrderId }: { focusOrderId?: string | null }) {
   const supabase = useMemo(() => getSupabaseBrowser(), []);
   const [orders, setOrders] = useState<Order[]>([]);
   const [query, setQuery] = useState("");
@@ -132,6 +132,12 @@ export function SupervisorOrders() {
     const frame = window.requestAnimationFrame(() => void load());
     return () => window.cancelAnimationFrame(frame);
   }, [load]);
+
+  useEffect(() => {
+    if (!focusOrderId || !orders.length) return;
+    const matching = orders.find((order) => order.id === focusOrderId);
+    if (matching) setSelectedOrder(matching);
+  }, [focusOrderId, orders]);
 
   async function update(order: Order, status: OrderStatus, notes?: string) {
     const session = (await supabase?.auth.getSession())?.data.session;

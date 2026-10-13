@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { SupervisorOrders } from "@/features/orders/components/supervisor-orders";
 import { IdentityReviewQueue } from "@/features/admin/components/identity-review-queue";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
@@ -16,11 +17,19 @@ type CatalogOption = { mainId: string; name: string; type: string; imageUrl?: st
 
 export function CommerceAdminDashboard() {
   const supabase = useMemo(() => getSupabaseBrowser(), []);
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>("summary");
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loadedTab, setLoadedTab] = useState<Tab | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const loadRequest = useRef(0);
+  const requestedTab = searchParams.get("tab");
+  const selectedCartId = searchParams.get("cart");
+  const selectedOrderId = searchParams.get("order");
+
+  useEffect(() => {
+    if (["summary", "orders", "identities", "carts", "favorites", "prices"].includes(requestedTab ?? "")) setTab(requestedTab as Tab);
+  }, [requestedTab]);
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const session = (await supabase?.auth.getSession())?.data.session;
@@ -51,9 +60,9 @@ export function CommerceAdminDashboard() {
     <nav className="admin-tabs" aria-label="Secciones del dashboard">{(["summary", "orders", "identities", "carts", "favorites", "prices"] as Tab[]).map((value) => <button key={value} className={tab === value ? "active" : ""} onClick={() => setTab(value)}>{({ summary: "Resumen", orders: "Pedidos", identities: "Revisión de IDs", carts: "Carritos", favorites: "Favoritos", prices: "Precios" } as const)[value]}</button>)}</nav>
     {message && <p className="notice error">{message}</p>}
     {tab === "summary" && loadedTab === "summary" && data && <Summary metrics={data.metrics as Metrics} />}
-    {tab === "orders" && <SupervisorOrders />}
+    {tab === "orders" && <SupervisorOrders focusOrderId={selectedOrderId} />}
     {tab === "identities" && <IdentityReviewQueue />}
-    {tab === "carts" && loadedTab === "carts" && data && <Carts carts={(data.carts as Cart[] | undefined) ?? []} />}
+    {tab === "carts" && loadedTab === "carts" && data && <Carts carts={(data.carts as Cart[] | undefined) ?? []} focusCartId={selectedCartId} />}
     {tab === "favorites" && loadedTab === "favorites" && data && <Favorites ranking={(data.ranking as { itemMainId: string; itemName: string; count: number }[] | undefined) ?? []} favorites={(data.favorites as FavoriteDetail[] | undefined) ?? []} />}
     {tab === "prices" && loadedTab === "prices" && data && <Prices data={{ rules: (data.rules as PriceRule[] | undefined) ?? [], overrides: (data.overrides as PriceOverride[] | undefined) ?? [] }} request={request} reload={() => load("prices")} />}
   </section>;
@@ -64,8 +73,8 @@ function Summary({ metrics }: { metrics: Metrics }) {
   return <div className="admin-metrics">{cards.map(([label, value]) => <article key={label}><small>{label}</small><strong>{value}</strong></article>)}</div>;
 }
 
-function Carts({ carts }: { carts: Cart[] }) {
-  return <div className="admin-data-list">{carts.length === 0 ? <p className="notice">No hay carritos activos.</p> : carts.map((cart) => <article key={cart.id} className="admin-data-card"><div><span className={`order-status-pill ${cart.abandoned ? "status-expired" : `status-${cart.status}`}`}>{cart.abandoned ? "Abandonado" : "Activo"}</span><h2>{cart.validation?.display_name ?? `Visitante ${cart.id.slice(0, 8)}`}</h2><p>{cart.validation ? `${cart.validation.platform} · ${cart.validation.status}` : "ID todavía no proporcionado"}</p></div><div><strong>{cart.shopping_cart_items.length} objetos · ${(cart.estimatedAmountMxnCents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}</strong><p>{cart.shopping_cart_items.map((item) => item.item_main_id).join(", ") || "Carrito vacío"}</p><small>Actividad: {new Date(cart.updated_at).toLocaleString("es-MX")}</small></div></article>)}</div>;
+function Carts({ carts, focusCartId }: { carts: Cart[]; focusCartId: string | null }) {
+  return <div className="admin-data-list">{carts.length === 0 ? <p className="notice">No hay carritos activos.</p> : carts.map((cart) => <article key={cart.id} className={`admin-data-card ${cart.id === focusCartId ? "admin-data-card-focus" : ""}`}><div><span className={`order-status-pill ${cart.abandoned ? "status-expired" : `status-${cart.status}`}`}>{cart.abandoned ? "Abandonado" : "Activo"}</span><h2>{cart.validation?.display_name ?? `Visitante ${cart.id.slice(0, 8)}`}</h2><p>{cart.validation ? `${cart.validation.platform} · ${cart.validation.status}` : "ID todavía no proporcionado"}</p></div><div><strong>{cart.shopping_cart_items.length} objetos · ${(cart.estimatedAmountMxnCents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}</strong><p>{cart.shopping_cart_items.map((item) => item.item_main_id).join(", ") || "Carrito vacío"}</p><small>Actividad: {new Date(cart.updated_at).toLocaleString("es-MX")}</small></div></article>)}</div>;
 }
 
 function Favorites({ ranking, favorites }: { ranking: { itemMainId: string; itemName: string; count: number }[]; favorites: FavoriteDetail[] }) {

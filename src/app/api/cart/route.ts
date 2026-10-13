@@ -3,6 +3,7 @@ import { z } from "zod";
 import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { attachCommerceCookie, commerceErrorResponse, requireCommerceSession } from "@/shared/server/commerce-session";
+import { recordCartActivity } from "@/features/notifications/server/campaigns";
 
 const schema = z.object({ itemIds: z.array(z.string().min(1).max(180)).max(30) })
   .refine((value) => new Set(value.itemIds).size === value.itemIds.length, "No se permiten artículos duplicados.");
@@ -41,6 +42,12 @@ export async function PUT(request: Request) {
       p_item_ids: parsed.data.itemIds
     });
     if (error) return attachCommerceCookie(NextResponse.json({ error: "No fue posible guardar el carrito." }, { status: 503 }), context.session);
+    const { data: savedCart } = await context.database.from("shopping_carts").select("id,updated_at")
+      .eq("commerce_session_id", context.session.id).eq("status", "active")
+      .maybeSingle<{ id: string; updated_at: string }>();
+    if (savedCart) {
+      await recordCartActivity(context.database, context.session.id, savedCart.id, savedCart.updated_at);
+    }
     return attachCommerceCookie(NextResponse.json({ itemIds: parsed.data.itemIds }), context.session);
   } catch (error) {
     return commerceErrorResponse(error, "cart");

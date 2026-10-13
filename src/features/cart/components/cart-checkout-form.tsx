@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { BadgeCheck, Clock3, ShieldCheck } from "lucide-react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
@@ -43,6 +43,14 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const isReady = commerce.validation?.status === "ready";
   const itemSignature = commerce.cartItemIds.join("|");
   const activeQuote = quote && quote.validationId === commerce.validation?.id && quote.itemSignature === itemSignature ? quote : null;
+
+  useEffect(() => {
+    let canceled = false;
+    void fetch("/api/customer-email").then((response) => response.ok ? response.json() : null).then((body) => {
+      if (!canceled && body?.contact?.verified_at) setEmail(body.contact.email ?? "");
+    }).catch(() => undefined);
+    return () => { canceled = true; };
+  }, []);
 
   const createQuote = useCallback(async () => {
     if (!commerce.validation || !lines.length) return;
