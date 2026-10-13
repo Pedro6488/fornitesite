@@ -66,10 +66,10 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CatalogCategory>("Todos");
-  const [mode, setMode] = useState<CatalogDiscoveryMode>("new");
+  const [mode, setMode] = useState<CatalogDiscoveryMode>("all");
   const [sort, setSort] = useState<CatalogSort>("newest");
   const [collaboration, setCollaboration] = useState<string | null>(null);
-  const [availability, setAvailability] = useState<CatalogAvailability>("available");
+  const [availability, setAvailability] = useState<CatalogAvailability>("all");
   const [priceRange, setPriceRange] = useState<CatalogPriceRange>("all");
   const [rarity, setRarity] = useState<string | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);

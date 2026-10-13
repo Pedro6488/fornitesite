@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { SupabaseOrderRepository } from "@/features/orders/infrastructure/supabase-order-repository";
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
+import { queueOutboxJob } from "@/features/notifications/server/outbox";
+import { deliverOutboxJob } from "@/features/notifications/server/providers";
 
 const extensions = new Map([["image/jpeg", "jpg"], ["image/png", "png"], ["application/pdf", "pdf"]]);
 
@@ -40,6 +42,14 @@ export async function POST(request: Request, { params }: { params: Promise<{ ord
   }
   const changed = await orders.transition(order.id, order.status, "receipt_submitted", { receipt_checksum: checksum });
   if (!changed) return NextResponse.json({ error: "El estado del pedido cambió mientras subías el comprobante." }, { status: 409 });
+  const job = await queueOutboxJob(database, {
+    jobType: "telegram.order.receipt_submitted",
+    aggregateId: order.id,
+    payload: { orderId: order.id },
+    dedupeKey: `telegram:receipt:${order.id}:${checksum}`,
+  });
+  try { await deliverOutboxJob(database, job); }
+  catch (deliveryError) { console.error("telegram.receipt.immediate.failed", deliveryError); }
   return NextResponse.json({ ok: true });
 }
 

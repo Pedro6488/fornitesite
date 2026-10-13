@@ -30,10 +30,10 @@ export async function POST(request: Request) {
     // revisión humana. No fingimos una validación automática ni bloqueamos al cliente.
     if (process.env.FULFILLMENT_MODE !== "fnshop") {
       const epicAccountId = manualRecipientId(parsed.data.platform, parsed.data.displayName);
-      const { data: priorRequest } = await context.database.from("friend_request_records")
-        .select("requested_at").eq("epic_account_id", epicAccountId).maybeSingle();
-      const requestedAt = priorRequest?.requested_at ?? new Date().toISOString();
-      const giftableAt = new Date(new Date(requestedAt).getTime() + 48 * 60 * 60_000).toISOString();
+      const { data: existing } = await context.database.from("game_id_validations")
+        .select("id,status,giftable_at").eq("commerce_session_id", context.session.id).eq("epic_account_id", epicAccountId).maybeSingle();
+      const keepsApproval = existing?.status === "ready";
+      const keepsWait = existing?.status === "waiting";
       const payload = {
         commerce_session_id: context.session.id,
         user_id: context.session.user?.id ?? null,
@@ -41,28 +41,17 @@ export async function POST(request: Request) {
         submitted_id: parsed.data.displayName,
         epic_account_id: epicAccountId,
         display_name: parsed.data.displayName,
-        status: "manual_review",
-        giftable_at: giftableAt,
+        status: keepsApproval ? "ready" : keepsWait ? "waiting" : "manual_review",
+        giftable_at: keepsWait ? existing?.giftable_at ?? null : null,
         provider: "manual",
         agents_snapshot: [],
         last_checked_at: new Date().toISOString()
       };
-      const { data: existing } = await context.database.from("game_id_validations")
-        .select("id").eq("commerce_session_id", context.session.id).eq("epic_account_id", epicAccountId).maybeSingle();
       const operation = existing
         ? context.database.from("game_id_validations").update(payload).eq("id", existing.id)
         : context.database.from("game_id_validations").insert(payload);
       const { data, error } = await operation.select("id,platform,submitted_id,epic_account_id,display_name,status,giftable_at,last_checked_at").single();
       if (error || !data) throw error ?? new Error("No se guardó el ID para revisión.");
-      if (!priorRequest) {
-        const { error: requestError } = await context.database.from("friend_request_records").insert({
-          epic_account_id: epicAccountId,
-          validation_id: data.id,
-          requested_at: requestedAt,
-          provider_response: { mode: "manual", status: "queued" }
-        });
-        if (requestError && requestError.code !== "23505") throw requestError;
-      }
       const { error: activeError } = await context.database.from("commerce_sessions")
         .update({ active_game_id_validation_id: data.id, last_seen_at: new Date().toISOString() }).eq("id", context.session.id);
       if (activeError) throw activeError;

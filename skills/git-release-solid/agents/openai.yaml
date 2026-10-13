@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Release SOLID"
+  short_description: "Ramas, commits y releases seguros"
+  default_prompt: "Use $git-release-solid para preparar una rama, commits, revisión y release seguro."

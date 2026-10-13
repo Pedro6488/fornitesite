@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
 const LEGACY_CART_KEY = "sigfriedlootbox:cart";
@@ -26,6 +26,7 @@ type CommerceState = Readonly<{
   validations: readonly IdentityValidation[];
   validation: IdentityValidation | null;
   identityOpen: boolean;
+  refresh: (options?: { advanceIdentity?: boolean }) => Promise<void>;
   openIdentity: () => void;
   closeIdentity: () => void;
   validateIdentity: (displayName: string, platform: IdentityPlatform) => Promise<string | null>;
@@ -60,6 +61,13 @@ async function authHeaders(): Promise<HeadersInit> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function responseBody(response: Response): Promise<Record<string, any>> {
+  const body = await response.json().catch(() => null);
+  return body && typeof body === "object"
+    ? body as Record<string, any>
+    : { error: "El servicio respondió sin detalles. Intenta de nuevo." };
+}
+
 export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -69,40 +77,71 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [activeValidationId, setActiveValidationId] = useState<string | null>(null);
   const validation = useMemo(() => validations.find((entry) => entry.id === activeValidationId) ?? null, [activeValidationId, validations]);
   const [identityOpen, setIdentityOpen] = useState(false);
+  const lastRefreshAt = useRef(0);
+  const refreshing = useRef(false);
   const openIdentity = useCallback(() => setIdentityOpen(true), []);
   const closeIdentity = useCallback(() => setIdentityOpen(false), []);
   const clearCart = useCallback(() => setCartItemIds([]), []);
 
-  useEffect(() => {
-    let active = true;
-    void (async () => {
-      const cart = legacyCartIds();
-      const favorites = legacyFavoriteIds();
-      try {
-        const response = await fetch("/api/commerce/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          body: JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites })
-        });
-        const body = await response.json();
-        if (!active) return;
-        if (!response.ok) throw new Error(body.error);
-        setCartItemIds(body.cartItemIds ?? []);
-        setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
-        setValidations(body.validations ?? (body.validation ? [body.validation] : []));
-        setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
-        window.localStorage.removeItem(LEGACY_CART_KEY);
-        window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
-      } catch {
-        if (!active) return;
-        setCartItemIds(cart);
-        setFavoriteItemIds(new Set(favorites));
-      } finally {
-        if (active) setReady(true);
-      }
-    })();
-    return () => { active = false; };
+  const refresh = useCallback(async (options?: { advanceIdentity?: boolean }) => {
+    if (refreshing.current) return;
+    refreshing.current = true;
+    const cart = legacyCartIds();
+    const favorites = legacyFavoriteIds();
+    const migratingLegacyState = cart.length > 0 || favorites.length > 0;
+    let completed = false;
+    try {
+      const query = options?.advanceIdentity ? "?advanceIdentity=1" : "";
+      const response = await fetch(`/api/commerce/session${query}`, {
+        method: migratingLegacyState ? "POST" : "GET",
+        headers: { ...(migratingLegacyState ? { "Content-Type": "application/json" } : {}), ...(await authHeaders()) },
+        body: migratingLegacyState ? JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites }) : undefined,
+        cache: "no-store"
+      });
+      const body = await responseBody(response);
+      if (!response.ok) throw new Error(body.error);
+      setCartItemIds(body.cartItemIds ?? []);
+      setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
+      setValidations(body.validations ?? (body.validation ? [body.validation] : []));
+      setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
+      window.localStorage.removeItem(LEGACY_CART_KEY);
+      window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
+      completed = true;
+    } catch {
+      setCartItemIds(cart);
+      setFavoriteItemIds(new Set(favorites));
+    } finally {
+      if (completed) lastRefreshAt.current = Date.now();
+      refreshing.current = false;
+      setReady(true);
+    }
   }, []);
+
+  useEffect(() => {
+    void refresh();
+    const refreshIfStale = () => {
+      if (document.visibilityState !== "visible") return;
+      if (Date.now() - lastRefreshAt.current < 5 * 60_000) return;
+      void refresh();
+    };
+    const onFocus = () => refreshIfStale();
+    const onVisibilityChange = () => refreshIfStale();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    const supabase = getSupabaseBrowser();
+    const { data: authListener } = supabase?.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      lastRefreshAt.current = 0;
+      window.setTimeout(() => void refresh(), 0);
+    }) ?? { data: { subscription: null } };
+
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      authListener.subscription?.unsubscribe();
+    };
+  }, [refresh]);
 
   const persistCart = useCallback(async (next: string[]) => {
     const previous = cartItemIds;
@@ -114,7 +153,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ itemIds: next })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error ?? "No fue posible guardar el carrito.");
       setCartItemIds(body.itemIds);
       return null;
@@ -142,7 +181,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ itemMainId: itemId })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       return null;
     } catch (error) {
@@ -159,7 +198,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ displayName, platform })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       setValidations((current) => [body.validation, ...current.filter((entry) => entry.id !== body.validation.id)]);
       setActiveValidationId(body.validation.id);
@@ -177,7 +216,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ validationId })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       setActiveValidationId(body.activeValidationId);
       return null;
@@ -194,7 +233,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ validationId: validation.id })
       });
-      const body = await response.json();
+      const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
       setValidations((current) => current.map((entry) => entry.id === validation.id ? { ...entry, status: "pending_friendship" } : entry));
       return null;
@@ -203,12 +242,12 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   }, [validation]);
 
   const value = useMemo<CommerceState>(() => ({
-    ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen,
+    ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
     openIdentity,
     closeIdentity,
     validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite,
     clearCart
-  }), [ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
+  }), [ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }

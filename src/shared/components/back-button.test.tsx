@@ -36,4 +36,14 @@ describe("BackButton", () => {
     expect(router.push).toHaveBeenCalledWith("/#catalogo");
     expect(router.back).not.toHaveBeenCalled();
   });
+
+  it("respeta la ruta explícita del panel aunque exista historial interno", () => {
+    vi.spyOn(document, "referrer", "get").mockReturnValue(`${window.location.origin}/cuenta`);
+
+    render(<BackButton fallbackHref="/admin" label="Volver al panel" preferFallback />);
+    fireEvent.click(screen.getByRole("button", { name: "Volver al panel" }));
+
+    expect(router.push).toHaveBeenCalledWith("/admin");
+    expect(router.back).not.toHaveBeenCalled();
+  });
 });

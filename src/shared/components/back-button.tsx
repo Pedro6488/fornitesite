@@ -6,15 +6,21 @@ import { ArrowLeft } from "lucide-react";
 type BackButtonProps = Readonly<{
   fallbackHref?: string;
   label?: string;
+  preferFallback?: boolean;
 }>;
 
 export function BackButton({
   fallbackHref = "/#catalogo",
-  label = "Volver al catálogo"
+  label = "Volver al catálogo",
+  preferFallback = false
 }: BackButtonProps) {
   const router = useRouter();
 
   function navigateBack() {
+    if (preferFallback) {
+      router.push(fallbackHref);
+      return;
+    }
     try {
       const referrer = document.referrer ? new URL(document.referrer) : null;
       if (referrer?.origin === window.location.origin) {

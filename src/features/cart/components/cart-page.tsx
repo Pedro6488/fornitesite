@@ -2,21 +2,59 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Check, ShieldCheck, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
 
 export function CartPage({ items }: { items: readonly CatalogItem[] }) {
+  const router = useRouter();
   const commerce = useCommerceState();
   const [message, setMessage] = useState<string | null>(null);
+  const [openingCheckout, setOpeningCheckout] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailConsent, setEmailConsent] = useState(false);
+  const [emailMessage, setEmailMessage] = useState<string | null>(null);
+  const [savingEmail, setSavingEmail] = useState(false);
   const lines = useMemo(() => commerce.cartItemIds.flatMap((id) => { const item = items.find((candidate) => candidate.mainId === id); return item ? [{ item }] : []; }), [commerce.cartItemIds, items]);
   const total = lines.reduce((sum, line) => sum + (line.item.priceMxn ?? 0), 0);
   const canContinue = lines.length > 0 && lines.every(({ item }) => item.priceMxn !== null && item.offerId && item.giftable);
   const idSubmitted = commerce.validation?.status === "manual_review" || commerce.validation?.status === "ready";
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const emailStatus = params.get("email");
+    const restoreStatus = params.get("restore");
+    if (emailStatus === "verified") setEmailMessage("Correo confirmado. Revisa tu bandeja de entrada para tu bienvenida.");
+    if (emailStatus === "unsubscribed") setEmailMessage("Ya no recibirás recordatorios de carrito.");
+    if (emailStatus === "expired") setEmailMessage("El enlace de correo venció. Guarda tu correo de nuevo para recibir otro.");
+    if (restoreStatus === "ok") setMessage("Tu carrito fue restaurado.");
+    if (restoreStatus === "unavailable") setMessage("Los objetos de ese carrito ya no están disponibles.");
+  }, []);
   async function remove(itemId: string) { setMessage(await commerce.removeCartItem(itemId)); }
+  async function continueToCheckout() {
+    if (!canContinue || openingCheckout) return;
+    setOpeningCheckout(true);
+    if (email && emailConsent && !await saveEmail()) {
+      setOpeningCheckout(false);
+      return;
+    }
+    router.push("/checkout");
+  }
+  async function saveEmail() {
+    if (!email || !emailConsent || savingEmail) return true;
+    setSavingEmail(true); setEmailMessage(null);
+    try {
+      const response = await fetch("/api/customer-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, consent: emailConsent }) });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error ?? "No fue posible guardar el correo.");
+      setEmailMessage(body.message ?? "Correo guardado.");
+      return true;
+    } catch (error) { setEmailMessage(error instanceof Error ? error.message : "No fue posible guardar el correo."); return false; }
+    finally { setSavingEmail(false); }
+  }
 
   return <section className="cart-page">
     <header className="cart-heading"><div><p className="eyebrow">TU CARRITO</p><h1>Tu selección</h1><p>{lines.length === 1 ? "1 objeto listo para continuar." : `${lines.length} objetos listos para continuar.`}</p></div><span><ShieldCheck aria-hidden="true" size={18} />Compra protegida y precio confirmado antes de pagar</span></header>
@@ -37,11 +75,17 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
         <div className="cart-summary-row"><span>Objetos</span><strong>{lines.length}</strong></div>
         <div className="cart-summary-total"><span>Total estimado</span><strong>{formatMxn(total)} <small>MXN</small></strong></div>
         <p className="cart-summary-note"><ShieldCheck aria-hidden="true" size={17} />{commerce.validation?.status === "manual_review" ? "Tu ID ya fue enviado. La espera de 48 horas se registra una sola vez." : idSubmitted ? "Tu ID está listo; confirmaremos el precio antes de crear la orden." : "En el siguiente paso agregarás tu ID y confirmaremos el precio."}</p>
-        {canContinue ? <Link className="primary-button" href="/checkout">Continuar compra <ArrowRight aria-hidden="true" size={17} /></Link> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
+        <section className="cart-email-capture" aria-label="Guardar correo para el carrito">
+          <strong>Guarda tu carrito</strong><p>Recibe un recordatorio si no terminas tu compra.</p>
+          <label>Correo electrónico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" /></label>
+          <label className="cart-email-consent"><input type="checkbox" checked={emailConsent} onChange={(event) => setEmailConsent(event.target.checked)} />Acepto recibir bienvenida y recordatorios de este carrito.</label>
+          {emailMessage && <small className="notice">{emailMessage}</small>}
+        </section>
+        {canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
         <div className="cart-next-steps" aria-label="Siguientes pasos"><span><b><Check aria-hidden="true" size={12} /></b>Carrito</span><span className={idSubmitted ? "complete" : ""}><b>{idSubmitted ? <Check aria-hidden="true" size={12} /> : "2"}</b>{idSubmitted ? "ID enviado" : "Agregar ID"}</span><span><b>3</b>Contacto y orden</span></div>
         <Link className="cart-secondary" href="/#catalogo">Seguir comprando</Link>
       </aside>
-      <SystemActionBar className="mobile-cart-checkout"><span><small>Total del carrito</small><strong>{formatMxn(total)}</strong></span>{canContinue ? <Link href="/checkout">Continuar compra <ArrowRight aria-hidden="true" size={16} /></Link> : <button disabled>No disponible</button>}</SystemActionBar>
+      <SystemActionBar className="mobile-cart-checkout" primaryFull><span><small>Resumen de compra</small><strong>{formatMxn(total)}</strong><em>{lines.length} {lines.length === 1 ? "objeto" : "objetos"} · precio se confirma antes de ordenar</em></span>{canContinue ? <button type="button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button disabled>No disponible</button>}</SystemActionBar>
     </div>}
   </section>;
 }
