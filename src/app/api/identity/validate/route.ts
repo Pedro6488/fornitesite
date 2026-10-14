@@ -5,6 +5,7 @@ import { validationStatus } from "@/features/eligibility/application/validation-
 import { getAgentProvider } from "@/features/eligibility/server/get-agent-provider";
 import { attachCommerceCookie, requireCommerceSession } from "@/shared/server/commerce-session";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
+import { nextManualValidationStatus, type IdentityValidationStatus } from "@/features/commerce/application/identity-review-state";
 
 const schema = z.object({
   displayName: z.string().trim().min(3).max(32),
@@ -32,8 +33,7 @@ export async function POST(request: Request) {
       const epicAccountId = manualRecipientId(parsed.data.platform, parsed.data.displayName);
       const { data: existing } = await context.database.from("game_id_validations")
         .select("id,status,giftable_at").eq("commerce_session_id", context.session.id).eq("epic_account_id", epicAccountId).maybeSingle();
-      const keepsApproval = existing?.status === "ready";
-      const keepsWait = existing?.status === "waiting";
+      const status = nextManualValidationStatus(existing?.status as IdentityValidationStatus | undefined);
       const payload = {
         commerce_session_id: context.session.id,
         user_id: context.session.user?.id ?? null,
@@ -41,8 +41,8 @@ export async function POST(request: Request) {
         submitted_id: parsed.data.displayName,
         epic_account_id: epicAccountId,
         display_name: parsed.data.displayName,
-        status: keepsApproval ? "ready" : keepsWait ? "waiting" : "manual_review",
-        giftable_at: keepsWait ? existing?.giftable_at ?? null : null,
+        status,
+        giftable_at: status === "waiting" ? existing?.giftable_at ?? null : null,
         provider: "manual",
         agents_snapshot: [],
         last_checked_at: new Date().toISOString()
