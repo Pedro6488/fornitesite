@@ -18,6 +18,12 @@ function optionalInteger(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : null;
 }
 
+function jamTrackDescription(track: UnknownRecord): string {
+  const artist = text(track.artist);
+  const album = text(track.album);
+  return [artist, album].filter(Boolean).join(" · ");
+}
+
 export class FortniteApiCatalogProvider implements CatalogProvider {
   constructor(private readonly baseUrl: string) {}
 
@@ -31,7 +37,9 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
     return entries.flatMap((rawEntry, index): CatalogItem[] => {
       const entry = record(rawEntry);
       const brItems = Array.isArray(entry.brItems) ? entry.brItems : [];
+      const tracks = Array.isArray(entry.tracks) ? entry.tracks : [];
       const first = record(brItems[0]);
+      const track = record(tracks[0]);
       const bundle = record(entry.bundle);
       const layout = record(entry.layout);
       const displayAsset = record(entry.newDisplayAsset);
@@ -43,24 +51,28 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
       const bundleName = text(bundle.name);
       const bundleImage = text(bundle.image);
       const isBundle = Boolean(bundleName || bundleImage);
+      const isIndividualJamTrack = !isBundle && tracks.length === 1;
       const renderImages = Array.isArray(displayAsset.renderImages) ? displayAsset.renderImages : [];
       const renderImage = record(renderImages[0]);
+      const renderImageUrl = text(renderImage.image);
       const cosmoFileName = text(renderImage.fileName);
       const cosmoId = /^cosmo__(.+)\.png$/i.exec(cosmoFileName)?.[1] ?? null;
       // Fortnite-API no siempre entrega bundle.id. Usar el primer brItem en ese
       // caso hace que el lote colisione con la oferta individual y se descarte.
       const mainId = isBundle
         ? text(bundle.id, offerId || `bundle-offer-${index}`)
-        : text(first.id, offerId || `offer-${index}`);
+        : isIndividualJamTrack
+          ? text(track.id, offerId || `track-offer-${index}`)
+          : text(first.id, offerId || `offer-${index}`);
       if (!mainId || !finalPrice) return [];
 
       return [{
         mainId,
         offerId: offerId || null,
-        name: bundleName || text(first.name, "Objeto sin nombre"),
-        description: text(bundle.info, text(first.description)),
-        imageUrl: bundleImage || text(images.featured, text(images.icon)) || null,
-        type: isBundle ? "Lote" : text(type.displayValue, "Objeto"),
+        name: bundleName || (isIndividualJamTrack ? text(track.title, "Objeto sin nombre") : text(first.name, "Objeto sin nombre")),
+        description: text(bundle.info, isIndividualJamTrack ? jamTrackDescription(track) : text(first.description)),
+        imageUrl: bundleImage || (isIndividualJamTrack ? text(track.albumArt) : text(images.featured, text(images.icon))) || renderImageUrl || null,
+        type: isBundle ? "Lote" : isIndividualJamTrack ? "Pista de Jam" : text(type.displayValue, "Objeto"),
         rarity: text(rarity.displayValue, "Común"),
         regularPriceVbucks: integer(entry.regularPrice) || finalPrice,
         finalPriceVbucks: finalPrice,
