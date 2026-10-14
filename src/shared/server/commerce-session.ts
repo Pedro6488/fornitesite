@@ -26,6 +26,12 @@ export type CommerceSession = Readonly<{
   user: User | null;
 }>;
 
+export function chooseCanonicalCommerceSessionId(sessionIds: readonly string[]): string {
+  const canonical = [...new Set(sessionIds)].sort((left, right) => left.localeCompare(right))[0];
+  if (!canonical) throw new Error("No existe una sesión comercial para fusionar.");
+  return canonical;
+}
+
 function cookieValue(request: Request): string | null {
   const cookie = request.headers.get("cookie") ?? "";
   for (const part of cookie.split(";")) {
@@ -97,28 +103,29 @@ export async function requireCommerceSession(request: Request): Promise<{
     }
   }
 
-  if (user && shouldMergeUser) await mergeUserCommerce(database, id, user.id);
+  if (user) id = await mergeUserCommerce(database, id, user.id);
   return { database, session: { id, token, isNew: token !== existingToken, user } };
 }
 
-async function mergeUserCommerce(database: SupabaseClient, currentSessionId: string, userId: string) {
+async function mergeUserCommerce(database: SupabaseClient, currentSessionId: string, userId: string): Promise<string> {
   const { data: sessions } = await database
     .from("commerce_sessions")
     .select("id")
     .eq("user_id", userId)
     .neq("id", currentSessionId)
     .is("merged_into", null);
-  const sourceIds = (sessions ?? []).map((session) => session.id as string);
+  const canonicalSessionId = chooseCanonicalCommerceSessionId([currentSessionId, ...(sessions ?? []).map((session) => session.id as string)]);
+  const sourceIds = [...new Set([currentSessionId, ...(sessions ?? []).map((session) => session.id as string)])].filter((sessionId) => sessionId !== canonicalSessionId);
   if (!sourceIds.length) {
-    await database.from("orders").update({ user_id: userId }).eq("commerce_session_id", currentSessionId).is("user_id", null);
-    await database.from("game_id_validations").update({ user_id: userId }).eq("commerce_session_id", currentSessionId).is("user_id", null);
-    return;
+    await database.from("orders").update({ user_id: userId }).eq("commerce_session_id", canonicalSessionId).is("user_id", null);
+    await database.from("game_id_validations").update({ user_id: userId }).eq("commerce_session_id", canonicalSessionId).is("user_id", null);
+    return canonicalSessionId;
   }
 
   const { data: sourceFavorites } = await database.from("customer_favorites").select("item_main_id").in("commerce_session_id", sourceIds);
   if (sourceFavorites?.length) {
     const { error } = await database.from("customer_favorites").upsert(
-      sourceFavorites.map((favorite) => ({ commerce_session_id: currentSessionId, item_main_id: favorite.item_main_id })),
+      sourceFavorites.map((favorite) => ({ commerce_session_id: canonicalSessionId, item_main_id: favorite.item_main_id })),
       { onConflict: "commerce_session_id,item_main_id", ignoreDuplicates: true }
     );
     if (error) throw error;
@@ -130,7 +137,7 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
   if (sourceCartIds.length) {
     const { data: sourceItems } = await database.from("shopping_cart_items").select("item_main_id").in("cart_id", sourceCartIds);
     if (sourceItems?.length) {
-      const currentCartId = await ensureActiveCart(database, currentSessionId);
+      const currentCartId = await ensureActiveCart(database, canonicalSessionId);
       const { error } = await database.from("shopping_cart_items").upsert(
         sourceItems.map((item) => ({ cart_id: currentCartId, item_main_id: item.item_main_id, quantity: 1 })),
         { onConflict: "cart_id,item_main_id", ignoreDuplicates: true }
@@ -142,19 +149,19 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
     }
   }
 
-  await database.from("orders").update({ user_id: userId }).in("commerce_session_id", [currentSessionId, ...sourceIds]).is("user_id", null);
+  await database.from("orders").update({ user_id: userId }).in("commerce_session_id", [canonicalSessionId, ...sourceIds]).is("user_id", null);
   type ValidationMergeRow = { id: string; commerce_session_id: string; epic_account_id: string; platform: string; submitted_id: string; display_name: string; status: string; giftable_at: string | null; provider: string; agents_snapshot: unknown; reviewed_at: string | null; review_note: string | null; last_checked_at: string };
   const { data: validationRows } = await database.from("game_id_validations")
     .select("id,commerce_session_id,epic_account_id,platform,submitted_id,display_name,status,giftable_at,provider,agents_snapshot,reviewed_at,review_note,last_checked_at")
-    .in("commerce_session_id", [currentSessionId, ...sourceIds]) as { data: ValidationMergeRow[] | null };
+    .in("commerce_session_id", [canonicalSessionId, ...sourceIds]) as { data: ValidationMergeRow[] | null };
   const rank: Record<string, number> = { pending_friendship: 1, manual_review: 2, waiting: 3, ready: 4, blocked: 5 };
   const targets = new Map<string, ValidationMergeRow>();
-  for (const validation of validationRows?.filter((entry) => entry.commerce_session_id === currentSessionId) ?? []) targets.set(validation.epic_account_id, validation);
+  for (const validation of validationRows?.filter((entry) => entry.commerce_session_id === canonicalSessionId) ?? []) targets.set(validation.epic_account_id, validation);
   for (const source of validationRows?.filter((entry) => sourceIds.includes(entry.commerce_session_id)) ?? []) {
     const target = targets.get(source.epic_account_id);
     if (!target) {
       const { data: copied, error } = await database.from("game_id_validations").insert({
-        commerce_session_id: currentSessionId,
+        commerce_session_id: canonicalSessionId,
         user_id: userId,
         platform: source.platform,
         submitted_id: source.submitted_id,
@@ -178,14 +185,15 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
       target.status = source.status; target.giftable_at = source.giftable_at; target.last_checked_at = source.last_checked_at;
     }
   }
-  await database.from("game_id_validations").update({ user_id: userId }).eq("commerce_session_id", currentSessionId).is("user_id", null);
+  await database.from("game_id_validations").update({ user_id: userId }).eq("commerce_session_id", canonicalSessionId).is("user_id", null);
   const { data: activeValidation } = await database.from("game_id_validations")
-    .select("id").eq("commerce_session_id", currentSessionId)
+    .select("id").eq("commerce_session_id", canonicalSessionId)
     .order("last_checked_at", { ascending: false }).limit(1).maybeSingle<{ id: string }>();
   if (activeValidation) {
-    await database.from("commerce_sessions").update({ active_game_id_validation_id: activeValidation.id }).eq("id", currentSessionId);
+    await database.from("commerce_sessions").update({ active_game_id_validation_id: activeValidation.id }).eq("id", canonicalSessionId);
   }
-  await database.from("commerce_sessions").update({ merged_into: currentSessionId }).in("id", sourceIds);
+  await database.from("commerce_sessions").update({ merged_into: canonicalSessionId }).in("id", sourceIds).is("merged_into", null);
+  return canonicalSessionId;
 }
 
 export async function ensureActiveCart(database: SupabaseClient, sessionId: string): Promise<string> {
