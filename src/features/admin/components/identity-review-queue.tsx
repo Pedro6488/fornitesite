@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BadgeCheck, CircleAlert, Clock3, RefreshCw, ScanLine } from "lucide-react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import { AdminActionModal } from "@/shared/components/admin-action-modal";
+import { isIdentityReviewPending } from "@/features/commerce/application/identity-review-state";
 
 type IdentityReview = {
   id: string; platform: string; submitted_id: string; epic_account_id: string; display_name: string;
@@ -57,13 +58,15 @@ export function IdentityReviewQueue() {
     finally { setUpdating(null); }
   }
 
-  const pending = validations.filter((entry) => entry.status !== "ready");
+  const pending = validations.filter((entry) => isIdentityReviewPending(entry.status));
   const ready = validations.filter((entry) => entry.status === "ready");
+  const blocked = validations.filter((entry) => entry.status === "blocked");
   return <section className="identity-review-queue">
     <header className="identity-review-heading"><div><p className="eyebrow">IDENTIDADES DE ENTREGA</p><h2>Revisión de IDs</h2><p>Aprueba IDs con 48 horas cumplidas o que ya recibieron una entrega.</p></div><button type="button" className="identity-review-refresh" disabled={loading || Boolean(updating)} onClick={() => void load()}><RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button></header>
     {message && <p className="notice">{message}</p>}
     {pending.length > 0 && <div className="identity-review-grid">{pending.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={updating === entry.id} onReview={(validation, status) => setPendingReview({ validation, status })} />)}</div>}
     {ready.length > 0 && <section className="identity-approved-list"><p className="eyebrow">YA VALIDADOS</p><div>{ready.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={false} onReview={(validation, status) => setPendingReview({ validation, status })} />)}</div></section>}
+    {blocked.length > 0 && <section className="identity-approved-list"><p className="eyebrow">BLOQUEADOS</p><div>{blocked.map((entry) => <IdentityReviewCard key={entry.id} validation={entry} updating={false} onReview={(validation, status) => setPendingReview({ validation, status })} />)}</div></section>}
     <AdminActionModal open={Boolean(pendingReview)} onClose={() => setPendingReview(null)} title={pendingReview?.status === "waiting" ? "Enviar solicitud de amistad" : pendingReview?.status === "ready" ? "Marcar ID como listo" : "Bloquear ID de entrega"} description={pendingReview?.status === "waiting" ? `Confirmas que enviaste la solicitud a ${pendingReview.validation.display_name}. Las 48 horas iniciarán ahora.` : pendingReview?.status === "ready" ? `${pendingReview.validation.display_name} quedará listo para recibir futuras entregas.` : pendingReview ? `Este ID no podrá utilizarse para entregas: ${pendingReview.validation.display_name}.` : ""} confirmLabel={pendingReview?.status === "waiting" ? "Enviar solicitud" : pendingReview?.status === "ready" ? "Marcar como listo" : "Bloquear ID"} tone={pendingReview?.status === "blocked" ? "danger" : "primary"} notesLabel={pendingReview?.status === "blocked" ? "Motivo del bloqueo" : "Nota interna (opcional)"} notesPlaceholder={pendingReview?.status === "blocked" ? "Explica por qué este ID no puede utilizarse." : "Agrega una nota para el equipo si es necesaria."} notesRequired={pendingReview?.status === "blocked"} busy={Boolean(updating)} onConfirm={(notes) => { if (!pendingReview) return; const next = pendingReview; setPendingReview(null); void review(next.validation, next.status, notes); }} />
   </section>;
 }
@@ -75,7 +78,7 @@ function IdentityReviewCard({ validation, updating, onReview }: { validation: Id
     <header><span className="identity-review-icon"><ReadyIcon aria-hidden="true" size={18} /></span><div><span className="order-status-pill">{statusText[validation.status]}</span><h3>{validation.display_name}</h3><p>{validation.platform} · {validation.submitted_id}</p></div></header>
     <dl><div><dt>ID de entrega</dt><dd>{validation.epic_account_id}</dd></div><div><dt>Solicitado</dt><dd>{new Date(validation.created_at).toLocaleString("es-MX")}</dd></div>{validation.giftable_at && <div><dt>48 horas</dt><dd>{new Date(validation.giftable_at).toLocaleString("es-MX")}</dd></div>}<div><dt>Pedidos</dt><dd>{validation.orders.length} {delivered ? "· ya recibió entrega" : ""}</dd></div></dl>
     {validation.review_note && <p className="identity-review-note">{validation.review_note}</p>}
-    {validation.status !== "ready" && <div className="identity-review-actions">{validation.status === "manual_review" && <button className="identity-review-action send" disabled={updating} onClick={() => onReview(validation, "waiting")}>{updating ? "Guardando…" : "Enviar solicitud"}</button>}<button className="identity-review-action approve" disabled={updating} onClick={() => onReview(validation, "ready")}>{updating ? "Guardando…" : validation.status === "waiting" ? "Marcar listo" : "Aprobar ID"}</button><button className="identity-review-action danger" disabled={updating} onClick={() => onReview(validation, "blocked")}>{updating ? "Guardando…" : "Bloquear"}</button></div>}
+    {isIdentityReviewPending(validation.status) && <div className="identity-review-actions">{validation.status === "manual_review" && <button className="identity-review-action send" disabled={updating} onClick={() => onReview(validation, "waiting")}>{updating ? "Guardando…" : "Enviar solicitud"}</button>}<button className="identity-review-action approve" disabled={updating} onClick={() => onReview(validation, "ready")}>{updating ? "Guardando…" : validation.status === "waiting" ? "Marcar listo" : "Aprobar ID"}</button><button className="identity-review-action danger" disabled={updating} onClick={() => onReview(validation, "blocked")}>{updating ? "Guardando…" : "Bloquear"}</button></div>}
     {validation.status === "ready" && <p className="identity-approved-copy"><BadgeCheck aria-hidden="true" size={15} />ID validado{validation.reviewed_at ? ` · ${new Date(validation.reviewed_at).toLocaleDateString("es-MX")}` : ""}</p>}
   </article>;
 }
