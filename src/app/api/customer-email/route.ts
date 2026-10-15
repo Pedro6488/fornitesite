@@ -46,10 +46,28 @@ export async function POST(request: Request) {
     const { error: sessionError } = await context.database.from("commerce_sessions").update({ email_contact_id: contact.id }).eq("id", context.session.id);
     if (sessionError) throw sessionError;
     await attachContactToActiveCart(context.database, context.session.id, contact.id);
-    if (contact.marketing_consent && !contact.verified_at) await sendVerificationEmail(context.database, contact);
+    let verificationDeliveryFailed = false;
+    if (contact.marketing_consent && !contact.verified_at) {
+      try {
+        await sendVerificationEmail(context.database, contact);
+      } catch (verificationError) {
+        // The contact and its consent have already been persisted. A provider
+        // outage must not make the customer believe that operation failed.
+        verificationDeliveryFailed = true;
+        console.error("customer-email.verification.failed", { contactId: contact.id, verificationError });
+      }
+    }
     return attachCommerceCookie(NextResponse.json({
-      verified: Boolean(contact.verified_at), verificationSent: contact.marketing_consent && !contact.verified_at,
-      message: contact.unsubscribed_at ? "Ese correo se dio de baja de recordatorios." : contact.verified_at ? "Tu correo ya está verificado." : parsed.data.consent ? "Revisa tu correo para confirmarlo." : "Correo guardado sin recordatorios.",
+      verified: Boolean(contact.verified_at), verificationSent: contact.marketing_consent && !contact.verified_at && !verificationDeliveryFailed,
+      message: contact.unsubscribed_at
+        ? "Ese correo se dio de baja de recordatorios."
+        : contact.verified_at
+          ? "Tu correo ya está verificado."
+          : verificationDeliveryFailed
+            ? "Correo guardado. Aún no pudimos enviar la confirmación; inténtalo de nuevo más tarde."
+            : parsed.data.consent
+              ? "Revisa tu correo para confirmarlo."
+              : "Correo guardado sin recordatorios.",
     }), context.session);
   } catch (error) {
     console.error("customer-email.save.failed", error);
