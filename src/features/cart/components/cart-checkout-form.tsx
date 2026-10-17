@@ -10,6 +10,7 @@ import { CommerceSheet } from "@/features/commerce/components/commerce-sheet";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
+import { resolveCartAvailability } from "../application/cart-availability";
 
 type Quote = Readonly<{
   id: string;
@@ -36,7 +37,9 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const [quoteSheetOpen, setQuoteSheetOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const lines = useMemo(() => commerce.cartItemIds.flatMap((id) => { const item = items.find((candidate) => candidate.mainId === id); return item ? [item] : []; }), [commerce.cartItemIds, items]);
+  const cartEntries = useMemo(() => resolveCartAvailability(commerce.cartItemIds, items), [commerce.cartItemIds, items]);
+  const unavailableEntries = useMemo(() => cartEntries.filter((entry) => !entry.available), [cartEntries]);
+  const lines = useMemo(() => cartEntries.flatMap((entry) => entry.available && entry.item ? [entry.item] : []), [cartEntries]);
   const visibleTotal = lines.reduce((sum, item) => sum + (item.priceMxn ?? 0), 0);
   const waiting = commerce.validation?.status === "waiting";
   const manualReview = commerce.validation?.status === "manual_review";
@@ -90,7 +93,24 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     finally { setLoading(false); }
   }
 
-  if (commerce.ready && !lines.length) return <section className="flow-shell"><div className="flow-heading"><p className="eyebrow">SOLICITUD</p><h1>Tu carrito está vacío.</h1><Link className="primary-button" href="/#catalogo">Explorar tienda</Link></div></section>;
+  async function removeUnavailable() {
+    setLoading(true); setError(null);
+    const failure = unavailableEntries[0]
+      ? await commerce.removeCartItem(unavailableEntries[0].itemId)
+      : null;
+    setError(failure); setLoading(false);
+  }
+
+  if (commerce.ready && commerce.cartItemIds.length === 0) return <section className="flow-shell"><div className="flow-heading"><p className="eyebrow">SOLICITUD</p><h1>Tu carrito está vacío.</h1><Link className="primary-button" href="/#catalogo">Explorar tienda</Link></div></section>;
+  if (commerce.ready && unavailableEntries.length > 0) return <section className="flow-shell checkout-flow">
+    <div className="flow-heading"><p className="eyebrow">CARRITO ACTUALIZADO</p><h1>Algunos objetos ya no están disponibles.</h1><p>Salieron de la tienda antes de confirmar tu solicitud. No se generó ningún pedido ni cobro.</p></div>
+    <div className="checkout-card expired-selection" role="alert">
+      <div className="checkout-items">{unavailableEntries.map((entry) => <p key={entry.itemId}><span>{entry.item?.name ?? "Objeto fuera del catálogo"}</span><strong>No disponible</strong></p>)}</div>
+      <button type="button" className="primary-button" disabled={loading} onClick={() => void removeUnavailable()}>{loading ? "Actualizando…" : "Quitar no disponibles"}</button>
+      <Link className="cart-secondary" href="/carrito">Volver al carrito</Link>
+      {error && <p className="notice error">{error}</p>}
+    </div>
+  </section>;
 
   return <section className="flow-shell checkout-flow">
     <div className="flow-heading"><p className="eyebrow">CHECKOUT SEGURO</p><h1>Confirma tu solicitud.</h1><p>{waiting ? "La solicitud de amistad fue enviada. Podrás continuar al cumplirse las 48 horas." : manualReview ? "Tu ID espera la revisión del equipo antes de iniciar la espera de amistad." : "Confirmamos el ID y el precio antes de guardar tu pedido."}</p><ol className="checkout-steps"><li className={isReady ? "complete" : "active"}><span>1</span>{waiting ? "Espera de 48 horas" : "ID de entrega"}</li><li className={activeQuote ? "complete" : isReady ? "active" : ""}><span>2</span>Precio confirmado</li><li className={activeQuote ? "active" : ""}><span>3</span>Contacto y orden</li></ol></div>

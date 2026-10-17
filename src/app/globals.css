@@ -6563,6 +6563,42 @@ body:has(.admin-dashboard) .site-footer {
   padding: .75rem;
 }
 
+.cart-line-unavailable {
+  border-color: rgba(255, 101, 119, .32);
+  opacity: .82;
+}
+
+.cart-line-unavailable .cart-line-price strong {
+  color: #ff8996;
+  font-size: .82rem;
+}
+
+.cart-unavailable-notice {
+  align-items: center;
+  background: rgba(255, 101, 119, .08);
+  border: 1px solid rgba(255, 101, 119, .28);
+  border-radius: .9rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: .85rem 1rem;
+}
+
+.cart-unavailable-notice div {
+  display: grid;
+  gap: .15rem;
+}
+
+.cart-unavailable-notice span {
+  color: var(--muted);
+  font-size: .72rem;
+}
+
+.cart-unavailable-notice button {
+  border-color: rgba(255, 101, 119, .32);
+  flex: 0 0 auto;
+}
+
 .cart-product-link {
   align-items: center;
   display: grid;
