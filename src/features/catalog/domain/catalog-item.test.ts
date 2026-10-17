@@ -1,11 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { canPurchase, getCatalogTransitionName, isCatalogItemDisplayable, type CatalogItem } from "./catalog-item";
+import { canPurchase, getCatalogTransitionName, isCatalogItemDisplayable, isCatalogItemExpired, type CatalogItem } from "./catalog-item";
 
 const base: CatalogItem = { mainId: "id", offerId: "offer", name: "Objeto", description: "", imageUrl: null, type: "Atuendo", rarity: "Raro", regularPriceVbucks: 500, finalPriceVbucks: 500, priceMxn: 40, giftable: true, availableUntil: null, featured: false };
 describe("canPurchase", () => {
   it("requiere oferta, regalo y precio", () => expect(canPurchase(base)).toBe(true));
   it("rechaza una oferta informativa", () => expect(canPurchase({ ...base, offerId: null })).toBe(false));
   it("rechaza objetos no regalables", () => expect(canPurchase({ ...base, giftable: false })).toBe(false));
+  it("rechaza objetos cuya disponibilidad ya terminó", () => {
+    const expired = { ...base, availableUntil: "2026-10-15T23:59:59.000Z" };
+    expect(isCatalogItemExpired(expired, Date.parse("2026-10-16T00:00:00.000Z"))).toBe(true);
+    expect(canPurchase(expired, Date.parse("2026-10-16T00:00:00.000Z"))).toBe(false);
+  });
+  it("mantiene disponible una oferta que aún no vence", () => {
+    expect(canPurchase(
+      { ...base, availableUntil: "2026-10-17T00:00:00.000Z" },
+      Date.parse("2026-10-16T00:00:00.000Z")
+    )).toBe(true);
+  });
   it("mantiene nombres seguros para consumidores de transiciones", () => {
     expect(getCatalogTransitionName("CID:TEST/ONE")).toBe("catalog-CID-TEST-ONE");
   });

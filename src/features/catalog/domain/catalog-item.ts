@@ -25,8 +25,22 @@ export interface CatalogProvider {
   getCurrentCatalog(): Promise<readonly CatalogItem[]>;
 }
 
-export function canPurchase(item: CatalogItem): boolean {
-  return Boolean(item.offerId && item.giftable && item.priceMxn !== null);
+export function isCatalogItemExpired(
+  item: CatalogItem,
+  now: number = Date.now()
+): boolean {
+  if (!item.availableUntil) return false;
+  const availableUntil = Date.parse(item.availableUntil);
+  return Number.isFinite(availableUntil) && availableUntil <= now;
+}
+
+export function canPurchase(item: CatalogItem, now: number = Date.now()): boolean {
+  return Boolean(
+    item.offerId &&
+    item.giftable &&
+    item.priceMxn !== null &&
+    !isCatalogItemExpired(item, now)
+  );
 }
 
 export function isCatalogItemDisplayable(item: CatalogItem): boolean {
