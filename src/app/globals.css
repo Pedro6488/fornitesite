@@ -2201,6 +2201,93 @@ legend {
   line-height: 1.5;
 }
 
+.account-tabs {
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.account-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.account-tabs button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #99a6c3;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .76rem;
+  font-weight: 850;
+  gap: .45rem;
+  min-height: 3.2rem;
+  padding: 0 .1rem;
+  position: relative;
+}
+
+.account-tabs button::after {
+  background: transparent;
+  bottom: -1px;
+  content: "";
+  height: 3px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.account-tabs button:hover {
+  color: #eef4ff;
+}
+
+.account-tabs button[aria-selected="true"] {
+  color: #f8faff;
+}
+
+.account-tabs button[aria-selected="true"] svg {
+  color: var(--cyan);
+}
+
+.account-tabs button[aria-selected="true"]::after {
+  background: var(--cyan);
+}
+
+.account-tabs button b {
+  align-items: center;
+  background: rgba(148, 174, 227, .12);
+  border-radius: 999px;
+  color: #c6d1e9;
+  display: inline-flex;
+  font-size: .56rem;
+  height: 1.35rem;
+  justify-content: center;
+  min-width: 1.35rem;
+  padding: 0 .28rem;
+}
+
+.account-tab-panel {
+  animation: account-panel-enter .18s ease-out;
+}
+
+.account-tab-panel[hidden] {
+  display: none;
+}
+
+@keyframes account-panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(.25rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .dashboard-grid {
   display: grid;
   gap: .75rem;
@@ -2461,6 +2548,70 @@ legend {
   gap: .65rem;
   margin-top: .4rem;
   padding-top: 1.25rem;
+}
+
+.orders-panel.account-tab-panel {
+  background: rgba(8, 13, 30, .58);
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 1rem;
+  margin: 0;
+  padding: 1rem;
+}
+
+.orders-heading>div>p:last-child {
+  color: #9eabc7;
+  font-size: .7rem;
+  margin: .25rem 0 0;
+}
+
+.account-favorites-panel {
+  align-items: center;
+  background: linear-gradient(135deg, rgba(85, 217, 255, .07), rgba(8, 13, 30, .65));
+  border: 1px solid rgba(85, 217, 255, .18);
+  border-radius: 1rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 1.25rem;
+}
+
+.account-favorites-panel>span {
+  align-items: center;
+  background: rgba(85, 217, 255, .11);
+  border-radius: .85rem;
+  color: var(--cyan);
+  display: flex;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+.account-favorites-panel>div {
+  display: grid;
+  gap: .3rem;
+}
+
+.account-favorites-panel .eyebrow,
+.account-favorites-panel h3,
+.account-favorites-panel p {
+  margin: 0;
+}
+
+.account-favorites-panel h3 {
+  font-size: 1.15rem;
+}
+
+.account-favorites-panel p:not(.eyebrow) {
+  color: #aeb9d4;
+  font-size: .75rem;
+}
+
+.account-favorites-panel a {
+  color: var(--cyan);
+  font-size: .73rem;
+  font-weight: 850;
+  justify-self: start;
+  margin-top: .35rem;
 }
 
 .orders-heading h3 {
@@ -5117,10 +5268,10 @@ body:has(.admin-dashboard) .site-footer {
   display: inline-flex;
   font-size: .78rem;
   font-weight: 850;
-  gap: .45rem;
+  gap: .5rem;
   list-style: none;
   min-height: 2.7rem;
-  padding: 0 .68rem;
+  padding: .3rem .4rem .3rem .65rem;
   transition: background .18s ease, border-color .18s ease;
 }
 
@@ -5145,8 +5296,13 @@ body:has(.admin-dashboard) .site-footer {
   width: 1.9rem;
 }
 
-.account-header-menu[open] .account-header-chevron {
-  transform: rotate(180deg);
+.account-header-menu.authenticated .account-header-avatar {
+  background: rgba(75, 225, 154, .13);
+  color: #8ff2c0;
+}
+
+.account-header-menu-icon {
+  color: #d7def0;
 }
 
 .account-header-popover {
@@ -5194,6 +5350,16 @@ body:has(.admin-dashboard) .site-footer {
 .account-header-popover button:disabled {
   cursor: wait;
   opacity: .6;
+}
+
+.account-header-popover .account-menu-primary {
+  font-weight: 950;
+}
+
+.account-header-loading {
+  color: #9eabc7;
+  font-size: .7rem;
+  padding: .7rem;
 }
 
 .desktop-nav-link,
@@ -6347,21 +6513,12 @@ body:has(.admin-dashboard) .site-footer {
     gap: .5rem;
   }
 
-  .mobile-header-actions .account-header-guest {
-    display: none;
-  }
-
   .mobile-header-actions .account-header-menu>summary {
     height: 2.65rem;
     justify-content: center;
     min-height: 2.65rem;
-    padding: 0;
-    width: 2.65rem;
-  }
-
-  .mobile-header-actions .account-header-menu>summary>span:not(.account-header-avatar),
-  .mobile-header-actions .account-header-chevron {
-    display: none;
+    padding: .25rem .35rem .25rem .55rem;
+    width: 4.35rem;
   }
 
   .mobile-header-actions .account-header-avatar {
