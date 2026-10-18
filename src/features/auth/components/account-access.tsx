@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BadgeCheck, CircleAlert, Clock3, Gamepad2, Plus, ScanLine } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
@@ -45,6 +46,10 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
 
   const identity = getIdentityPresentation(commerce.validation);
 
+  async function selectAccountIdentity(validationId: string) {
+    setMessage(await commerce.selectValidation(validationId));
+  }
+
   async function authenticate(event: FormEvent) {
     event.preventDefault();
     if (!supabase) { setMessage("El acceso todavía no está configurado."); return; }
@@ -71,8 +76,36 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
   if (checking) return <div className="account-card"><p>Cargando tu cuenta…</p></div>;
   if (orders) return <div className="account-dashboard">
     <div className="account-welcome"><div><p className="eyebrow">MI DASHBOARD</p><h2>Tu cuenta está lista.</h2></div><button type="button" onClick={() => void supabase?.auth.signOut().then(() => window.location.reload())}>Cerrar sesión</button></div>
-    <div className="dashboard-grid">
-      <button type="button" className="dashboard-card profile-card" onClick={commerce.openIdentity}><span className="dashboard-icon">◎</span><div><small>ID PARA RECIBIR</small><strong>{commerce.validation?.display_name ?? "Agregar mi ID"}</strong><p>{identity.label} →</p></div></button>
+    <section className={`account-identity-panel ${identity.tone}`} aria-labelledby="account-identities-title">
+      <header>
+        <div className="account-identity-heading">
+          <span><Gamepad2 aria-hidden="true" size={21} /></span>
+          <div><p className="eyebrow">DESTINATARIOS</p><h3 id="account-identities-title">¿Quién recibirá tu próxima compra?</h3><p>Elige un ID guardado o agrega otro destinatario.</p></div>
+        </div>
+        <button type="button" className="account-add-identity" onClick={commerce.openIdentity}><Plus aria-hidden="true" size={16} />Agregar otro ID</button>
+      </header>
+      {commerce.validations.length > 0 ? <div className="account-identity-list">
+        {commerce.validations.map((validation) => {
+          const entry = getIdentityPresentation(validation);
+          const EntryIcon = entry.tone === "success" ? BadgeCheck : entry.tone === "danger" ? CircleAlert : entry.tone === "warning" ? Clock3 : ScanLine;
+          const active = commerce.validation?.id === validation.id;
+          return <button
+            type="button"
+            className={`account-identity-option ${entry.tone} ${active ? "active" : ""}`}
+            key={validation.id}
+            aria-pressed={active}
+            disabled={commerce.syncing}
+            onClick={() => void selectAccountIdentity(validation.id)}
+          >
+            <span className="account-identity-status"><EntryIcon aria-hidden="true" size={18} /></span>
+            <span><strong>{validation.display_name}</strong><small>{entry.label}</small></span>
+            {active && <b>Activo</b>}
+          </button>;
+        })}
+      </div> : <button type="button" className="account-identity-empty" onClick={commerce.openIdentity}>Agrega el ID que recibirá tus objetos</button>}
+      {message && <p className="notice error">{message}</p>}
+    </section>
+    <div className="dashboard-grid account-stats-grid">
       <Link href="/favoritos" className="dashboard-card"><span className="dashboard-icon">♡</span><div><small>FAVORITOS</small><strong>{commerce.favoriteItemIds.size} objetos</strong><p>Ver disponibilidad →</p></div></Link>
       <section className="dashboard-card"><span className="dashboard-icon">✓</span><div><small>OBJETOS RECIBIDOS</small><strong>{orders.filter((order) => order.status === "delivered").length}</strong><p>Entregas confirmadas</p></div></section>
     </div>

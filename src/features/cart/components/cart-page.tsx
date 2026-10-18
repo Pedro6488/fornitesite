@@ -39,7 +39,7 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   }
 
   return <section className="cart-page">
-    <header className="cart-heading"><div><p className="eyebrow">TU CARRITO</p><h1>Tu selección</h1><p>{unavailableLines.length ? `${unavailableLines.length} ${unavailableLines.length === 1 ? "objeto requiere" : "objetos requieren"} atención.` : lines.length === 1 ? "1 objeto listo para continuar." : `${lines.length} objetos listos para continuar.`}</p></div><span><ShieldCheck aria-hidden="true" size={18} />Precio y disponibilidad se confirman antes de crear tu pedido.</span></header>
+    <header className="cart-heading"><div><p className="eyebrow">TU CARRITO</p><h1>Tu selección</h1><p>{unavailableLines.length ? `${unavailableLines.length} ${unavailableLines.length === 1 ? "objeto requiere" : "objetos requieren"} atención.` : lines.length === 1 ? "1 objeto listo para continuar." : `${lines.length} objetos listos para continuar.`}</p></div></header>
     {!commerce.ready ? <div className="cart-empty"><h2>Cargando tu carrito…</h2></div> : lines.length === 0 ? <div className="cart-empty"><h2>Tu carrito está vacío</h2><p>Explora los objetos disponibles y agrega los que quieras solicitar.</p><Link href="/#catalogo">Ver tienda</Link></div> : <div className="cart-layout">
       <div className="cart-lines">
         {unavailableLines.length > 0 && <div className="cart-unavailable-notice" role="status"><div><strong>Tu carrito cambió</strong><span>Estos objetos salieron de la tienda y deben quitarse antes de continuar.</span></div><button type="button" onClick={() => void removeUnavailable()} disabled={commerce.syncing}>Quitar no disponibles</button></div>}
@@ -58,6 +58,10 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
         <Link className="cart-continue-shopping" href="/#catalogo"><ArrowLeft aria-hidden="true" size={15} />Seguir comprando</Link>
       </div>
       <aside className="cart-summary">
+        <section className="cart-trust-panel" aria-label="Compra protegida">
+          <span><ShieldCheck aria-hidden="true" size={19} /></span>
+          <div><strong>Compra protegida</strong><p>Precio y disponibilidad se confirman antes de crear tu pedido.</p></div>
+        </section>
         <div className="cart-summary-heading"><div><p className="eyebrow">RESUMEN</p><h2>Tu pedido</h2></div><b>{lines.length}</b></div>
         <div className="cart-summary-row"><span>Objetos</span><strong>{lines.length}</strong></div>
         <div className="cart-summary-total"><span>Total estimado</span><strong>{formatMxn(total)} <small>MXN</small></strong></div>
