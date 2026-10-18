@@ -7180,6 +7180,212 @@ body:has(.admin-dashboard) .site-footer {
   }
 }
 
+/* Delivery identity stays visible and selectable in the purchase header. */
+.identity-nav-selector {
+  align-items: center;
+  background: rgba(255, 213, 31, .09);
+  border: 1px solid rgba(255, 213, 31, .28);
+  border-radius: .78rem;
+  color: #fff1a7;
+  display: grid;
+  gap: .45rem;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  min-height: 3.15rem;
+  padding: .35rem .4rem .35rem .65rem;
+  width: clamp(13rem, 19vw, 17rem);
+}
+
+.identity-nav-selector.success {
+  background: rgba(75, 225, 154, .09);
+  border-color: rgba(75, 225, 154, .35);
+  color: #a7f8c9;
+}
+
+.identity-nav-selector.danger {
+  background: rgba(255, 101, 119, .08);
+  border-color: rgba(255, 101, 119, .4);
+  color: #ffadb5;
+}
+
+.identity-nav-selector>label {
+  display: grid;
+  gap: .05rem;
+  min-width: 0;
+}
+
+.identity-nav-selector>label>span:first-child {
+  font-size: .55rem;
+  font-weight: 900;
+  letter-spacing: .055em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.identity-nav-select-wrap {
+  align-items: center;
+  display: flex;
+  min-width: 0;
+  position: relative;
+}
+
+.identity-nav-select-wrap select {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: #f6f8ff;
+  cursor: pointer;
+  font-size: .76rem;
+  font-weight: 900;
+  min-width: 0;
+  overflow: hidden;
+  padding: .1rem 1.15rem .1rem 0;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.identity-nav-select-wrap select:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.identity-nav-select-wrap select option {
+  background: #10162e;
+  color: #f6f8ff;
+}
+
+.identity-nav-select-wrap svg {
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+.identity-nav-manage {
+  align-items: center;
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: .55rem;
+  color: currentColor;
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.25rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.25rem;
+}
+
+.identity-nav-manage:hover {
+  background: rgba(255, 255, 255, .13);
+  border-color: currentColor;
+}
+
+.cart-continue-shopping {
+  align-items: center;
+  color: var(--cyan);
+  display: inline-flex;
+  font-size: .78rem;
+  font-weight: 850;
+  gap: .35rem;
+  justify-self: start;
+  margin-top: .15rem;
+  padding: .45rem .15rem;
+}
+
+.cart-next-steps {
+  list-style: none;
+  margin: .1rem 0 0;
+  padding: .2rem 0 0;
+}
+
+.cart-next-steps li {
+  align-items: center;
+  color: #aab6d2;
+  display: grid;
+  font-size: .75rem;
+  font-weight: 750;
+  gap: .38rem;
+  justify-items: center;
+  min-width: 0;
+  position: relative;
+  text-align: center;
+}
+
+.cart-next-steps li>span {
+  color: inherit;
+  display: block;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: 1.25;
+}
+
+.cart-next-steps li:not(:last-child)::after {
+  background: rgba(148, 174, 227, .24);
+  content: "";
+  height: 1px;
+  left: calc(50% + 1rem);
+  position: absolute;
+  top: .92rem;
+  width: calc(100% - 2rem);
+}
+
+.cart-next-steps li.complete {
+  color: #8ff2c0;
+}
+
+.cart-next-steps li.complete::after {
+  background: linear-gradient(90deg, rgba(75, 225, 154, .55), rgba(148, 174, 227, .24));
+}
+
+.cart-next-steps li b {
+  background: #111831;
+  height: 1.65rem;
+  position: relative;
+  width: 1.65rem;
+  z-index: 1;
+}
+
+.cart-next-steps li.complete b {
+  background: rgba(75, 225, 154, .14);
+  border-color: rgba(75, 225, 154, .42);
+}
+
+@media (max-width: 1100px) {
+  .identity-nav-selector {
+    width: 12rem;
+  }
+
+  .identity-nav-selector>label>span:first-child {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .mobile-header-actions .identity-nav-selector {
+    gap: .3rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 2.65rem;
+    padding: .25rem .28rem .25rem .5rem;
+    width: clamp(7.25rem, 36vw, 8.5rem);
+  }
+
+  .mobile-header-actions .identity-nav-status-icon {
+    display: none;
+  }
+
+  .mobile-header-actions .identity-nav-select-wrap select {
+    font-size: .65rem;
+    padding-right: .85rem;
+  }
+
+  .mobile-header-actions .identity-nav-manage {
+    height: 2rem;
+    width: 2rem;
+  }
+
+  .cart-continue-shopping {
+    margin-top: 0;
+  }
+}
+
 /* Shared commerce step: identity and server quote use the same sheet language. */
 .checkout-quote-action {
   align-items: center;

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, ShieldCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ShieldCheck, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
@@ -55,6 +55,7 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
           <button className="cart-remove" onClick={() => void remove(itemId)} aria-label={`Quitar ${item?.name ?? "objeto no disponible"} del carrito`}><Trash2 aria-hidden="true" size={16} /><span>Eliminar</span></button>
         </article>)}
         {message && <p className="notice error">{message}</p>}
+        <Link className="cart-continue-shopping" href="/#catalogo"><ArrowLeft aria-hidden="true" size={15} />Seguir comprando</Link>
       </div>
       <aside className="cart-summary">
         <div className="cart-summary-heading"><div><p className="eyebrow">RESUMEN</p><h2>Tu pedido</h2></div><b>{lines.length}</b></div>
@@ -62,8 +63,7 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
         <div className="cart-summary-total"><span>Total estimado</span><strong>{formatMxn(total)} <small>MXN</small></strong></div>
         <p className="cart-summary-note"><ShieldCheck aria-hidden="true" size={17} />{nextStep}</p>
         {canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={continueToCheckout}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
-        <div className="cart-next-steps" aria-label="Progreso de compra"><span className="active" aria-current="step"><b><Check aria-hidden="true" size={12} /></b>Carrito</span><span><b>2</b>ID y precio</span><span><b>3</b>Contacto y orden</span></div>
-        <Link className="cart-secondary" href="/#catalogo">Seguir comprando</Link>
+        <ol className="cart-next-steps" aria-label="Progreso de compra"><li className="complete active" aria-current="step"><b><Check aria-hidden="true" size={12} /></b><span>Carrito</span></li><li><b>2</b><span>ID y precio</span></li><li><b>3</b><span>Contacto y orden</span></li></ol>
       </aside>
       <SystemActionBar className="mobile-cart-checkout" primaryFull><span><small>Resumen de compra</small><strong>{formatMxn(total)}</strong><em>{nextStep}</em></span>{canContinue ? <button type="button" disabled={openingCheckout} onClick={continueToCheckout}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button disabled>No disponible</button>}</SystemActionBar>
     </div>}

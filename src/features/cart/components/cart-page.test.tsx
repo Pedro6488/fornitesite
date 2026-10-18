@@ -51,7 +51,8 @@ describe("CartPage", () => {
     expect(screen.getByText("Objeto ya no disponible")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hay objetos no disponibles" })).toBeDisabled();
     expect(screen.getByText("ID y precio")).toBeInTheDocument();
-    expect(screen.getByText("Carrito").closest("span")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByText("Carrito").closest("li")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByRole("link", { name: "Seguir comprando" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Quitar no disponibles" }));
     await waitFor(() => expect(commerce.removeCartItem).toHaveBeenCalledWith("expired"));
