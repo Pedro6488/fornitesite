@@ -64,6 +64,17 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
     window.requestAnimationFrame(() => document.getElementById(`account-tab-${nextTab}`)?.focus());
   }
 
+  function moveAuthMode(event: ReactKeyboardEvent<HTMLButtonElement>, currentMode: "login" | "register") {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const nextMode = event.key === "Home" ? "login"
+      : event.key === "End" ? "register"
+        : currentMode === "login" ? "register" : "login";
+    setAuthMode(nextMode);
+    setMessage(null);
+    window.requestAnimationFrame(() => document.getElementById(`auth-mode-${nextMode}`)?.focus());
+  }
+
   async function authenticate(event: FormEvent) {
     event.preventDefault();
     if (!supabase) { setMessage("El acceso todavía no está configurado."); return; }
@@ -87,7 +98,7 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
     setSubmitting(false);
   }
 
-  if (checking) return <div className="account-card"><p>Cargando tu cuenta…</p></div>;
+  if (checking) return adminAccess ? <div className="account-card"><p>Cargando tu cuenta…</p></div> : <section className="account-auth-flow"><div className="auth-loading">Cargando acceso seguro…</div></section>;
   if (orders) return <div className="account-dashboard">
     <div className="account-welcome"><p className="eyebrow">MI CUENTA</p><h2>Administra tu experiencia de compra.</h2><p>Cambia de sección sin perder el ID seleccionado para tu próxima entrega.</p></div>
     <div className="account-tabs" role="tablist" aria-label="Secciones de mi cuenta">
@@ -121,5 +132,22 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
 
   if (adminAccess) return <form className="account-card register-card" onSubmit={authenticate}><p className="eyebrow">ACCESO RESTRINGIDO</p><h2>Panel de administración</h2><p>Ingresa con el correo y la contraseña de una cuenta autorizada.</p><label>Correo de administrador<input type="email" required value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="tu@correo.com" autoComplete="email" /></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /></label><button className="primary-button" disabled={submitting}>{submitting ? "Entrando…" : "Entrar al panel"}</button>{message && <p className="notice">{message}</p>}<small className="account-note">Solo las cuentas con rol de administrador pueden continuar.</small></form>;
 
-  return <form className="account-card register-card" onSubmit={authenticate}><p className="eyebrow">{authMode === "login" ? "INICIA SESIÓN" : "CREA TU CUENTA"}</p><h2>Tu cuenta SigfriedLootBox</h2><p>Usa un nombre de usuario y contraseña para conservar tu ID validado, favoritos, carrito e historial. No enviamos correos.</p><label>Nombre de usuario<input type="text" required minLength={3} maxLength={authMode === "register" ? 24 : 120} pattern={authMode === "register" ? "[A-Za-z0-9_-]{3,24}" : undefined} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="tu_usuario" autoComplete="username" /></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={authMode === "login" ? "current-password" : "new-password"} /></label><button className="primary-button" disabled={submitting}>{submitting ? "Procesando…" : authMode === "login" ? "Iniciar sesión" : "Crear cuenta"}</button>{message && <p className="notice">{message}</p>}<button className="identity-account-button" type="button" onClick={() => { setAuthMode((current) => current === "login" ? "register" : "login"); setMessage(null); }}>{authMode === "login" ? "Crear una cuenta" : "Ya tengo cuenta"}</button><button className="identity-account-button" type="button" onClick={commerce.openIdentity}>Validar mi ID sin crear cuenta</button><small className="account-note">No necesitas correo. Tu nombre de usuario identifica la cuenta.</small></form>;
+  return <section className="account-auth-flow">
+    <div className="auth-brand" aria-label="SigfriedLootBox">Sigfried<span>LootBox</span></div>
+    <form className="account-auth-card" onSubmit={authenticate}>
+      <header><p className="eyebrow">ACCESO SEGURO</p><h1>{authMode === "login" ? "Bienvenido de vuelta" : "Crea tu cuenta"}</h1><p>{authMode === "login" ? "Recupera tus destinatarios, favoritos y compras." : "Guarda tus destinatarios, favoritos, carrito e historial."}</p></header>
+      <div className="auth-mode-tabs" role="tablist" aria-label="Acceso a tu cuenta">
+        <button id="auth-mode-login" type="button" role="tab" aria-selected={authMode === "login"} aria-controls="auth-mode-panel" tabIndex={authMode === "login" ? 0 : -1} onKeyDown={(event) => moveAuthMode(event, "login")} onClick={() => { setAuthMode("login"); setMessage(null); }}>Iniciar sesión</button>
+        <button id="auth-mode-register" type="button" role="tab" aria-selected={authMode === "register"} aria-controls="auth-mode-panel" tabIndex={authMode === "register" ? 0 : -1} onKeyDown={(event) => moveAuthMode(event, "register")} onClick={() => { setAuthMode("register"); setMessage(null); }}>Crear cuenta</button>
+      </div>
+      <div id="auth-mode-panel" className="auth-fields" role="tabpanel" aria-labelledby={`auth-mode-${authMode}`}>
+        <label>Nombre de usuario<input type="text" required minLength={3} maxLength={authMode === "register" ? 24 : 120} pattern={authMode === "register" ? "[A-Za-z0-9_-]{3,24}" : undefined} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="tu_usuario" autoComplete="username" /></label>
+        <label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={authMode === "login" ? "current-password" : "new-password"} /></label>
+      </div>
+      <button className="primary-button auth-submit" disabled={submitting}>{submitting ? "Procesando…" : authMode === "login" ? "Iniciar sesión" : "Crear cuenta"}</button>
+      {message && <p className="notice" role="alert">{message}</p>}
+      <button className="auth-guest-action" type="button" onClick={commerce.openIdentity}>Continuar sin cuenta</button>
+      <small className="account-note">No necesitas correo. Tu nombre de usuario identifica tu cuenta.</small>
+    </form>
+  </section>;
 }
