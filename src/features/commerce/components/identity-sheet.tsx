@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BadgeCheck, ChevronDown, CircleAlert, Clock3, Plus, ScanLine } from "lucide-react";
 import { useCommerceState, type IdentityPlatform } from "./commerce-state-provider";
 import { CommerceSheet } from "./commerce-sheet";
@@ -18,6 +20,7 @@ function timeRemaining(date: string, now: number) {
 
 export function IdentitySheet() {
   const commerce = useCommerceState();
+  const pathname = usePathname();
   const [displayName, setDisplayName] = useState("");
   const [platform, setPlatform] = useState<IdentityPlatform>("epic");
   const [message, setMessage] = useState<string | null>(null);
@@ -25,6 +28,11 @@ export function IdentitySheet() {
   const [now, setNow] = useState(() => Date.now());
   const presentation = getIdentityPresentation(commerce.validation);
   const canContinue = presentation.canQuote;
+
+  useEffect(() => {
+    if (!commerce.identityOpen) return;
+    void commerce.refresh({ advanceIdentity: true });
+  }, [commerce.identityOpen, commerce.refresh]);
 
   useEffect(() => {
     if (!commerce.identityOpen || commerce.validation?.status !== "waiting") return;
@@ -45,7 +53,7 @@ export function IdentitySheet() {
     setEditingIdentity(true);
   }
 
-  return <CommerceSheet open={commerce.identityOpen} onClose={commerce.closeIdentity} titleId="identity-title" eyebrow="IDENTIDAD DE ENTREGA" title="Elige o valida tu ID" description="Tu ID se guarda en esta sesión. Puedes tener más de uno y seleccionar cuál recibirá esta compra.">
+  return <CommerceSheet open={commerce.identityOpen} onClose={commerce.closeIdentity} titleId="identity-title" eyebrow="IDENTIDAD DE ENTREGA" title="Elige o valida tu ID" description="Agrega el gamertag que recibirá los objetos. Si inicias sesión en SigfriedLootBox, recuperaremos los IDs guardados en tu cuenta.">
       {commerce.validations.length > 0 && <div className="identity-saved" aria-label="IDs guardados">
         <div><strong>Tus IDs</strong><small>Selecciona el que usarás ahora</small></div>
         <div className="identity-saved-list">
@@ -57,15 +65,16 @@ export function IdentitySheet() {
       {commerce.validation ? <div className={`identity-result identity-${commerce.validation.status}`} aria-live="polite">
         <span>{commerce.validation.status === "ready" ? <BadgeCheck aria-hidden="true" size={19} /> : commerce.validation.status === "waiting" ? <Clock3 aria-hidden="true" size={19} /> : commerce.validation.status === "blocked" ? <CircleAlert aria-hidden="true" size={19} /> : <ScanLine aria-hidden="true" size={19} />}</span>
         <div><strong>{commerce.validation.display_name}</strong><small>{presentation.label}. {presentation.description}</small>{commerce.validation.status === "waiting" && commerce.validation.giftable_at && <small className="identity-countdown">{timeRemaining(commerce.validation.giftable_at, now)}</small>}</div>
-      </div> : <p className="sheet-description">Agrega el ID que recibirá los objetos. Por ahora nuestro equipo lo revisará manualmente antes de solicitar tu pago.</p>}
+      </div> : <p className="sheet-description">No pedimos acceso ni contraseña de Epic Games: usa sólo tu gamertag. Nuestro equipo lo revisará manualmente antes de solicitar tu pago.</p>}
+      {commerce.validations.length === 0 && !commerce.authenticated && <p className="identity-session-note">¿Ya tienes una cuenta? <Link href={`/cuenta?next=${encodeURIComponent(pathname)}`} onClick={commerce.closeIdentity}>Inicia sesión para recuperar tus IDs guardados</Link>.</p>}
       {(!commerce.validation || editingIdentity) && <form className="identity-form" onSubmit={submit}>
         <div className="identity-form-title"><span><Plus aria-hidden="true" size={15} />Agregar o actualizar</span><small>Lo guardamos para que el equipo confirme la entrega.</small></div>
-        <label>ID o gamertag<input required minLength={3} maxLength={32} autoComplete="off" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Tu usuario en Fortnite" /></label>
+        <label>Gamertag o ID de Epic<input required minLength={3} maxLength={32} autoComplete="off" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Tu usuario en Fortnite" /></label>
         <label>Plataforma<span className="select-control"><select value={platform} onChange={(event) => setPlatform(event.target.value as IdentityPlatform)}><option value="epic">Epic Games</option><option value="xbl">Xbox</option><option value="psn">PlayStation</option><option value="nintendo">Nintendo Switch</option></select><ChevronDown aria-hidden="true" size={17} /></span></label>
         <button className="primary-button" disabled={commerce.syncing}>{commerce.syncing ? "Guardando…" : "Guardar nuevo ID"}</button>
       </form>}
       {commerce.validation && !editingIdentity && <button type="button" className="identity-add-another" onClick={addAnotherIdentity}><Plus aria-hidden="true" size={15} />Agregar otro ID</button>}
-      {commerce.validation && <button type="button" className="secondary-button" disabled={commerce.syncing} onClick={() => void commerce.refresh()}>Actualizar estado</button>}
+      {commerce.validation && <button type="button" className="secondary-button" disabled={commerce.syncing} onClick={() => void commerce.refresh({ advanceIdentity: true })}>Actualizar estado</button>}
       {canContinue && <button className="primary-button identity-continue" onClick={commerce.closeIdentity}>Usar este ID y continuar</button>}
       {message && <p className="notice error" role="alert">{message}</p>}
   </CommerceSheet>;

@@ -7,6 +7,8 @@ import { selectBestAgentForCart } from "@/features/eligibility/domain/delivery-a
 import { getAgentProvider } from "@/features/eligibility/server/get-agent-provider";
 import { attachCommerceCookie, requireCommerceSession } from "@/shared/server/commerce-session";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
+import { queueOutboxJob } from "@/features/notifications/server/outbox";
+import { deliverOutboxJob } from "@/features/notifications/server/providers";
 
 const schema = z.object({
   quoteId: z.uuid(),
@@ -86,6 +88,11 @@ export async function POST(request: Request) {
     const order = Array.isArray(data) ? data[0] : data;
     if (!order) throw new Error("La transacción no devolvió la orden.");
     if (context.session.user) await context.database.from("orders").update({ user_id: context.session.user.id }).eq("id", order.order_id);
+    const job = await queueOutboxJob(context.database, {
+      jobType: "telegram.order.created", aggregateId: order.order_id, payload: { orderId: order.order_id }, dedupeKey: `telegram:order:${order.order_id}`,
+    });
+    try { await deliverOutboxJob(context.database, job); }
+    catch (deliveryError) { console.error("telegram.order.immediate.failed", deliveryError); }
     return attachCommerceCookie(NextResponse.json({ order: { id: order.order_id, publicToken: order.public_token } }, { status: 201 }), context.session);
   } catch (error) {
     console.error("cart-order.create.failed", error);

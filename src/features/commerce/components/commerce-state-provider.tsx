@@ -41,7 +41,7 @@ type CommerceState = Readonly<{
   validations: readonly IdentityValidation[];
   validation: IdentityValidation | null;
   identityOpen: boolean;
-  refresh: () => Promise<void>;
+  refresh: (options?: { advanceIdentity?: boolean }) => Promise<void>;
   openIdentity: () => void;
   closeIdentity: () => void;
   validateIdentity: (displayName: string, platform: IdentityPlatform) => Promise<string | null>;
@@ -100,18 +100,25 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const closeIdentity = useCallback(() => setIdentityOpen(false), []);
   const clearCart = useCallback(() => setCartItemIds([]), []);
 
-  const refresh = useCallback((): Promise<void> => {
-    if (refreshInFlightRef.current) return refreshInFlightRef.current;
+  const refresh = useCallback((options?: { advanceIdentity?: boolean }): Promise<void> => {
+    const inFlight = refreshInFlightRef.current;
+    // Only a plain refresh can reuse an in-flight request; advancing identity
+    // waits must reach the server, so it queues behind the current request.
+    if (inFlight && !options?.advanceIdentity) return inFlight;
 
     const request = (async () => {
+      if (inFlight) await inFlight;
       const cart = legacyCartIds();
       const favorites = legacyFavoriteIds();
+      const migratingLegacyState = cart.length > 0 || favorites.length > 0;
       lastRefreshAttemptAtRef.current = Date.now();
       try {
-        const response = await fetch("/api/commerce/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", ...(await authHeaders()) },
-          body: JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites })
+        const query = options?.advanceIdentity ? "?advanceIdentity=1" : "";
+        const response = await fetch(`/api/commerce/session${query}`, {
+          method: migratingLegacyState ? "POST" : "GET",
+          headers: { ...(migratingLegacyState ? { "Content-Type": "application/json" } : {}), ...(await authHeaders()) },
+          body: migratingLegacyState ? JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites }) : undefined,
+          cache: "no-store"
         });
         const body = await responseBody(response);
         if (!response.ok) throw new Error(body.error);
@@ -171,7 +178,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
     const giftableAt = new Date(validation.giftable_at).getTime();
     if (!Number.isFinite(giftableAt)) return;
     const timeout = window.setTimeout(
-      () => void refresh(),
+      () => void refresh({ advanceIdentity: true }),
       Math.max(WAIT_COMPLETION_BUFFER_MS, giftableAt - Date.now() + WAIT_COMPLETION_BUFFER_MS),
     );
     return () => window.clearTimeout(timeout);

@@ -39,6 +39,10 @@ FULFILLMENT_MODE=manual
 ALLOW_DEMO_PROVIDERS=false
 WHATSAPP_BUSINESS_NUMBER
 CRON_SECRET
+TELEGRAM_BOT_TOKEN
+TELEGRAM_ADMIN_CHAT_IDS
+RESEND_API_KEY
+EMAIL_FROM
 ```
 
 `FORTNITE_API_BASE_URL` alimenta el catálogo visual y, si se omite, usa
@@ -49,6 +53,12 @@ servidor. Una fase posterior podrá usar `FULFILLMENT_MODE=fnshop` junto con
 `FNSHOP_API_KEY` para habilitar validación y entrega automáticas.
 `COMMERCE_SESSION_SECRET` debe ser un valor aleatorio exclusivo
 de cada ambiente. `ALLOW_DEMO_PROVIDERS` debe permanecer en `false` en producción.
+
+Para automatizaciones, configura un bot de Telegram y usa como
+`TELEGRAM_ADMIN_CHAT_IDS` una lista separada por comas de chats autorizados. En
+Resend, verifica el dominio de `EMAIL_FROM` antes de enviar a clientes reales.
+El cron de Hobby ejecuta `/api/internal/jobs` diariamente; Telegram y la
+verificación de correo se intentan de inmediato y se reintentan desde la cola.
 
 `NEXT_PUBLIC_APP_URL` utiliza `https://www.sigfriedlootbox.com` como respaldo
 cuando no está definida. En previews y desarrollo se debe configurar de forma

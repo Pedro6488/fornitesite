@@ -27,6 +27,10 @@ export async function POST(request: Request) {
     console.error("checkout.quote.rate-limit.failed", error);
     return attachCommerceCookie(NextResponse.json({ error: "No fue posible validar la solicitud." }, { status: 503 }), session);
   }
+  const { error: advanceError } = await database.rpc("advance_delivery_identity_waits", { p_session_id: session.id });
+  if (advanceError) {
+    return attachCommerceCookie(NextResponse.json({ error: "No fue posible actualizar el estado del ID." }, { status: 503 }), session);
+  }
   const { data: validation } = await database.from("game_id_validations")
     .select("id,epic_account_id,display_name,platform,status")
     .eq("id", parsed.data.validationId).eq("commerce_session_id", session.id).maybeSingle();
