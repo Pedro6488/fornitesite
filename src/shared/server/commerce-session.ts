@@ -32,6 +32,19 @@ export function chooseCanonicalCommerceSessionId(sessionIds: readonly string[]):
   return canonical;
 }
 
+type ActiveValidationCandidate = Readonly<{ id: string; epic_account_id: string; last_checked_at: string }>;
+
+export function chooseMergedActiveValidationId(
+  candidates: readonly ActiveValidationCandidate[],
+  preferredEpicAccountIds: readonly string[],
+): string | null {
+  for (const epicAccountId of preferredEpicAccountIds) {
+    const preferred = candidates.find((candidate) => candidate.epic_account_id === epicAccountId);
+    if (preferred) return preferred.id;
+  }
+  return [...candidates].sort((left, right) => Date.parse(right.last_checked_at) - Date.parse(left.last_checked_at))[0]?.id ?? null;
+}
+
 function cookieValue(request: Request): string | null {
   const cookie = request.headers.get("cookie") ?? "";
   for (const part of cookie.split(";")) {
@@ -115,6 +128,10 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
     return canonicalSessionId;
   }
 
+  const { data: sessionStates } = await database.from("commerce_sessions")
+    .select("id,active_game_id_validation_id")
+    .in("id", [canonicalSessionId, ...sourceIds]) as { data: { id: string; active_game_id_validation_id: string | null }[] | null };
+
   const { data: sourceFavorites } = await database.from("customer_favorites").select("item_main_id").in("commerce_session_id", sourceIds);
   if (sourceFavorites?.length) {
     const { error } = await database.from("customer_favorites").upsert(
@@ -147,6 +164,11 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
   const { data: validationRows } = await database.from("game_id_validations")
     .select("id,commerce_session_id,epic_account_id,platform,submitted_id,display_name,status,giftable_at,provider,agents_snapshot,reviewed_at,review_note,last_checked_at")
     .in("commerce_session_id", [canonicalSessionId, ...sourceIds]) as { data: ValidationMergeRow[] | null };
+  const validationById = new Map((validationRows ?? []).map((validation) => [validation.id, validation]));
+  const currentActiveId = sessionStates?.find((session) => session.id === currentSessionId)?.active_game_id_validation_id ?? null;
+  const canonicalActiveId = sessionStates?.find((session) => session.id === canonicalSessionId)?.active_game_id_validation_id ?? null;
+  const preferredEpicAccountIds = [currentActiveId, canonicalActiveId]
+    .flatMap((validationId) => validationId && validationById.has(validationId) ? [validationById.get(validationId)!.epic_account_id] : []);
   const rank: Record<string, number> = { pending_friendship: 1, manual_review: 2, waiting: 3, ready: 4, blocked: 5 };
   const targets = new Map<string, ValidationMergeRow>();
   for (const validation of validationRows?.filter((entry) => entry.commerce_session_id === canonicalSessionId) ?? []) targets.set(validation.epic_account_id, validation);
@@ -179,11 +201,9 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
     }
   }
   await database.from("game_id_validations").update({ user_id: userId }).eq("commerce_session_id", canonicalSessionId).is("user_id", null);
-  const { data: activeValidation } = await database.from("game_id_validations")
-    .select("id").eq("commerce_session_id", canonicalSessionId)
-    .order("last_checked_at", { ascending: false }).limit(1).maybeSingle<{ id: string }>();
-  if (activeValidation) {
-    await database.from("commerce_sessions").update({ active_game_id_validation_id: activeValidation.id }).eq("id", canonicalSessionId);
+  const activeValidationId = chooseMergedActiveValidationId([...targets.values()], preferredEpicAccountIds);
+  if (activeValidationId) {
+    await database.from("commerce_sessions").update({ active_game_id_validation_id: activeValidationId }).eq("id", canonicalSessionId);
   }
   await database.from("commerce_sessions").update({ merged_into: canonicalSessionId }).in("id", sourceIds).is("merged_into", null);
   return canonicalSessionId;
