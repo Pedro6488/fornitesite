@@ -35,11 +35,12 @@ const item: CatalogItem = {
 describe("CartCheckoutForm", () => {
   beforeEach(() => { commerce.authenticated = true; });
 
-  it("muestra la sesión y oculta un login repetido antes de cotizar", () => {
+  it("mantiene la sesión activa fuera del contenido del checkout", () => {
     render(<CartCheckoutForm items={[item]} />);
 
-    expect(screen.getByText("Sesión iniciada")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Iniciar sesión" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Sesión iniciada")).not.toBeInTheDocument();
+    expect(screen.queryByText("Compra sin crear una cuenta")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Prefiero iniciar sesión" })).not.toBeInTheDocument();
     expect(screen.getByText("ID y precio").closest("li")).toHaveAttribute("aria-current", "step");
   });
 
@@ -47,8 +48,8 @@ describe("CartCheckoutForm", () => {
     commerce.authenticated = false;
     render(<CartCheckoutForm items={[item]} />);
 
-    expect(screen.getByText("Continuar como invitado")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Iniciar sesión" })).toHaveAttribute("href", "/cuenta?next=/checkout");
+    expect(screen.getByText("Compra sin crear una cuenta")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Prefiero iniciar sesión" })).toHaveAttribute("href", "/cuenta?next=/checkout");
     expect(screen.queryByText("Precio confirmado")).not.toBeInTheDocument();
   });
 });

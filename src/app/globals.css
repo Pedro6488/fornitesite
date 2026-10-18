@@ -1864,6 +1864,42 @@ h1 {
   line-height: 1.6;
 }
 
+.account-page {
+  display: grid;
+  gap: 1.75rem;
+  margin: 0 auto;
+  max-width: 82rem;
+  padding: 3.5rem clamp(1rem, 5vw, 4rem) 5rem;
+}
+
+.account-page-heading {
+  display: grid;
+  gap: .45rem;
+  max-width: 48rem;
+}
+
+.account-page-heading .eyebrow {
+  margin: 0;
+}
+
+.account-page-heading h1 {
+  font-size: clamp(2.6rem, 5vw, 4rem);
+  line-height: .98;
+  margin: 0;
+}
+
+.account-page-heading>p:last-child {
+  color: #aeb9d4;
+  line-height: 1.55;
+  margin: .25rem 0 0;
+  max-width: 42rem;
+}
+
+.account-page>.account-card {
+  max-width: 35rem;
+  width: 100%;
+}
+
 .validation-panel {
   background: rgba(21, 26, 49, .86);
   border: 1px solid rgba(255, 255, 255, .1);
@@ -2136,7 +2172,6 @@ legend {
   line-height: 1.4;
 }
 
-.account-welcome,
 .orders-heading {
   align-items: start;
   display: flex;
@@ -2149,15 +2184,21 @@ legend {
   margin: 0;
 }
 
-.account-welcome button {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, .18);
-  border-radius: 999px;
-  color: var(--muted);
-  cursor: pointer;
-  font-size: .7rem;
-  font-weight: 800;
-  padding: .6rem .75rem;
+.account-welcome {
+  display: grid;
+  gap: .35rem;
+  max-width: 42rem;
+}
+
+.account-welcome .eyebrow,
+.account-welcome>p:last-child {
+  margin: 0;
+}
+
+.account-welcome>p:last-child {
+  color: #aeb9d4;
+  font-size: .82rem;
+  line-height: 1.5;
 }
 
 .dashboard-grid {
@@ -2176,10 +2217,7 @@ legend {
 }
 
 .account-identity-panel>header {
-  align-items: center;
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
+  display: block;
 }
 
 .account-identity-heading {
@@ -2226,23 +2264,46 @@ legend {
 
 .account-add-identity {
   align-items: center;
-  background: rgba(85, 217, 255, .08);
-  border: 1px solid rgba(85, 217, 255, .3);
-  border-radius: .7rem;
+  background: rgba(85, 217, 255, .045);
+  border: 1px dashed rgba(85, 217, 255, .35);
+  border-radius: .85rem;
   color: #c3f2ff;
   cursor: pointer;
-  display: inline-flex;
-  flex: 0 0 auto;
-  font-size: .72rem;
-  font-weight: 850;
-  gap: .4rem;
-  min-height: 2.7rem;
-  padding: .6rem .8rem;
+  display: grid;
+  gap: .65rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  min-height: 4.25rem;
+  padding: .75rem;
+  text-align: left;
 }
 
 .account-add-identity:hover {
   background: rgba(85, 217, 255, .14);
   border-color: rgba(85, 217, 255, .55);
+}
+
+.account-add-identity>span:first-child {
+  align-items: center;
+  background: rgba(85, 217, 255, .1);
+  border-radius: .65rem;
+  display: flex;
+  height: 2.35rem;
+  justify-content: center;
+  width: 2.35rem;
+}
+
+.account-add-identity>span:last-child {
+  display: grid;
+  gap: .18rem;
+}
+
+.account-add-identity strong {
+  font-size: .8rem;
+}
+
+.account-add-identity small {
+  color: #9eacc9;
+  font-size: .64rem;
 }
 
 .account-identity-list {
@@ -2329,17 +2390,6 @@ legend {
   letter-spacing: .035em;
   padding: .3rem .48rem;
   text-transform: uppercase;
-}
-
-.account-identity-empty {
-  background: rgba(255, 213, 31, .07);
-  border: 1px dashed rgba(255, 213, 31, .38);
-  border-radius: .85rem;
-  color: #fff1a7;
-  cursor: pointer;
-  font-size: .78rem;
-  font-weight: 800;
-  min-height: 4rem;
 }
 
 .account-stats-grid {
@@ -4033,8 +4083,7 @@ select:focus-visible {
   margin: 0;
 }
 
-.checkout-gate button,
-.checkout-auth-choice a {
+.checkout-gate button {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, .17);
   border-radius: .65rem;
@@ -4064,25 +4113,32 @@ select:focus-visible {
   color: #ff9ba6;
 }
 
-.checkout-auth-choice {
+.checkout-guest-access {
   align-items: center;
-  background: #0d1227;
-  border-radius: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  border-top: 1px solid rgba(255, 255, 255, .08);
   display: flex;
   gap: 1rem;
   justify-content: space-between;
-  padding: .9rem;
+  padding: .8rem .15rem;
 }
 
-.checkout-auth-choice p {
+.checkout-guest-access strong {
+  font-size: .78rem;
+}
+
+.checkout-guest-access p {
   color: var(--muted);
   font-size: .7rem;
   margin: .25rem 0 0;
 }
 
-.checkout-auth-choice a {
+.checkout-guest-access a {
   align-items: center;
+  color: var(--cyan);
   display: flex;
+  font-size: .69rem;
+  font-weight: 850;
   white-space: nowrap;
 }
 
@@ -4687,15 +4743,18 @@ body:has(.admin-dashboard) .site-footer {
   }
 
   .checkout-gate,
-  .checkout-auth-choice {
+  .checkout-guest-access {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .checkout-gate button,
-  .checkout-auth-choice a {
+  .checkout-gate button {
     justify-content: center;
     text-align: center;
+  }
+
+  .checkout-guest-access a {
+    align-self: flex-start;
   }
 
   .post-sale-actions {
@@ -5043,6 +5102,98 @@ body:has(.admin-dashboard) .site-footer {
 
 .desktop-navigation {
   gap: .35rem;
+}
+
+.account-header-menu {
+  position: relative;
+}
+
+.account-header-menu>summary {
+  align-items: center;
+  border: 1px solid rgba(85, 217, 255, .38);
+  border-radius: .78rem;
+  color: #eef5ff;
+  cursor: pointer;
+  display: inline-flex;
+  font-size: .78rem;
+  font-weight: 850;
+  gap: .45rem;
+  list-style: none;
+  min-height: 2.7rem;
+  padding: 0 .68rem;
+  transition: background .18s ease, border-color .18s ease;
+}
+
+.account-header-menu>summary::-webkit-details-marker {
+  display: none;
+}
+
+.account-header-menu>summary:hover,
+.account-header-menu[open]>summary {
+  background: rgba(85, 217, 255, .08);
+  border-color: rgba(85, 217, 255, .65);
+}
+
+.account-header-avatar {
+  align-items: center;
+  background: rgba(85, 217, 255, .1);
+  border-radius: .55rem;
+  color: var(--cyan);
+  display: flex;
+  height: 1.9rem;
+  justify-content: center;
+  width: 1.9rem;
+}
+
+.account-header-menu[open] .account-header-chevron {
+  transform: rotate(180deg);
+}
+
+.account-header-popover {
+  background: #0c1228;
+  border: 1px solid rgba(126, 175, 255, .24);
+  border-radius: .85rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .42);
+  display: grid;
+  gap: .3rem;
+  min-width: 12.5rem;
+  padding: .45rem;
+  position: absolute;
+  right: 0;
+  top: calc(100% + .55rem);
+  z-index: 80;
+}
+
+.account-header-popover a,
+.account-header-popover button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: .55rem;
+  color: #e9edfa;
+  cursor: pointer;
+  display: flex;
+  font-size: .72rem;
+  font-weight: 800;
+  gap: .55rem;
+  min-height: 2.5rem;
+  padding: .55rem .65rem;
+  text-align: left;
+  width: 100%;
+}
+
+.account-header-popover a:hover,
+.account-header-popover button:hover {
+  background: rgba(255, 255, 255, .07);
+}
+
+.account-header-popover button {
+  color: #ffadb7;
+}
+
+.account-header-popover button:disabled {
+  cursor: wait;
+  opacity: .6;
 }
 
 .desktop-nav-link,
@@ -6196,6 +6347,31 @@ body:has(.admin-dashboard) .site-footer {
     gap: .5rem;
   }
 
+  .mobile-header-actions .account-header-guest {
+    display: none;
+  }
+
+  .mobile-header-actions .account-header-menu>summary {
+    height: 2.65rem;
+    justify-content: center;
+    min-height: 2.65rem;
+    padding: 0;
+    width: 2.65rem;
+  }
+
+  .mobile-header-actions .account-header-menu>summary>span:not(.account-header-avatar),
+  .mobile-header-actions .account-header-chevron {
+    display: none;
+  }
+
+  .mobile-header-actions .account-header-avatar {
+    background: transparent;
+  }
+
+  .mobile-header-actions .account-header-popover {
+    right: 0;
+  }
+
   .mobile-header-actions .identity-nav-button {
     background: #131b36;
     border-color: rgba(85, 217, 255, .46);
@@ -7031,10 +7207,6 @@ body:has(.admin-dashboard) .site-footer {
   color: #ff9ba6;
 }
 
-.checkout-auth-choice.authenticated {
-  border: 1px solid rgba(75, 225, 154, .28);
-}
-
 .mobile-cart-checkout a {
   align-items: center;
   display: inline-flex;
@@ -7378,6 +7550,19 @@ body:has(.admin-dashboard) .site-footer {
 }
 
 @media (max-width: 700px) {
+  .account-page {
+    gap: 1.25rem;
+    padding: 2rem .85rem 6rem;
+  }
+
+  .account-page-heading h1 {
+    font-size: clamp(2.45rem, 13vw, 3.35rem);
+  }
+
+  .account-page-heading>p:last-child {
+    font-size: .83rem;
+  }
+
   .account-identity-panel {
     gap: .85rem;
     padding: .85rem;
@@ -7392,11 +7577,6 @@ body:has(.admin-dashboard) .site-footer {
     align-items: flex-start;
   }
 
-  .account-add-identity {
-    justify-content: center;
-    width: 100%;
-  }
-
   .account-identity-list,
   .account-stats-grid {
     grid-template-columns: 1fr;
@@ -7404,6 +7584,12 @@ body:has(.admin-dashboard) .site-footer {
 
   .account-identity-option {
     min-height: 4rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header .brand>span {
+    display: none;
   }
 }
 

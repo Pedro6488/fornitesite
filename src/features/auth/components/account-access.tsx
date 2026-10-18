@@ -75,16 +75,15 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
 
   if (checking) return <div className="account-card"><p>Cargando tu cuenta…</p></div>;
   if (orders) return <div className="account-dashboard">
-    <div className="account-welcome"><div><p className="eyebrow">MI DASHBOARD</p><h2>Tu cuenta está lista.</h2></div><button type="button" onClick={() => void supabase?.auth.signOut().then(() => window.location.reload())}>Cerrar sesión</button></div>
+    <div className="account-welcome"><p className="eyebrow">MI DASHBOARD</p><h2>Todo lo importante, en un solo lugar.</h2><p>Administra destinatarios y revisa el estado de tus compras.</p></div>
     <section className={`account-identity-panel ${identity.tone}`} aria-labelledby="account-identities-title">
       <header>
         <div className="account-identity-heading">
           <span><Gamepad2 aria-hidden="true" size={21} /></span>
           <div><p className="eyebrow">DESTINATARIOS</p><h3 id="account-identities-title">¿Quién recibirá tu próxima compra?</h3><p>Elige un ID guardado o agrega otro destinatario.</p></div>
         </div>
-        <button type="button" className="account-add-identity" onClick={commerce.openIdentity}><Plus aria-hidden="true" size={16} />Agregar otro ID</button>
       </header>
-      {commerce.validations.length > 0 ? <div className="account-identity-list">
+      <div className="account-identity-list">
         {commerce.validations.map((validation) => {
           const entry = getIdentityPresentation(validation);
           const EntryIcon = entry.tone === "success" ? BadgeCheck : entry.tone === "danger" ? CircleAlert : entry.tone === "warning" ? Clock3 : ScanLine;
@@ -102,7 +101,11 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
             {active && <b>Activo</b>}
           </button>;
         })}
-      </div> : <button type="button" className="account-identity-empty" onClick={commerce.openIdentity}>Agrega el ID que recibirá tus objetos</button>}
+        <button type="button" className="account-add-identity" onClick={commerce.openIdentity}>
+          <span><Plus aria-hidden="true" size={18} /></span>
+          <span><strong>Agregar otro ID</strong><small>Registra un nuevo destinatario</small></span>
+        </button>
+      </div>
       {message && <p className="notice error">{message}</p>}
     </section>
     <div className="dashboard-grid account-stats-grid">

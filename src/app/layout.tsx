@@ -6,7 +6,6 @@ import {
   Heart,
   MessageCircle,
   ShieldCheck,
-  UserRound,
 } from "lucide-react";
 import { CartLink } from "@/features/cart/components/cart-link";
 import { CommerceStateProvider } from "@/features/commerce/components/commerce-state-provider";
@@ -14,6 +13,7 @@ import { IdentitySheet } from "@/features/commerce/components/identity-sheet";
 import { IdentityNavButton } from "@/features/commerce/components/identity-nav-button";
 import { MobileNavigation } from "@/features/commerce/components/mobile-navigation";
 import { AdminHeaderLogout } from "@/features/admin/components/admin-header-logout";
+import { AccountHeaderMenu } from "@/features/auth/components/account-header-menu";
 import "./globals.css";
 import "./system-action-bar.css";
 import "./order-operations.css";
@@ -84,6 +84,7 @@ export default function RootLayout({
               </Link>
               <div className="mobile-header-actions">
                 <IdentityNavButton />
+                <AccountHeaderMenu />
                 <AdminHeaderLogout />
               </div>
               <nav
@@ -96,10 +97,7 @@ export default function RootLayout({
                 </Link>
                 <IdentityNavButton />
                 <CartLink />
-                <Link className="account-link" href="/cuenta">
-                  <UserRound aria-hidden="true" size={17} />
-                  Cuenta
-                </Link>
+                <AccountHeaderMenu />
                 <AdminHeaderLogout />
               </nav>
             </div>
