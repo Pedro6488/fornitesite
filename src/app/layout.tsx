@@ -5,7 +5,6 @@ import {
   Globe2,
   Heart,
   MessageCircle,
-  ReceiptText,
   ShieldCheck,
   UserRound,
 } from "lucide-react";
@@ -40,7 +39,7 @@ export default function RootLayout({
             <div className="utility-bar-inner">
               <span className="trust-message">
                 <ShieldCheck aria-hidden="true" size={15} />
-                Compra protegida · precio confirmado en servidor
+                Compra protegida
               </span>
               <div className="utility-links">
                 <a

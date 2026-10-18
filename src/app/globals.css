@@ -4644,6 +4644,27 @@ body:has(.admin-dashboard) .site-footer {
   color: #fff1a7;
 }
 
+.identity-nav-button.success,
+.product-identity-status.success {
+  background: rgba(75, 225, 154, .08);
+  border-color: rgba(75, 225, 154, .32);
+  color: #9cffcf;
+}
+
+.identity-nav-button.warning,
+.product-identity-status.warning {
+  background: rgba(255, 213, 31, .1);
+  border-color: rgba(255, 213, 31, .4);
+  color: #fff1a7;
+}
+
+.identity-nav-button.danger,
+.product-identity-status.danger {
+  background: rgba(255, 101, 119, .08);
+  border-color: rgba(255, 101, 119, .4);
+  color: #ffadb5;
+}
+
 .identity-manual_review {
   border-color: rgba(85, 217, 255, .35);
 }
@@ -5207,10 +5228,8 @@ body:has(.admin-dashboard) .site-footer {
   }
 
   .trust-message {
-    font-size: .61rem;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: 0 0 auto;
+    font-size: .68rem;
     white-space: nowrap;
   }
 
@@ -6007,7 +6026,8 @@ body:has(.admin-dashboard) .site-footer {
     padding: 0 .65rem;
   }
 
-  .mobile-header-actions .identity-nav-button.ready {
+  .mobile-header-actions .identity-nav-button.ready,
+  .mobile-header-actions .identity-nav-button.success {
     background: #102b29;
     border-color: rgba(75, 225, 154, .5);
     color: #b8f8d6;
@@ -6520,7 +6540,7 @@ body:has(.admin-dashboard) .site-footer {
 }
 
 .cart-heading h1 {
-  font-size: clamp(3rem, 6vw, 5rem);
+  font-size: clamp(3rem, 5vw, 4rem);
   line-height: .92;
   margin: .35rem 0 .65rem;
 }
@@ -6540,7 +6560,7 @@ body:has(.admin-dashboard) .site-footer {
   border-radius: .8rem;
   color: #bcefff;
   display: inline-flex;
-  font-size: .7rem;
+  font-size: .82rem;
   font-weight: 800;
   gap: .45rem;
   max-width: 18rem;
@@ -6761,7 +6781,7 @@ body:has(.admin-dashboard) .site-footer {
   align-items: center;
   color: #8f9bb9;
   display: grid;
-  font-size: .52rem;
+  font-size: .75rem;
   gap: .28rem;
   justify-items: center;
   text-align: center;
@@ -6793,6 +6813,24 @@ body:has(.admin-dashboard) .site-footer {
 .cart-next-steps span.complete b {
   background: rgba(75, 225, 154, .12);
   border-color: rgba(75, 225, 154, .3);
+}
+
+.checkout-gate.success {
+  background: rgba(75, 225, 154, .07);
+  border-color: rgba(75, 225, 154, .27);
+}
+
+.checkout-gate.danger {
+  background: rgba(255, 101, 119, .08);
+  border-color: rgba(255, 101, 119, .31);
+}
+
+.checkout-gate.danger small {
+  color: #ff9ba6;
+}
+
+.checkout-auth-choice.authenticated {
+  border: 1px solid rgba(75, 225, 154, .28);
 }
 
 .mobile-cart-checkout a {
