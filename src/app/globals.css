@@ -5312,11 +5312,12 @@ body:has(.admin-dashboard) .site-footer {
   box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, .42);
   display: grid;
   gap: .3rem;
-  min-width: 12.5rem;
+  max-width: calc(100vw - 1.5rem);
   padding: .45rem;
   position: absolute;
   right: 0;
   top: calc(100% + .55rem);
+  width: 19.5rem;
   z-index: 80;
 }
 
@@ -5343,7 +5344,7 @@ body:has(.admin-dashboard) .site-footer {
   background: rgba(255, 255, 255, .07);
 }
 
-.account-header-popover button {
+.account-header-popover .account-menu-signout {
   color: #ffadb7;
 }
 
@@ -5354,6 +5355,103 @@ body:has(.admin-dashboard) .site-footer {
 
 .account-header-popover .account-menu-primary {
   font-weight: 950;
+}
+
+.account-menu-identity {
+  align-items: center;
+  background: rgba(85, 217, 255, .055);
+  border: 1px solid rgba(85, 217, 255, .17);
+  border-radius: .7rem;
+  display: grid;
+  gap: .65rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: .75rem;
+}
+
+.account-menu-identity>svg {
+  color: var(--cyan);
+}
+
+.account-menu-identity.success {
+  background: rgba(75, 225, 154, .06);
+  border-color: rgba(75, 225, 154, .22);
+}
+
+.account-menu-identity.success>svg {
+  color: #75edaf;
+}
+
+.account-menu-identity.warning {
+  background: rgba(255, 213, 31, .06);
+  border-color: rgba(255, 213, 31, .22);
+}
+
+.account-menu-identity.warning>svg {
+  color: var(--accent);
+}
+
+.account-menu-identity.danger {
+  background: rgba(255, 101, 119, .06);
+  border-color: rgba(255, 101, 119, .24);
+}
+
+.account-menu-identity.danger>svg {
+  color: #ff8996;
+}
+
+.account-menu-identity>div {
+  display: grid;
+  gap: .12rem;
+  min-width: 0;
+}
+
+.account-menu-identity small {
+  color: #8f9bb9;
+  font-size: .51rem;
+  font-weight: 900;
+  letter-spacing: .055em;
+}
+
+.account-menu-identity strong {
+  color: #f5f8ff;
+  font-size: .8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu-identity div>span {
+  color: #aab6d2;
+  font-size: .63rem;
+}
+
+.account-header-popover .account-menu-identity>button {
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .1);
+  color: #cdefff;
+  grid-column: 1 / -1;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: .45rem .6rem;
+}
+
+.account-menu-favorites b {
+  align-items: center;
+  background: rgba(255, 213, 31, .14);
+  border-radius: 999px;
+  color: var(--accent);
+  display: inline-flex;
+  font-size: .58rem;
+  height: 1.45rem;
+  justify-content: center;
+  margin-left: auto;
+  min-width: 1.45rem;
+  padding: 0 .3rem;
+}
+
+.account-menu-divider {
+  border-top: 1px solid rgba(255, 255, 255, .09);
+  margin: .15rem .35rem;
 }
 
 .account-header-loading {
@@ -6550,7 +6648,7 @@ body:has(.admin-dashboard) .site-footer {
     background: #0b1126;
     border-radius: 0;
     gap: .45rem;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     min-height: 4.85rem;
     padding: .52rem max(.7rem, env(safe-area-inset-left)) calc(.5rem + env(safe-area-inset-bottom)) max(.7rem, env(safe-area-inset-right));
   }

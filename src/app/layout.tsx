@@ -3,14 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Globe2,
-  Heart,
   MessageCircle,
   ShieldCheck,
 } from "lucide-react";
 import { CartLink } from "@/features/cart/components/cart-link";
 import { CommerceStateProvider } from "@/features/commerce/components/commerce-state-provider";
 import { IdentitySheet } from "@/features/commerce/components/identity-sheet";
-import { IdentityNavButton } from "@/features/commerce/components/identity-nav-button";
 import { MobileNavigation } from "@/features/commerce/components/mobile-navigation";
 import { AdminHeaderLogout } from "@/features/admin/components/admin-header-logout";
 import { AccountHeaderMenu } from "@/features/auth/components/account-header-menu";
@@ -83,7 +81,6 @@ export default function RootLayout({
                 </span>
               </Link>
               <div className="mobile-header-actions">
-                <IdentityNavButton />
                 <AccountHeaderMenu />
                 <AdminHeaderLogout />
               </div>
@@ -91,11 +88,6 @@ export default function RootLayout({
                 className="desktop-navigation"
                 aria-label="Navegación principal"
               >
-                <Link className="desktop-nav-link" href="/favoritos">
-                  <Heart aria-hidden="true" size={17} />
-                  Favoritos
-                </Link>
-                <IdentityNavButton />
                 <CartLink />
                 <AccountHeaderMenu />
                 <AdminHeaderLogout />
