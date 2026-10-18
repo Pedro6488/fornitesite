@@ -6,6 +6,7 @@ import { CartPage } from "./cart-page";
 const router = vi.hoisted(() => ({ push: vi.fn() }));
 const commerce = vi.hoisted(() => ({
   ready: true,
+  authenticated: false,
   syncing: false,
   cartItemIds: ["available", "expired", "missing"],
   validation: null,
@@ -49,6 +50,8 @@ describe("CartPage", () => {
     expect(screen.getByText("Objeto vencido")).toBeInTheDocument();
     expect(screen.getByText("Objeto ya no disponible")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Hay objetos no disponibles" })).toBeDisabled();
+    expect(screen.getByText("ID y precio")).toBeInTheDocument();
+    expect(screen.getByText("Carrito").closest("span")).toHaveAttribute("aria-current", "step");
 
     fireEvent.click(screen.getByRole("button", { name: "Quitar no disponibles" }));
     await waitFor(() => expect(commerce.removeCartItem).toHaveBeenCalledWith("expired"));
