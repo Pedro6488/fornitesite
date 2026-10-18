@@ -3,18 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   Globe2,
-  Heart,
   MessageCircle,
-  ReceiptText,
   ShieldCheck,
-  UserRound,
 } from "lucide-react";
 import { CartLink } from "@/features/cart/components/cart-link";
 import { CommerceStateProvider } from "@/features/commerce/components/commerce-state-provider";
 import { IdentitySheet } from "@/features/commerce/components/identity-sheet";
-import { IdentityNavButton } from "@/features/commerce/components/identity-nav-button";
 import { MobileNavigation } from "@/features/commerce/components/mobile-navigation";
 import { AdminHeaderLogout } from "@/features/admin/components/admin-header-logout";
+import { AccountHeaderMenu } from "@/features/auth/components/account-header-menu";
 import "./globals.css";
 import "./system-action-bar.css";
 import "./order-operations.css";
@@ -40,7 +37,7 @@ export default function RootLayout({
             <div className="utility-bar-inner">
               <span className="trust-message">
                 <ShieldCheck aria-hidden="true" size={15} />
-                Compra protegida · precio confirmado en servidor
+                Compra protegida
               </span>
               <div className="utility-links">
                 <a
@@ -84,23 +81,15 @@ export default function RootLayout({
                 </span>
               </Link>
               <div className="mobile-header-actions">
-                <IdentityNavButton />
+                <AccountHeaderMenu />
                 <AdminHeaderLogout />
               </div>
               <nav
                 className="desktop-navigation"
                 aria-label="Navegación principal"
               >
-                <Link className="desktop-nav-link" href="/favoritos">
-                  <Heart aria-hidden="true" size={17} />
-                  Favoritos
-                </Link>
-                <IdentityNavButton />
                 <CartLink />
-                <Link className="account-link" href="/cuenta">
-                  <UserRound aria-hidden="true" size={17} />
-                  Cuenta
-                </Link>
+                <AccountHeaderMenu />
                 <AdminHeaderLogout />
               </nav>
             </div>

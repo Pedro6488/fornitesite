@@ -634,6 +634,8 @@
 
 .admin-action-confirm { background: var(--cyan); border: 1px solid var(--cyan); color: #08111a; }
 
+.admin-action-confirm.warning { background: #ffd31a; border-color: #ffd31a; color: #171200; }
+
 .admin-action-confirm.danger { background: #ff6577; border-color: #ff6577; color: #23070b; }
 
 .admin-action-cancel:disabled,
@@ -706,6 +708,12 @@
 .identity-review-action.approve {
   background: var(--cyan);
   color: #08111a;
+}
+
+.identity-review-action.override {
+  background: rgba(255, 211, 26, .1);
+  border-color: rgba(255, 211, 26, .5);
+  color: #ffe36c;
 }
 
 .identity-review-action.danger {

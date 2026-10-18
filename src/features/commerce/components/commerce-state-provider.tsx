@@ -5,6 +5,8 @@ import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
 const LEGACY_CART_KEY = "sigfriedlootbox:cart";
 const LEGACY_FAVORITES_KEY = "drop-shop-mx:favorites";
+const SESSION_STALE_AFTER_MS = 5 * 60 * 1000;
+const WAIT_COMPLETION_BUFFER_MS = 1000;
 
 export type IdentityPlatform = "epic" | "xbl" | "psn" | "nintendo";
 export type IdentityValidation = Readonly<{
@@ -18,8 +20,21 @@ export type IdentityValidation = Readonly<{
   last_checked_at: string;
 }>;
 
+type CommerceApiResponse = {
+  error?: string;
+  authenticated?: boolean;
+  cartItemIds?: string[];
+  favoriteItemIds?: string[];
+  itemIds?: string[];
+  validations?: IdentityValidation[];
+  validation?: IdentityValidation;
+  activeValidationId?: string | null;
+  [key: string]: unknown;
+};
+
 type CommerceState = Readonly<{
   ready: boolean;
+  authenticated: boolean;
   syncing: boolean;
   cartItemIds: readonly string[];
   favoriteItemIds: ReadonlySet<string>;
@@ -61,15 +76,16 @@ async function authHeaders(): Promise<HeadersInit> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function responseBody(response: Response): Promise<Record<string, any>> {
+async function responseBody(response: Response): Promise<CommerceApiResponse> {
   const body = await response.json().catch(() => null);
   return body && typeof body === "object"
-    ? body as Record<string, any>
+    ? body as CommerceApiResponse
     : { error: "El servicio respondió sin detalles. Intenta de nuevo." };
 }
 
 export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [favoriteItemIds, setFavoriteItemIds] = useState<Set<string>>(new Set());
@@ -77,71 +93,96 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [activeValidationId, setActiveValidationId] = useState<string | null>(null);
   const validation = useMemo(() => validations.find((entry) => entry.id === activeValidationId) ?? null, [activeValidationId, validations]);
   const [identityOpen, setIdentityOpen] = useState(false);
-  const lastRefreshAt = useRef(0);
-  const refreshing = useRef(false);
+  const refreshInFlightRef = useRef<Promise<void> | null>(null);
+  const lastRefreshAttemptAtRef = useRef(0);
+  const hasHydratedRef = useRef(false);
   const openIdentity = useCallback(() => setIdentityOpen(true), []);
   const closeIdentity = useCallback(() => setIdentityOpen(false), []);
   const clearCart = useCallback(() => setCartItemIds([]), []);
 
-  const refresh = useCallback(async (options?: { advanceIdentity?: boolean }) => {
-    if (refreshing.current) return;
-    refreshing.current = true;
-    const cart = legacyCartIds();
-    const favorites = legacyFavoriteIds();
-    const migratingLegacyState = cart.length > 0 || favorites.length > 0;
-    let completed = false;
-    try {
-      const query = options?.advanceIdentity ? "?advanceIdentity=1" : "";
-      const response = await fetch(`/api/commerce/session${query}`, {
-        method: migratingLegacyState ? "POST" : "GET",
-        headers: { ...(migratingLegacyState ? { "Content-Type": "application/json" } : {}), ...(await authHeaders()) },
-        body: migratingLegacyState ? JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites }) : undefined,
-        cache: "no-store"
-      });
-      const body = await responseBody(response);
-      if (!response.ok) throw new Error(body.error);
-      setCartItemIds(body.cartItemIds ?? []);
-      setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
-      setValidations(body.validations ?? (body.validation ? [body.validation] : []));
-      setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
-      window.localStorage.removeItem(LEGACY_CART_KEY);
-      window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
-      completed = true;
-    } catch {
-      setCartItemIds(cart);
-      setFavoriteItemIds(new Set(favorites));
-    } finally {
-      if (completed) lastRefreshAt.current = Date.now();
-      refreshing.current = false;
-      setReady(true);
-    }
+  const refresh = useCallback((options?: { advanceIdentity?: boolean }): Promise<void> => {
+    const inFlight = refreshInFlightRef.current;
+    // Only a plain refresh can reuse an in-flight request; advancing identity
+    // waits must reach the server, so it queues behind the current request.
+    if (inFlight && !options?.advanceIdentity) return inFlight;
+
+    const request = (async () => {
+      if (inFlight) await inFlight;
+      const cart = legacyCartIds();
+      const favorites = legacyFavoriteIds();
+      const migratingLegacyState = cart.length > 0 || favorites.length > 0;
+      lastRefreshAttemptAtRef.current = Date.now();
+      try {
+        const query = options?.advanceIdentity ? "?advanceIdentity=1" : "";
+        const response = await fetch(`/api/commerce/session${query}`, {
+          method: migratingLegacyState ? "POST" : "GET",
+          headers: { ...(migratingLegacyState ? { "Content-Type": "application/json" } : {}), ...(await authHeaders()) },
+          body: migratingLegacyState ? JSON.stringify({ cartItemIds: cart, favoriteItemIds: favorites }) : undefined,
+          cache: "no-store"
+        });
+        const body = await responseBody(response);
+        if (!response.ok) throw new Error(body.error);
+        setCartItemIds(body.cartItemIds ?? []);
+        setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
+        setValidations(body.validations ?? (body.validation ? [body.validation] : []));
+        setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
+        setAuthenticated(body.authenticated === true);
+        window.localStorage.removeItem(LEGACY_CART_KEY);
+        window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
+      } catch {
+        // Local storage is only a bootstrap fallback. A later network failure
+        // must not erase state that was already confirmed by the server.
+        if (!hasHydratedRef.current) {
+          setCartItemIds(cart);
+          setFavoriteItemIds(new Set(favorites));
+        }
+      } finally {
+        hasHydratedRef.current = true;
+        setReady(true);
+      }
+    })();
+
+    refreshInFlightRef.current = request;
+    void request.finally(() => {
+      if (refreshInFlightRef.current === request) refreshInFlightRef.current = null;
+    });
+    return request;
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const initialRefresh = window.setTimeout(() => void refresh(), 0);
     const refreshIfStale = () => {
       if (document.visibilityState !== "visible") return;
-      if (Date.now() - lastRefreshAt.current < 5 * 60_000) return;
+      if (Date.now() - lastRefreshAttemptAtRef.current < SESSION_STALE_AFTER_MS) return;
       void refresh();
     };
-    const onFocus = () => refreshIfStale();
-    const onVisibilityChange = () => refreshIfStale();
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    const supabase = getSupabaseBrowser();
-    const { data: authListener } = supabase?.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
-      lastRefreshAt.current = 0;
-      window.setTimeout(() => void refresh(), 0);
-    }) ?? { data: { subscription: null } };
-
+    document.addEventListener("visibilitychange", refreshIfStale);
     return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-      authListener.subscription?.unsubscribe();
+      window.clearTimeout(initialRefresh);
+      document.removeEventListener("visibilitychange", refreshIfStale);
     };
   }, [refresh]);
+
+  useEffect(() => {
+    const supabase = getSupabaseBrowser();
+    if (!supabase) return;
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT") return;
+      window.setTimeout(() => void refresh(), 0);
+    });
+    return () => data.subscription.unsubscribe();
+  }, [refresh]);
+
+  useEffect(() => {
+    if (validation?.status !== "waiting" || !validation.giftable_at) return;
+    const giftableAt = new Date(validation.giftable_at).getTime();
+    if (!Number.isFinite(giftableAt)) return;
+    const timeout = window.setTimeout(
+      () => void refresh({ advanceIdentity: true }),
+      Math.max(WAIT_COMPLETION_BUFFER_MS, giftableAt - Date.now() + WAIT_COMPLETION_BUFFER_MS),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [refresh, validation?.giftable_at, validation?.status]);
 
   const persistCart = useCallback(async (next: string[]) => {
     const previous = cartItemIds;
@@ -155,6 +196,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error ?? "No fue posible guardar el carrito.");
+      if (!body.itemIds) throw new Error("El servicio no devolvió el carrito actualizado.");
       setCartItemIds(body.itemIds);
       return null;
     } catch (error) {
@@ -200,8 +242,10 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
-      setValidations((current) => [body.validation, ...current.filter((entry) => entry.id !== body.validation.id)]);
-      setActiveValidationId(body.validation.id);
+      const savedValidation = body.validation;
+      if (!savedValidation) throw new Error("El servicio no devolvió el ID guardado.");
+      setValidations((current) => [savedValidation, ...current.filter((entry) => entry.id !== savedValidation.id)]);
+      setActiveValidationId(savedValidation.id);
       return null;
     } catch (error) { return error instanceof Error ? error.message : "No fue posible validar el ID."; }
     finally { setSyncing(false); }
@@ -218,6 +262,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
+      if (!body.activeValidationId) throw new Error("El servicio no devolvió el ID activo.");
       setActiveValidationId(body.activeValidationId);
       return null;
     } catch (error) { return error instanceof Error ? error.message : "No fue posible cambiar el ID."; }
@@ -242,12 +287,12 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   }, [validation]);
 
   const value = useMemo<CommerceState>(() => ({
-    ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
+    ready, authenticated, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
     openIdentity,
     closeIdentity,
     validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite,
     clearCart
-  }), [ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
+  }), [ready, authenticated, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }

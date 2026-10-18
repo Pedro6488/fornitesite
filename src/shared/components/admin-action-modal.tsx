@@ -12,6 +12,7 @@ export function AdminActionModal({
   notesLabel,
   notesPlaceholder,
   notesRequired = false,
+  notesMinLength = 3,
   busy = false,
   onClose,
   onConfirm
@@ -20,21 +21,26 @@ export function AdminActionModal({
   title: string;
   description: string;
   confirmLabel: string;
-  tone?: "primary" | "danger";
+  tone?: "primary" | "warning" | "danger";
   notesLabel?: string;
   notesPlaceholder?: string;
   notesRequired?: boolean;
+  notesMinLength?: number;
   busy?: boolean;
   onClose: () => void;
   onConfirm: (notes: string) => void;
 }) {
   const [notes, setNotes] = useState("");
-  useEffect(() => { if (open) setNotes(""); }, [open]);
-  const valid = !notesRequired || notes.trim().length >= 3;
+  useEffect(() => {
+    if (!open) return;
+    const timeout = window.setTimeout(() => setNotes(""), 0);
+    return () => window.clearTimeout(timeout);
+  }, [open]);
+  const valid = !notesRequired || notes.trim().length >= notesMinLength;
   return <CommerceSheet open={open} onClose={onClose} titleId="admin-action-modal-title" eyebrow="CONFIRMAR OPERACIÓN" title={title} description={description} className="admin-action-sheet">
     <form className="admin-action-form" onSubmit={(event) => { event.preventDefault(); if (valid && !busy) onConfirm(notes.trim()); }}>
-      {notesLabel && <label>{notesLabel}{notesRequired && <span> (requerido)</span>}<textarea autoFocus required={notesRequired} minLength={notesRequired ? 3 : undefined} maxLength={500} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder={notesPlaceholder} /></label>}
-      <div><button type="button" className="admin-action-cancel" disabled={busy} onClick={onClose}>Volver</button><button className={tone === "danger" ? "admin-action-confirm danger" : "admin-action-confirm"} disabled={!valid || busy}>{busy ? "Guardando…" : confirmLabel}</button></div>
+      {notesLabel && <label>{notesLabel}{notesRequired && <span> (requerido, mínimo {notesMinLength} caracteres)</span>}<textarea autoFocus required={notesRequired} minLength={notesRequired ? notesMinLength : undefined} maxLength={500} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder={notesPlaceholder} /></label>}
+      <div><button type="button" className="admin-action-cancel" disabled={busy} onClick={onClose}>Volver</button><button className={`admin-action-confirm${tone === "primary" ? "" : ` ${tone}`}`} disabled={!valid || busy}>{busy ? "Guardando…" : confirmLabel}</button></div>
     </form>
   </CommerceSheet>;
 }

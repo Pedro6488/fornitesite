@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
+import { resolveCartAvailability } from "@/features/cart/application/cart-availability";
 import { attachCommerceCookie, commerceErrorResponse, requireCommerceSession } from "@/shared/server/commerce-session";
 import { recordCartActivity } from "@/features/notifications/server/campaigns";
 
@@ -32,14 +32,18 @@ export async function PUT(request: Request) {
       if (error) return attachCommerceCookie(NextResponse.json({ error: "No fue posible vaciar el carrito." }, { status: 503 }), context.session);
       return attachCommerceCookie(NextResponse.json({ itemIds: [] }), context.session);
     }
-    const catalog = await getCatalogService();
-    const items = await Promise.all(parsed.data.itemIds.map((id) => catalog.find(id)));
-    if (items.some((item) => !item || !canPurchase(item))) {
-      return attachCommerceCookie(NextResponse.json({ error: "Uno de los objetos ya no está disponible." }, { status: 409 }), context.session);
+    const catalogItems = await (await getCatalogService()).list();
+    const availability = resolveCartAvailability(parsed.data.itemIds, catalogItems);
+    const availableItemIds = availability.filter((entry) => entry.available).map((entry) => entry.itemId);
+    const removedItemIds = availability.filter((entry) => !entry.available).map((entry) => entry.itemId);
+    if (availableItemIds.length === 0) {
+      const { error } = await context.database.from("shopping_carts").delete().eq("commerce_session_id", context.session.id).eq("status", "active");
+      if (error) return attachCommerceCookie(NextResponse.json({ error: "No fue posible limpiar el carrito." }, { status: 503 }), context.session);
+      return attachCommerceCookie(NextResponse.json({ itemIds: [], removedItemIds }), context.session);
     }
     const { error } = await context.database.rpc("replace_cart_items", {
       p_session_id: context.session.id,
-      p_item_ids: parsed.data.itemIds
+      p_item_ids: availableItemIds
     });
     if (error) return attachCommerceCookie(NextResponse.json({ error: "No fue posible guardar el carrito." }, { status: 503 }), context.session);
     const { data: savedCart } = await context.database.from("shopping_carts").select("id,updated_at")
@@ -48,7 +52,7 @@ export async function PUT(request: Request) {
     if (savedCart) {
       await recordCartActivity(context.database, context.session.id, savedCart.id, savedCart.updated_at);
     }
-    return attachCommerceCookie(NextResponse.json({ itemIds: parsed.data.itemIds }), context.session);
+    return attachCommerceCookie(NextResponse.json({ itemIds: availableItemIds, removedItemIds }), context.session);
   } catch (error) {
     return commerceErrorResponse(error, "cart");
   }

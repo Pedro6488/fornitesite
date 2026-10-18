@@ -46,4 +46,59 @@ describe("FortniteApiCatalogProvider", () => {
       shopLayoutRank: 198
     }));
   });
+
+  it("muestra lotes y pistas de Jam cuando Fortnite-API las entrega en tracks", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      data: {
+        entries: [
+          {
+            offerId: "spooky-jam-bundle",
+            finalPrice: 2_200,
+            bundle: {
+              name: "Spooky Szn '26 Jam Bundle",
+              info: "Bundle",
+              image: "https://fortnite-api.com/spooky-bundle.png"
+            },
+            layout: { name: "Locker of Horrors" },
+            tracks: [
+              { id: "sid-reaper", title: "(Don't Fear) The Reaper", artist: "Blue Öyster Cult", albumArt: "https://cdn.fortnite-api.com/reaper.jpg" },
+              { id: "sid-dragula", title: "Dragula", artist: "Rob Zombie", albumArt: "https://cdn.fortnite-api.com/dragula.jpg" }
+            ]
+          },
+          {
+            offerId: "reaper-offer",
+            finalPrice: 500,
+            layout: { name: "Locker of Horrors" },
+            tracks: [{
+              id: "sid-reaper",
+              title: "(Don't Fear) The Reaper",
+              artist: "Blue Öyster Cult",
+              album: "Agents of Fortune",
+              albumArt: "https://cdn.fortnite-api.com/reaper.jpg"
+            }]
+          }
+        ]
+      }
+    }), { status: 200 })));
+
+    const items = await new FortniteApiCatalogProvider("https://fortnite-api.com/v2").getCurrentCatalog();
+
+    expect(items).toEqual([
+      expect.objectContaining({
+        mainId: "spooky-jam-bundle",
+        name: "Spooky Szn '26 Jam Bundle",
+        description: "Bundle",
+        imageUrl: "https://fortnite-api.com/spooky-bundle.png",
+        type: "Lote"
+      }),
+      expect.objectContaining({
+        mainId: "sid-reaper",
+        offerId: "reaper-offer",
+        name: "(Don't Fear) The Reaper",
+        description: "Blue Öyster Cult · Agents of Fortune",
+        imageUrl: "https://cdn.fortnite-api.com/reaper.jpg",
+        type: "Pista de Jam"
+      })
+    ]);
+  });
 });
