@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState, type FormEvent } from "react";
 import { BadgeCheck, Clock3, ShieldCheck } from "lucide-react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
+import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
 import { CommerceSheet } from "@/features/commerce/components/commerce-sheet";
 import { formatMxn } from "@/features/pricing/domain/price-calculator";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
@@ -41,9 +42,8 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const unavailableEntries = useMemo(() => cartEntries.filter((entry) => !entry.available), [cartEntries]);
   const lines = useMemo(() => cartEntries.flatMap((entry) => entry.available && entry.item ? [entry.item] : []), [cartEntries]);
   const visibleTotal = lines.reduce((sum, item) => sum + (item.priceMxn ?? 0), 0);
-  const waiting = commerce.validation?.status === "waiting";
-  const manualReview = commerce.validation?.status === "manual_review";
-  const isReady = commerce.validation?.status === "ready";
+  const identity = getIdentityPresentation(commerce.validation);
+  const isReady = identity.canQuote;
   const itemSignature = commerce.cartItemIds.join("|");
   const activeQuote = quote && quote.validationId === commerce.validation?.id && quote.itemSignature === itemSignature ? quote : null;
 
@@ -113,17 +113,18 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   </section>;
 
   return <section className="flow-shell checkout-flow">
-    <div className="flow-heading"><p className="eyebrow">CHECKOUT SEGURO</p><h1>Confirma tu solicitud.</h1><p>{waiting ? "La solicitud de amistad fue enviada. Podrás continuar al cumplirse las 48 horas." : manualReview ? "Tu ID espera la revisión del equipo antes de iniciar la espera de amistad." : "Confirmamos el ID y el precio antes de guardar tu pedido."}</p><ol className="checkout-steps"><li className={isReady ? "complete" : "active"}><span>1</span>{waiting ? "Espera de 48 horas" : "ID de entrega"}</li><li className={activeQuote ? "complete" : isReady ? "active" : ""}><span>2</span>Precio confirmado</li><li className={activeQuote ? "active" : ""}><span>3</span>Contacto y orden</li></ol></div>
+    <div className="flow-heading"><p className="eyebrow">CHECKOUT SEGURO</p><h1>Confirma tu solicitud.</h1><p>{identity.description}</p><ol className="checkout-steps" aria-label="Progreso de compra"><li className="complete"><span><BadgeCheck aria-hidden="true" size={13} /></span>Carrito</li><li className={activeQuote ? "complete" : "active"} aria-current={!activeQuote ? "step" : undefined}><span>{activeQuote ? <BadgeCheck aria-hidden="true" size={13} /> : "2"}</span>ID y precio</li><li className={activeQuote ? "active" : ""} aria-current={activeQuote ? "step" : undefined}><span>3</span>Contacto y orden</li></ol></div>
     <form className="checkout-card" onSubmit={submit}>
       <div className="order-summary"><div><p className="eyebrow">TU PEDIDO</p><h2>{lines.length} {lines.length === 1 ? "objeto" : "objetos"}</h2><span>Una unidad de cada objeto</span></div><strong>{formatMxn((activeQuote?.amountMxnCents ?? visibleTotal * 100) / 100)}</strong></div>
       <div className="checkout-items">{(activeQuote?.lines ?? lines.map((item) => ({ itemMainId: item.mainId, name: item.name, amountMxnCents: (item.priceMxn ?? 0) * 100 }))).map((item) => <p key={item.itemMainId}><span>{item.name}</span><strong>{formatMxn(item.amountMxnCents / 100)}</strong></p>)}</div>
-      <section className={`checkout-gate ${isReady ? "ready" : waiting ? "waiting" : manualReview ? "review" : ""}`}><div><small>PASO 1 · ID DE ENTREGA</small><strong>{commerce.validation?.display_name ?? "Aún no agregado"}</strong><p>{isReady ? "ID validado y listo para recibir objetos." : waiting ? `Solicitud enviada. Disponible ${commerce.validation?.giftable_at ? `a partir de ${new Date(commerce.validation.giftable_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}` : "cuando se cumplan las 48 horas"}.` : manualReview ? "Esperando que el equipo envíe la solicitud de amistad." : "Agrega el ID que recibirá los objetos."}</p></div><button type="button" onClick={commerce.openIdentity}>{isReady ? "Cambiar ID" : "Ver estado"}</button></section>
-      {!activeQuote && <SystemActionBar className="checkout-quote-action" primaryFull><span><small>Total estimado</small><strong>{formatMxn(visibleTotal)}</strong><em>{lines.length} {lines.length === 1 ? "objeto" : "objetos"} · se confirma antes de ordenar</em></span><button type="button" className="primary-button" disabled={loading || !lines.length} onClick={isReady ? openQuoteSheet : commerce.openIdentity}>{loading ? "Confirmando…" : isReady ? "Confirmar precio y continuar" : waiting || manualReview ? "Ver estado de mi ID" : "Agregar ID para continuar"}</button></SystemActionBar>}
+      <section className={`checkout-gate ${identity.tone}`}><div><small>PASO 2 · ID Y PRECIO</small><strong>{commerce.validation?.display_name ?? identity.label}</strong><p>{identity.label}. {identity.description}</p></div><button type="button" onClick={commerce.openIdentity}>{isReady ? "Cambiar ID" : identity.actionLabel}</button></section>
+      <div id="checkout-account" className={`checkout-auth-choice ${commerce.authenticated ? "authenticated" : ""}`}><div><strong>{commerce.authenticated ? "Sesión iniciada" : "Continuar como invitado"}</strong><p>{commerce.authenticated ? "Tu carrito y el ID receptor quedarán asociados a tu cuenta." : "Puedes confirmar el precio sin crear una cuenta."}</p></div>{!commerce.authenticated && <Link href="/cuenta?next=/checkout">Iniciar sesión</Link>}</div>
+      {!activeQuote && <SystemActionBar className="checkout-quote-action" primaryFull><span><small>Total estimado</small><strong>{formatMxn(visibleTotal)}</strong><em>{lines.length} {lines.length === 1 ? "objeto" : "objetos"} · se confirma antes de ordenar</em></span><button type="button" className="primary-button" disabled={loading || !lines.length} onClick={isReady ? openQuoteSheet : commerce.openIdentity}>{loading ? "Confirmando…" : isReady ? "Confirmar precio y continuar" : identity.actionLabel}</button></SystemActionBar>}
       {activeQuote && <>
         {activeQuote.amountMxnCents !== visibleTotal * 100 && <p className="notice">El precio fue actualizado por el servidor. Revisa el total antes de confirmar.</p>}
-        <div id="checkout-contact" className="checkout-auth-choice"><div><strong>Compra como invitado</strong><p>Sólo necesitas WhatsApp y el ID que ya enviaste.</p></div><Link href="/cuenta?next=/checkout">Iniciar sesión</Link></div>
-        <label>WhatsApp de contacto<input required inputMode="tel" pattern="[0-9+ ()-]{8,24}" value={whatsapp} onChange={(event) => setWhatsapp(event.target.value)} placeholder="55 5555 5555" /></label>
-        <label>Correo electrónico <span>(opcional)</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" /></label>
+        <div id="checkout-contact" />
+        <label>WhatsApp de contacto<input required inputMode="tel" autoComplete="tel" pattern="[0-9+ ()-]{8,24}" value={whatsapp} onChange={(event) => setWhatsapp(event.target.value)} placeholder="55 5555 5555" /></label>
+        <label>Correo electrónico <span>(opcional)</span><input type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" /></label>
         <div className="transfer-only"><span aria-hidden="true">▣</span><div><strong>Transferencia bancaria</strong><small>Después podrás subir tu comprobante o continuar por WhatsApp.</small></div></div>
         <SystemActionBar className="checkout-final-action" primaryFull><span><small>Total confirmado</small><strong>{formatMxn(activeQuote.amountMxnCents / 100)}</strong><em>Reservado hasta {new Date(activeQuote.expiresAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}</em></span><button className="primary-button" disabled={loading}>{loading ? "Creando pedido…" : "Confirmar pedido"}</button><Link className="cart-secondary" href="/carrito">Volver al carrito</Link></SystemActionBar>
       </>}

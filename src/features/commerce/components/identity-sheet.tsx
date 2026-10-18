@@ -4,14 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { BadgeCheck, ChevronDown, CircleAlert, Clock3, Plus, ScanLine } from "lucide-react";
 import { useCommerceState, type IdentityPlatform } from "./commerce-state-provider";
 import { CommerceSheet } from "./commerce-sheet";
-
-const statusCopy = {
-  pending_friendship: "Acepta la solicitud de amistad en Fortnite.",
-  waiting: "Solicitud de amistad enviada. La espera de 48 horas ya está corriendo.",
-  ready: "ID confirmado y listo para recibir objetos.",
-  manual_review: "ID enviado. Espera a que el equipo envíe la solicitud de amistad.",
-  blocked: "Este ID no se puede usar para una entrega."
-} as const;
+import { getIdentityPresentation } from "../application/identity-presentation";
 
 const platformLabel = { epic: "Epic Games", xbl: "Xbox", psn: "PlayStation", nintendo: "Nintendo Switch" } as const;
 
@@ -30,13 +23,14 @@ export function IdentitySheet() {
   const [message, setMessage] = useState<string | null>(null);
   const [editingIdentity, setEditingIdentity] = useState(false);
   const [now, setNow] = useState(() => Date.now());
-  const canContinue = commerce.validation?.status === "ready";
+  const presentation = getIdentityPresentation(commerce.validation);
+  const canContinue = presentation.canQuote;
 
   useEffect(() => {
     if (!commerce.identityOpen || commerce.validation?.status !== "waiting") return;
-    setNow(Date.now());
+    const initialUpdate = window.setTimeout(() => setNow(Date.now()), 0);
     const interval = window.setInterval(() => setNow(Date.now()), 60_000);
-    return () => window.clearInterval(interval);
+    return () => { window.clearTimeout(initialUpdate); window.clearInterval(interval); };
   }, [commerce.identityOpen, commerce.validation?.status]);
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -44,7 +38,6 @@ export function IdentitySheet() {
     setMessage(nextMessage);
     if (!nextMessage) setEditingIdentity(false);
   }
-  async function addFriend() { setMessage(await commerce.requestFriendship()); }
   function addAnotherIdentity() {
     setDisplayName("");
     setPlatform("epic");
@@ -56,14 +49,14 @@ export function IdentitySheet() {
       {commerce.validations.length > 0 && <div className="identity-saved" aria-label="IDs guardados">
         <div><strong>Tus IDs</strong><small>Selecciona el que usarás ahora</small></div>
         <div className="identity-saved-list">
-          {commerce.validations.map((entry) => <button key={entry.id} type="button" className={`${entry.id === commerce.validation?.id ? "active " : ""}identity-status-${entry.status}`} disabled={commerce.syncing} onClick={() => void commerce.selectValidation(entry.id)}>
-            {entry.status === "ready" ? <BadgeCheck aria-hidden="true" size={16} /> : entry.status === "waiting" ? <Clock3 aria-hidden="true" size={16} /> : <ScanLine aria-hidden="true" size={16} />}<span><b>{entry.display_name}</b><small>{platformLabel[entry.platform]} · {entry.status === "ready" ? "Listo" : entry.status === "manual_review" ? "En revisión" : entry.status === "waiting" ? "En espera" : entry.status === "pending_friendship" ? "Solicitud pendiente" : "No disponible"}</small></span>
+          {commerce.validations.map((entry) => <button key={entry.id} type="button" aria-pressed={entry.id === commerce.validation?.id} className={`${entry.id === commerce.validation?.id ? "active " : ""}identity-status-${entry.status}`} disabled={commerce.syncing} onClick={() => void commerce.selectValidation(entry.id)}>
+            {entry.status === "ready" ? <BadgeCheck aria-hidden="true" size={16} /> : entry.status === "blocked" ? <CircleAlert aria-hidden="true" size={16} /> : entry.status === "waiting" || entry.status === "manual_review" || entry.status === "pending_friendship" ? <Clock3 aria-hidden="true" size={16} /> : <ScanLine aria-hidden="true" size={16} />}<span><b>{entry.display_name}</b><small>{platformLabel[entry.platform]} · {getIdentityPresentation(entry).label}</small></span>
           </button>)}
         </div>
       </div>}
       {commerce.validation ? <div className={`identity-result identity-${commerce.validation.status}`} aria-live="polite">
         <span>{commerce.validation.status === "ready" ? <BadgeCheck aria-hidden="true" size={19} /> : commerce.validation.status === "waiting" ? <Clock3 aria-hidden="true" size={19} /> : commerce.validation.status === "blocked" ? <CircleAlert aria-hidden="true" size={19} /> : <ScanLine aria-hidden="true" size={19} />}</span>
-        <div><strong>{commerce.validation.display_name}</strong><small>{statusCopy[commerce.validation.status]}</small>{commerce.validation.status === "waiting" && commerce.validation.giftable_at && <small className="identity-countdown">{timeRemaining(commerce.validation.giftable_at, now)}</small>}</div>
+        <div><strong>{commerce.validation.display_name}</strong><small>{presentation.label}. {presentation.description}</small>{commerce.validation.status === "waiting" && commerce.validation.giftable_at && <small className="identity-countdown">{timeRemaining(commerce.validation.giftable_at, now)}</small>}</div>
       </div> : <p className="sheet-description">Agrega el ID que recibirá los objetos. Por ahora nuestro equipo lo revisará manualmente antes de solicitar tu pago.</p>}
       {(!commerce.validation || editingIdentity) && <form className="identity-form" onSubmit={submit}>
         <div className="identity-form-title"><span><Plus aria-hidden="true" size={15} />Agregar o actualizar</span><small>Lo guardamos para que el equipo confirme la entrega.</small></div>
@@ -72,7 +65,6 @@ export function IdentitySheet() {
         <button className="primary-button" disabled={commerce.syncing}>{commerce.syncing ? "Guardando…" : "Guardar nuevo ID"}</button>
       </form>}
       {commerce.validation && !editingIdentity && <button type="button" className="identity-add-another" onClick={addAnotherIdentity}><Plus aria-hidden="true" size={15} />Agregar otro ID</button>}
-      {commerce.validation?.status === "pending_friendship" && <button className="secondary-button" disabled={commerce.syncing} onClick={addFriend}>Enviar solicitud de amistad</button>}
       {commerce.validation && <button type="button" className="secondary-button" disabled={commerce.syncing} onClick={() => void commerce.refresh()}>Actualizar estado</button>}
       {canContinue && <button className="primary-button identity-continue" onClick={commerce.closeIdentity}>Usar este ID y continuar</button>}
       {message && <p className="notice error" role="alert">{message}</p>}

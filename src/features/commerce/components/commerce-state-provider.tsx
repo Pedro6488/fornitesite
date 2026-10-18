@@ -18,8 +18,21 @@ export type IdentityValidation = Readonly<{
   last_checked_at: string;
 }>;
 
+type CommerceApiResponse = {
+  error?: string;
+  authenticated?: boolean;
+  cartItemIds?: string[];
+  favoriteItemIds?: string[];
+  itemIds?: string[];
+  validations?: IdentityValidation[];
+  validation?: IdentityValidation;
+  activeValidationId?: string | null;
+  [key: string]: unknown;
+};
+
 type CommerceState = Readonly<{
   ready: boolean;
+  authenticated: boolean;
   syncing: boolean;
   cartItemIds: readonly string[];
   favoriteItemIds: ReadonlySet<string>;
@@ -61,15 +74,16 @@ async function authHeaders(): Promise<HeadersInit> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-async function responseBody(response: Response): Promise<Record<string, any>> {
+async function responseBody(response: Response): Promise<CommerceApiResponse> {
   const body = await response.json().catch(() => null);
   return body && typeof body === "object"
-    ? body as Record<string, any>
+    ? body as CommerceApiResponse
     : { error: "El servicio respondió sin detalles. Intenta de nuevo." };
 }
 
 export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [favoriteItemIds, setFavoriteItemIds] = useState<Set<string>>(new Set());
@@ -96,6 +110,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       setFavoriteItemIds(new Set(body.favoriteItemIds ?? []));
       setValidations(body.validations ?? (body.validation ? [body.validation] : []));
       setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
+      setAuthenticated(body.authenticated === true);
       window.localStorage.removeItem(LEGACY_CART_KEY);
       window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
     } catch {
@@ -105,11 +120,11 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    void refresh();
+    const initialRefresh = window.setTimeout(() => void refresh(), 0);
     const interval = window.setInterval(() => void refresh(), 30_000);
     const onFocus = () => void refresh();
     window.addEventListener("focus", onFocus);
-    return () => { window.clearInterval(interval); window.removeEventListener("focus", onFocus); };
+    return () => { window.clearTimeout(initialRefresh); window.clearInterval(interval); window.removeEventListener("focus", onFocus); };
   }, [refresh]);
 
   const persistCart = useCallback(async (next: string[]) => {
@@ -124,6 +139,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error ?? "No fue posible guardar el carrito.");
+      if (!body.itemIds) throw new Error("El servicio no devolvió el carrito actualizado.");
       setCartItemIds(body.itemIds);
       return null;
     } catch (error) {
@@ -169,8 +185,10 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
-      setValidations((current) => [body.validation, ...current.filter((entry) => entry.id !== body.validation.id)]);
-      setActiveValidationId(body.validation.id);
+      const savedValidation = body.validation;
+      if (!savedValidation) throw new Error("El servicio no devolvió el ID guardado.");
+      setValidations((current) => [savedValidation, ...current.filter((entry) => entry.id !== savedValidation.id)]);
+      setActiveValidationId(savedValidation.id);
       return null;
     } catch (error) { return error instanceof Error ? error.message : "No fue posible validar el ID."; }
     finally { setSyncing(false); }
@@ -187,6 +205,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
+      if (!body.activeValidationId) throw new Error("El servicio no devolvió el ID activo.");
       setActiveValidationId(body.activeValidationId);
       return null;
     } catch (error) { return error instanceof Error ? error.message : "No fue posible cambiar el ID."; }
@@ -211,12 +230,12 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   }, [validation]);
 
   const value = useMemo<CommerceState>(() => ({
-    ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
+    ready, authenticated, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
     openIdentity,
     closeIdentity,
     validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite,
     clearCart
-  }), [ready, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
+  }), [ready, authenticated, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }

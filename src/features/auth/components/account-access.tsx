@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
+import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
 type CustomerOrder = { id: string; status: string; item_name: string; amount_mxn_cents: number; public_token: string; created_at: string };
@@ -30,13 +31,19 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
     if (!supabase || !commerce.ready) return;
     void supabase.auth.getUser().then(async ({ data }) => {
       if (!data.user) { setChecking(false); return; }
+      if (!adminAccess && nextPath !== "/cuenta") {
+        window.location.replace(nextPath);
+        return;
+      }
       const { data: orderRows } = await supabase.from("orders")
         .select("id,status,item_name,amount_mxn_cents,public_token,created_at")
         .order("created_at", { ascending: false });
       setOrders(orderRows ?? []);
       setChecking(false);
     });
-  }, [commerce.ready, supabase]);
+  }, [adminAccess, commerce.ready, nextPath, supabase]);
+
+  const identity = getIdentityPresentation(commerce.validation);
 
   async function authenticate(event: FormEvent) {
     event.preventDefault();
@@ -65,7 +72,7 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false }: { n
   if (orders) return <div className="account-dashboard">
     <div className="account-welcome"><div><p className="eyebrow">MI DASHBOARD</p><h2>Tu cuenta está lista.</h2></div><button type="button" onClick={() => void supabase?.auth.signOut().then(() => window.location.reload())}>Cerrar sesión</button></div>
     <div className="dashboard-grid">
-      <button type="button" className="dashboard-card profile-card" onClick={commerce.openIdentity}><span className="dashboard-icon">◎</span><div><small>ID PARA RECIBIR</small><strong>{commerce.validation?.display_name ?? "Agregar mi ID"}</strong><p>{commerce.validation?.status === "ready" ? "ID validado · listo para comprar" : commerce.validation?.status === "waiting" ? "Solicitud enviada · espera de 48 h →" : commerce.validation?.status === "manual_review" ? "En revisión manual →" : "Agregar ID →"}</p></div></button>
+      <button type="button" className="dashboard-card profile-card" onClick={commerce.openIdentity}><span className="dashboard-icon">◎</span><div><small>ID PARA RECIBIR</small><strong>{commerce.validation?.display_name ?? "Agregar mi ID"}</strong><p>{identity.label} →</p></div></button>
       <Link href="/favoritos" className="dashboard-card"><span className="dashboard-icon">♡</span><div><small>FAVORITOS</small><strong>{commerce.favoriteItemIds.size} objetos</strong><p>Ver disponibilidad →</p></div></Link>
       <section className="dashboard-card"><span className="dashboard-icon">✓</span><div><small>OBJETOS RECIBIDOS</small><strong>{orders.filter((order) => order.status === "delivered").length}</strong><p>Entregas confirmadas</p></div></section>
     </div>
