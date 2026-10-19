@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
+import { groupReviewsByRecipient, type IdentityValidationStatus } from "@/features/commerce/application/identity-review-state";
 
 export async function GET(request: Request) {
   const staff = await authorizeStaff(request);
@@ -18,5 +19,6 @@ export async function GET(request: Request) {
     : { data: [] as { id: string; recipient_validation_id: string; status: string; created_at: string; item_name: string }[] };
   const ordersByValidation = new Map<string, typeof orders>();
   for (const order of orders ?? []) ordersByValidation.set(order.recipient_validation_id, [...(ordersByValidation.get(order.recipient_validation_id) ?? []), order]);
-  return NextResponse.json({ validations: (data ?? []).map((entry) => ({ ...entry, orders: ordersByValidation.get(entry.id) ?? [] })) });
+  const reviews = (data ?? []).map((entry) => ({ ...entry, status: entry.status as IdentityValidationStatus, orders: ordersByValidation.get(entry.id) ?? [] }));
+  return NextResponse.json({ validations: groupReviewsByRecipient(reviews) });
 }
