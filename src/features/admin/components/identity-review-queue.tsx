@@ -14,6 +14,7 @@ type IdentityReview = {
   status: ReviewStatus; giftable_at: string | null; last_checked_at: string; created_at: string;
   reviewed_at: string | null; review_note: string | null; user_id: string | null;
   orders: { id: string; status: string; created_at: string; item_name: string }[];
+  session_count: number;
 };
 
 const statusText: Record<ReviewStatus, string> = {
@@ -156,6 +157,7 @@ function IdentityReviewCard({ validation, updating, onReview }: { validation: Id
       <div><dt>Solicitado</dt><dd>{new Date(validation.created_at).toLocaleString("es-MX")}</dd></div>
       {validation.giftable_at && <div><dt>Disponible</dt><dd>{new Date(validation.giftable_at).toLocaleString("es-MX")} · {expired ? "espera cumplida" : remainingTime(validation.giftable_at)}</dd></div>}
       <div><dt>Pedidos</dt><dd>{validation.orders.length} {delivered ? "· ya recibió entrega" : ""}</dd></div>
+      {validation.session_count > 1 && <div><dt>Registrado en</dt><dd>{validation.session_count} sesiones · la decisión aplica a todas</dd></div>}
     </dl>
     {validation.review_note && <p className="identity-review-note">{validation.review_note}</p>}
     {isIdentityReviewPending(validation.status) && <div className="identity-review-actions">
