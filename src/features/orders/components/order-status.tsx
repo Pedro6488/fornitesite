@@ -2,9 +2,10 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import type { Order, OrderStatus as OrderState } from "../domain/order";
-import { formatMxn } from "@/features/pricing/domain/price-calculator";
+import { formatMxn, formatUsdCents, PAYPAL_FEE_USD_CENTS } from "@/features/pricing/domain/price-calculator";
 import { PurchaseConfetti } from "@/shared/components/purchase-confetti";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
+import { BackButton } from "@/shared/components/back-button";
 
 const statusCopy: Record<OrderState, string> = {
   draft: "Preparando pedido",
@@ -47,6 +48,13 @@ export function OrderStatus({
   const [order, setOrder] = useState(initialOrder);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deliveryFeedbackMessage, setDeliveryFeedbackMessage] = useState<string | null>(null);
+  const [submittingDeliveryFeedback, setSubmittingDeliveryFeedback] = useState(false);
+  const [deliveryFeedbackSubmitted, setDeliveryFeedbackSubmitted] = useState(Boolean(initialOrder.deliveryFeedbackSubmittedAt));
+  const isUsdOrder = order.currency === "USD";
+  const totalLabel = isUsdOrder
+    ? `${formatUsdCents(order.amountUsdCents ?? 0)} USD`
+    : formatMxn(order.amountMxnCents / 100);
   const canUpload =
     order.status === "awaiting_transfer" ||
     order.status === "information_required";
@@ -56,7 +64,6 @@ export function OrderStatus({
     const copy = `Hola, necesito ayuda con el pedido ${order.id.slice(0, 8).toUpperCase()}. Seguimiento: ${tracking}`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(copy)}`;
   }, [appUrl, order.id, order.publicToken, whatsappNumber]);
-
   async function refresh(showLoading = false) {
     if (showLoading) setLoading(true);
     try {
@@ -106,6 +113,30 @@ export function OrderStatus({
     }
   }
 
+  async function submitDeliveryFeedback(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmittingDeliveryFeedback(true);
+    setDeliveryFeedbackMessage(null);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    form.set("access", order.publicToken);
+    try {
+      const response = await fetch(`/api/orders/${order.id}/delivery-feedback`, {
+        method: "POST",
+        body: form,
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error ?? "No fue posible guardar tu confirmación.");
+      setDeliveryFeedbackMessage("Gracias, tu confirmación fue guardada.");
+      setDeliveryFeedbackSubmitted(true);
+      formElement.reset();
+    } catch (error) {
+      setDeliveryFeedbackMessage(error instanceof Error ? error.message : "No fue posible guardar tu confirmación.");
+    } finally {
+      setSubmittingDeliveryFeedback(false);
+    }
+  }
+
   async function trackWhatsapp() {
     await fetch(`/api/orders/${order.id}/contact`, {
       method: "POST",
@@ -124,15 +155,16 @@ export function OrderStatus({
           <h2>Resumen de compra</h2>
           <span>Para {order.epicDisplayName}</span>
         </div>
-        <strong>{formatMxn(order.amountMxnCents / 100)}</strong>
+        <strong>{totalLabel}</strong>
       </div>
       <div className="order-items-summary">
         {(order.items ?? []).map((item, index) => (
           <p key={`${item.itemName}-${index}`}>
             <span>{item.itemName}</span>
-            <strong>{formatMxn(item.unitAmountMxnCents / 100)}</strong>
+            <strong>{isUsdOrder ? `${formatUsdCents(item.unitAmountUsdCents ?? 0)} USD` : formatMxn(item.unitAmountMxnCents / 100)}</strong>
           </p>
         ))}
+        {isUsdOrder && <p><span>Comisión PayPal</span><strong>{formatUsdCents(order.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
       </div>
       <div className="recipient-id-notice">
         <span>
@@ -163,22 +195,24 @@ export function OrderStatus({
       {canUpload && (
         <>
           <div className="bank-details">
-            <p>
-              <span>Banco</span>
-              <strong>{bank.name}</strong>
-            </p>
-            <p>
-              <span>Beneficiario</span>
-              <strong>{bank.beneficiary}</strong>
-            </p>
-            <p>
-              <span>CLABE</span>
-              <strong>{bank.clabe}</strong>
-            </p>
-            <p>
-              <span>Concepto</span>
-              <strong>{bank.concept}</strong>
-            </p>
+            {!isUsdOrder && <>
+              <p>
+                <span>Banco</span>
+                <strong>{bank.name}</strong>
+              </p>
+              <p>
+                <span>Beneficiario</span>
+                <strong>{bank.beneficiary}</strong>
+              </p>
+              <p>
+                <span>CLABE</span>
+                <strong>{bank.clabe}</strong>
+              </p>
+              <p>
+                <span>Concepto</span>
+                <strong>{bank.concept}</strong>
+              </p>
+            </>}
             <p>
               <span>PayPal</span>
               <strong>{bank.paypal}</strong>
@@ -205,8 +239,43 @@ export function OrderStatus({
           </form>
         </>
       )}
-      {(canUpload || whatsappHref || order.status !== "delivered") && (
-        <SystemActionBar className="post-sale-actions order-tracking-actions">
+      {order.status === "delivered" && deliveryFeedbackSubmitted && (
+        <div className="delivery-feedback-submitted" role="status">
+          <span>REFERENCIA ENVIADA</span>
+          <strong>Gracias por confirmar tu entrega.</strong>
+          <p>Tu comentario e imagen ya fueron enviados al equipo.</p>
+        </div>
+      )}
+      {order.status === "delivered" && !deliveryFeedbackSubmitted && (
+        <form className="delivery-feedback-form" onSubmit={submitDeliveryFeedback}>
+          <div>
+            <span className="eyebrow">CONFIRMA TU ENTREGA</span>
+            <h3>¿Recibiste tus productos?</h3>
+            <p>Si quieres, comparte hasta tres imágenes o un comentario. Ambos son opcionales.</p>
+          </div>
+          <label>
+            Imágenes de la entrega <span>(máximo 3)</span>
+            <span className="delivery-image-inputs">
+              <input name="images" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Imagen de entrega 1" />
+              <input name="images" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Imagen de entrega 2" />
+              <input name="images" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Imagen de entrega 3" />
+            </span>
+          </label>
+          <label>
+            Comentario
+            <textarea name="comment" rows={4} maxLength={1000} placeholder="Cuéntanos cómo fue tu entrega (opcional)" />
+          </label>
+          <button className="secondary-button" disabled={submittingDeliveryFeedback}>
+            {submittingDeliveryFeedback ? "Guardando…" : "Enviar confirmación"}
+          </button>
+          {deliveryFeedbackMessage && (
+            <p className={`notice ${deliveryFeedbackMessage.startsWith("Gracias") ? "success" : "error"}`}>
+              {deliveryFeedbackMessage}
+            </p>
+          )}
+        </form>
+      )}
+      <SystemActionBar className="post-sale-actions order-tracking-actions">
           {canUpload && (
             <button
               form="receipt-upload-form"
@@ -220,7 +289,7 @@ export function OrderStatus({
                   : "Subir comprobante"}
             </button>
           )}
-          {whatsappHref && (
+          {whatsappHref && order.status !== "delivered" && (
             <a
               className="whatsapp-button"
               href={whatsappHref}
@@ -240,8 +309,11 @@ export function OrderStatus({
               {loading ? "Actualizando…" : "Actualizar estado"}
             </button>
           )}
+          {order.status === "delivered" && <>
+            <a className="primary-button order-store-link" href="/#catalogo">Regresar a la tienda</a>
+            <BackButton label="Atrás" fallbackHref="/#catalogo" />
+          </>}
         </SystemActionBar>
-      )}
       {message && (
         <p
           className={`notice ${message.startsWith("Comprobante") ? "success" : "error"}`}

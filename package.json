@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "TMPDIR=/tmp vitest run",
-    "test:watch": "TMPDIR=/tmp vitest",
-    "test:coverage": "TMPDIR=/tmp vitest run --coverage"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",

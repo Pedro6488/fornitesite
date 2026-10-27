@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateAuthoritativePrice, calculateMxnPrice, formatMxn, priceTiersOverlap, UnsupportedVbucksPriceError } from "./price-calculator";
+import { calculateAuthoritativePrice, calculateMxnPrice, calculateUsdPrice, formatMxn, PAYPAL_FEE_USD_CENTS, priceTiersOverlap, UnsupportedVbucksPriceError } from "./price-calculator";
 
 describe("calculateMxnPrice", () => {
   it.each([
@@ -24,6 +24,22 @@ describe("calculateAuthoritativePrice", () => {
   it("usa la regla y redondea hacia arriba sin excepción", () => {
     expect(calculateAuthoritativePrice(1_501, tiers)).toBe(113);
   });
+});
+
+describe("calculateUsdPrice", () => {
+  it("convierte paVos con la tarifa de 8 MXN por cada 100 y tipo de cambio de 16", () => {
+    expect(calculateUsdPrice(100)).toBe(1);
+    expect(calculateUsdPrice(800)).toBe(4);
+    expect(calculateUsdPrice(1_500)).toBe(8);
+  });
+
+  it("sube las fracciones desde .3", () => {
+    expect(calculateUsdPrice(1_400)).toBe(7);
+    expect(calculateUsdPrice(1_500)).toBe(8);
+    expect(calculateUsdPrice(1_600)).toBe(8);
+  });
+
+  it("define una comisión fija de PayPal de 2.30 USD", () => expect(PAYPAL_FEE_USD_CENTS).toBe(230));
 });
 
 describe("priceTiersOverlap", () => {

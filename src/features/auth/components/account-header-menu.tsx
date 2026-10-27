@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { BadgeCheck, CircleAlert, Clock3, Heart, LayoutDashboard, LogIn, LogOut, Menu, ScanLine, UserPlus, UserRound } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
@@ -10,6 +10,7 @@ import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
 export function AccountHeaderMenu() {
   const pathname = usePathname();
+  const router = useRouter();
   const commerce = useCommerceState();
   const identity = getIdentityPresentation(commerce.validation);
   const IdentityIcon = identity.tone === "success" ? BadgeCheck : identity.tone === "danger" ? CircleAlert : identity.tone === "warning" ? Clock3 : ScanLine;
@@ -36,7 +37,7 @@ export function AccountHeaderMenu() {
   async function signOut() {
     setSigningOut(true);
     await getSupabaseBrowser()?.auth.signOut();
-    window.location.assign("/");
+    router.replace("/");
   }
 
   function openIdentity() {

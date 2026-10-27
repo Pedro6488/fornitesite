@@ -4,12 +4,13 @@ import type { Order, OrderLine, OrderRepository, OrderStatus, SupervisorStatus }
 type OrderRow = {
   id: string; public_token: string; status: OrderStatus; customer_email: string | null; epic_account_id: string;
   epic_display_name: string; item_main_id: string; offer_id: string; item_name: string; item_image_url: string | null;
-  vbucks_price: number; amount_mxn_cents: number; payment_method: "mercado_pago" | "bank_transfer"; created_at: string;
+  vbucks_price: number; amount_mxn_cents: number; currency?: "MXN" | "USD"; subtotal_usd_cents?: number | null; paypal_fee_usd_cents?: number | null; amount_usd_cents?: number | null; payment_method: "mercado_pago" | "bank_transfer"; created_at: string;
   supervisor_status?: SupervisorStatus;
   recipient_platform?: "epic" | "xbl" | "psn" | "nintendo";
   contact_whatsapp?: string | null;
   metadata?: { notes?: string | null } | null;
-  order_items?: { item_name: string; quantity: number; unit_amount_mxn_cents: number }[];
+  delivery_feedback?: { created_at: string } | { created_at: string }[] | null;
+  order_items?: { item_name: string; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null; vbucks_price: number }[];
 };
 
 export class SupabaseOrderRepository implements OrderRepository {
@@ -27,12 +28,12 @@ export class SupabaseOrderRepository implements OrderRepository {
   }
 
   async findById(id: string): Promise<Order | null> {
-    const { data, error } = await this.database.from("orders").select("*,order_items(item_name,quantity,unit_amount_mxn_cents)").eq("id", id).maybeSingle<OrderRow>();
+    const { data, error } = await this.database.from("orders").select("*,order_items(item_name,quantity,unit_amount_mxn_cents,unit_amount_usd_cents,vbucks_price),delivery_feedback(created_at)").eq("id", id).maybeSingle<OrderRow>();
     if (error) throw error; return data ? mapRow(data) : null;
   }
 
   async findByPublicToken(id: string, publicToken: string): Promise<Order | null> {
-    const { data, error } = await this.database.from("orders").select("*,order_items(item_name,quantity,unit_amount_mxn_cents)").eq("id", id).eq("public_token", publicToken).maybeSingle<OrderRow>();
+    const { data, error } = await this.database.from("orders").select("*,order_items(item_name,quantity,unit_amount_mxn_cents,unit_amount_usd_cents,vbucks_price),delivery_feedback(created_at)").eq("id", id).eq("public_token", publicToken).maybeSingle<OrderRow>();
     if (error) throw error; return data ? mapRow(data) : null;
   }
 
@@ -43,11 +44,12 @@ export class SupabaseOrderRepository implements OrderRepository {
 }
 
 function mapRow(row: OrderRow): Order {
+  const deliveryFeedback = Array.isArray(row.delivery_feedback) ? row.delivery_feedback[0] : row.delivery_feedback;
   return { id: row.id, publicToken: row.public_token, status: row.status, customerEmail: row.customer_email,
     epicAccountId: row.epic_account_id, epicDisplayName: row.epic_display_name, itemMainId: row.item_main_id,
     offerId: row.offer_id, itemName: row.item_name, itemImageUrl: row.item_image_url, vbucksPrice: row.vbucks_price,
-    amountMxnCents: row.amount_mxn_cents, paymentMethod: row.payment_method, recipientPlatform: row.recipient_platform,
+    amountMxnCents: row.amount_mxn_cents, currency: row.currency ?? "MXN", subtotalUsdCents: row.subtotal_usd_cents ?? null, paypalFeeUsdCents: row.paypal_fee_usd_cents ?? null, amountUsdCents: row.amount_usd_cents ?? null, paymentMethod: row.payment_method, recipientPlatform: row.recipient_platform,
     contactWhatsapp: row.contact_whatsapp, supervisorStatus: row.supervisor_status ?? "pending_confirmation",
-    statusNote: row.metadata?.notes ?? null,
-    items: (row.order_items?.map((item): OrderLine => ({ itemName: item.item_name, quantity: item.quantity, unitAmountMxnCents: item.unit_amount_mxn_cents })) ?? [{ itemName: row.item_name, quantity: 1, unitAmountMxnCents: row.amount_mxn_cents }]), createdAt: row.created_at };
+    statusNote: row.metadata?.notes ?? null, deliveryFeedbackSubmittedAt: deliveryFeedback?.created_at ?? null,
+    items: (row.order_items?.map((item): OrderLine => ({ itemName: item.item_name, quantity: item.quantity, unitAmountMxnCents: item.unit_amount_mxn_cents, unitAmountUsdCents: item.unit_amount_usd_cents ?? null, vbucksPrice: item.vbucks_price })) ?? [{ itemName: row.item_name, quantity: 1, unitAmountMxnCents: row.amount_mxn_cents, vbucksPrice: row.vbucks_price }]), createdAt: row.created_at };
 }
