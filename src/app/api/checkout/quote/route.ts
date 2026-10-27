@@ -7,10 +7,12 @@ import { getAgentProvider } from "@/features/eligibility/server/get-agent-provid
 import { selectBestAgentForCart } from "@/features/eligibility/domain/delivery-agent";
 import { attachCommerceCookie, requireCommerceSession } from "@/shared/server/commerce-session";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
+import { calculateUsdPrice, PAYPAL_FEE_USD_CENTS } from "@/features/pricing/domain/price-calculator";
 
 const schema = z.object({
   validationId: z.uuid(),
-  itemIds: z.array(z.string().min(1).max(180)).min(1).max(30)
+  itemIds: z.array(z.string().min(1).max(180)).min(1).max(30),
+  region: z.enum(["mx", "us"]).default("mx")
 }).refine((value) => new Set(value.itemIds).size === value.itemIds.length, "No se permiten artículos duplicados.");
 
 export async function POST(request: Request) {
@@ -76,11 +78,23 @@ export async function POST(request: Request) {
     }
 
     const amountMxnCents = resolved.reduce((sum, item) => sum + Math.round(item.priceMxn! * 100), 0);
+    const currency = parsed.data.region === "us" ? "USD" : "MXN";
+    const subtotalUsdCents = currency === "USD"
+      ? resolved.reduce((sum, item) => sum + calculateUsdPrice(item.finalPriceVbucks) * 100, 0)
+      : null;
+    const paypalFeeUsdCents = currency === "USD" ? PAYPAL_FEE_USD_CENTS : null;
+    const amountUsdCents = subtotalUsdCents === null || paypalFeeUsdCents === null
+      ? null
+      : subtotalUsdCents + paypalFeeUsdCents;
     const expiresAt = new Date(Date.now() + 30 * 60_000).toISOString();
     const { data: quote, error: quoteError } = await database.from("checkout_quotes").insert({
       commerce_session_id: session.id,
       validation_id: validation.id,
       amount_mxn_cents: amountMxnCents,
+      currency,
+      subtotal_usd_cents: subtotalUsdCents,
+      paypal_fee_usd_cents: paypalFeeUsdCents,
+      amount_usd_cents: amountUsdCents,
       total_vbucks: totalVbucks,
       selected_agent_id: selectedAgentId,
       expires_at: expiresAt
@@ -94,6 +108,7 @@ export async function POST(request: Request) {
       item_image_url: item.imageUrl,
       vbucks_price: item.finalPriceVbucks,
       unit_amount_mxn_cents: Math.round(item.priceMxn! * 100),
+      unit_amount_usd_cents: currency === "USD" ? calculateUsdPrice(item.finalPriceVbucks) * 100 : null,
       quantity: 1
     }));
     const { error: lineError } = await database.from("checkout_quote_items").insert(lines);
@@ -106,13 +121,18 @@ export async function POST(request: Request) {
         id: quote.id,
         expiresAt: quote.expires_at,
         amountMxnCents,
+        currency,
+        subtotalUsdCents,
+        paypalFeeUsdCents,
+        amountUsdCents,
         totalVbucks,
         lines: lines.map((line) => ({
           itemMainId: line.item_main_id,
           name: line.item_name,
           imageUrl: line.item_image_url,
           vbucksPrice: line.vbucks_price,
-          amountMxnCents: line.unit_amount_mxn_cents
+          amountMxnCents: line.unit_amount_mxn_cents,
+          amountUsdCents: line.unit_amount_usd_cents
         }))
       }
     }), session);

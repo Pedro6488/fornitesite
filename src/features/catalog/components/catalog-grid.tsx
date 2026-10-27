@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { ChevronDown, Flame, Grid2X2, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import {
@@ -30,6 +31,10 @@ import { CatalogCard } from "./catalog-card";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
 
 const PAGE_SIZE = 48;
+
+function moveJamTracksToEnd<T extends { name: string }>(groups: readonly T[]): T[] {
+  return [...groups.filter((group) => group.name !== "Jam Tracks"), ...groups.filter((group) => group.name === "Jam Tracks")];
+}
 
 const SORT_LABELS: Readonly<Record<CatalogSort, string>> = {
   newest: "Más nuevo",
@@ -91,12 +96,12 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
     [matchingItems, collaboration, availability, priceRange, rarity]
   );
   const orderedItems = useMemo(
-    () => groupCatalogByCollaboration(sortCatalog(filteredItems, sort)).flatMap((group) => group.items),
+    () => moveJamTracksToEnd(groupCatalogByCollaboration(sortCatalog(filteredItems, sort))).flatMap((group) => group.items),
     [filteredItems, sort]
   );
   const visibleItems = orderedItems.slice(0, visibleCount);
   const visibleGroups = useMemo(
-    () => groupCatalogByCollaboration(visibleItems),
+    () => moveJamTracksToEnd(groupCatalogByCollaboration(visibleItems)),
     [visibleItems]
   );
   const hasMore = visibleCount < filteredItems.length;
@@ -105,9 +110,9 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
     popular: filterCatalogDiscovery(items, "popular").length,
     all: items.length
   }), [items]);
-  const collections = useMemo(() => groupCatalogByCollaboration(items)
+  const collections = useMemo(() => moveJamTracksToEnd(groupCatalogByCollaboration(items)
     .filter((group) => group.name !== "Otros objetos")
-    .sort((left, right) => left.name.localeCompare(right.name, "es-MX", { sensitivity: "base" })), [items]);
+    .sort((left, right) => left.name.localeCompare(right.name, "es-MX", { sensitivity: "base" }))), [items]);
   const visibleCollections = useMemo(() => {
     const normalizedQuery = collectionQuery.trim().toLocaleLowerCase("es-MX");
     if (!normalizedQuery) return collections;
@@ -307,34 +312,40 @@ export function CatalogGrid({ items }: { items: readonly CatalogItem[] }) {
         </button>
       </div>
 
-      <div className="catalog-view-tabs" role="tablist" aria-label="Vista del catálogo">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={catalogView === "items"}
-          className={catalogView === "items" ? "active" : undefined}
-          onClick={() => setCatalogView("items")}
-        >
-          Objetos
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={catalogView === "collections"}
-          className={catalogView === "collections" ? "active" : undefined}
-          onClick={() => {
-            startTransition(() => {
-              setCatalogView("collections");
-              setMode("all");
-              setCollaboration(null);
-              setCategory("Todos");
-              setQuery("");
-              setCollectionQuery("");
-            });
-          }}
-        >
-          Colecciones <span>{collections.length}</span>
-        </button>
+      <div className="catalog-view-tab-row">
+        <div className="catalog-view-tabs" role="tablist" aria-label="Vista del catálogo">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={catalogView === "items"}
+            className={catalogView === "items" ? "active" : undefined}
+            onClick={() => setCatalogView("items")}
+          >
+            Objetos
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={catalogView === "collections"}
+            className={catalogView === "collections" ? "active" : undefined}
+            onClick={() => {
+              startTransition(() => {
+                setCatalogView("collections");
+                setMode("all");
+                setCollaboration(null);
+                setCategory("Todos");
+                setQuery("");
+                setCollectionQuery("");
+              });
+            }}
+          >
+            Colecciones <span>{collections.length}</span>
+          </button>
+        </div>
+        <nav className="catalog-community-nav" aria-label="Comunidad">
+          <Link href="/clientes">Clientes</Link>
+          <Link href="/referencias">Referencias</Link>
+        </nav>
       </div>
 
       {filtersOpen && (

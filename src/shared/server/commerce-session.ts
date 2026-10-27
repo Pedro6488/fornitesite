@@ -94,7 +94,6 @@ export async function requireCommerceSession(request: Request): Promise<{
   // Old devices may still carry the token of a session that was merged after
   // login. Always operate on its canonical session to avoid recreating carts.
   let id = existing?.merged_into ?? existing?.id;
-  const shouldMergeUser = Boolean(user && (!existing || existing.user_id !== user.id));
   if (!id) {
     const { data, error } = await database
       .from("commerce_sessions")

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
-import { formatMxn } from "@/features/pricing/domain/price-calculator";
+import { RegionalPrice } from "@/features/pricing/components/regional-price";
 import { BackButton } from "@/shared/components/back-button";
 import { ProductPurchaseActions } from "@/features/catalog/components/product-purchase-actions";
 import { ItemPreview } from "@/features/catalog/components/item-preview";
@@ -100,10 +100,7 @@ export default async function ItemPage({
               </div>
               <div>
                 <strong>
-                  {item.priceMxn === null
-                    ? "Consultar"
-                    : formatMxn(item.priceMxn)}
-                  {item.priceMxn !== null && <em> MXN</em>}
+                  <RegionalPrice vbucks={item.finalPriceVbucks} mxnPrice={item.priceMxn} />
                 </strong>
               </div>
             </div>

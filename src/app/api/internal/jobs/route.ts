@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
-import { cancelOutboxJob, queueOutboxJob, retryOutboxJob, type OutboxJob } from "@/features/notifications/server/outbox";
+import { queueOutboxJob, retryOutboxJob, type OutboxJob } from "@/features/notifications/server/outbox";
 import { deliverOutboxJob } from "@/features/notifications/server/providers";
 
 type Campaign = { cart_id: string; contact_id: string; last_activity_at: string; first_sent_at: string | null; second_sent_at: string | null; canceled_at: string | null };

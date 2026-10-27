@@ -11,6 +11,8 @@ export const DEFAULT_PRICE_TIERS: readonly PriceTier[] = [
   { minVbucks: 3_000, maxVbucks: null, mxnPerHundred: 7 }
 ];
 
+export const PAYPAL_FEE_USD_CENTS = 230;
+
 export class UnsupportedVbucksPriceError extends Error {
   constructor(vbucks: number) {
     super(`No existe una tarifa para ${vbucks} paVos.`);
@@ -61,4 +63,32 @@ export function formatMxn(amount: number): string {
     currency: "MXN",
     maximumFractionDigits: 0
   }).format(amount);
+}
+
+export function calculateUsdPrice(vbucks: number): number {
+  if (!Number.isInteger(vbucks) || vbucks <= 0) {
+    throw new UnsupportedVbucksPriceError(vbucks);
+  }
+
+  const pesos = (vbucks / 100) * 8;
+  const dollars = pesos / 16;
+  const wholeDollars = Math.floor(dollars);
+  return dollars - wholeDollars >= 0.3 ? wholeDollars + 1 : wholeDollars;
+}
+
+export function formatUsd(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+export function formatUsdCents(amountCents: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amountCents / 100);
 }

@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, Check, ShieldCheck, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
-import { formatMxn } from "@/features/pricing/domain/price-calculator";
+import { formatMxn, formatUsdCents, PAYPAL_FEE_USD_CENTS } from "@/features/pricing/domain/price-calculator";
+import { getRegionalPrice } from "@/features/pricing/components/regional-price";
+import { useStoreRegion } from "@/features/pricing/components/region-provider";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
@@ -15,6 +17,7 @@ import { resolveCartAvailability } from "../application/cart-availability";
 export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   const router = useRouter();
   const commerce = useCommerceState();
+  const { region } = useStoreRegion();
   const [message, setMessage] = useState<string | null>(null);
   const [openingCheckout, setOpeningCheckout] = useState(false);
   const [email, setEmail] = useState("");
@@ -23,7 +26,10 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   const [savingEmail, setSavingEmail] = useState(false);
   const lines =useMemo(() => resolveCartAvailability(commerce.cartItemIds, items), [commerce.cartItemIds, items]);
   const unavailableLines = lines.filter((line) => !line.available);
-  const total = lines.reduce((sum, line) => sum + (line.available ? line.item?.priceMxn ?? 0 : 0), 0);
+  const total = lines.reduce((sum, line) => sum + (line.available && line.item ? getRegionalPrice(region, line.item.finalPriceVbucks, line.item.priceMxn).amount ?? 0 : 0), 0);
+  const currency = region === "us" ? "USD" : "MXN";
+  const totalWithFee = region === "us" ? total + PAYPAL_FEE_USD_CENTS / 100 : total;
+  const formatTotal = region === "us" ? `${formatUsdCents(Math.round(totalWithFee * 100))} USD` : formatMxn(total);
   const canContinue = lines.length > 0 && unavailableLines.length === 0;
   const identity = getIdentityPresentation(commerce.validation);
   const nextStep = !commerce.validation ? "Siguiente: agregar ID"
@@ -33,14 +39,17 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
           : commerce.validation.status === "ready" ? "Siguiente: confirmar precio"
             : "Selecciona otro ID";
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const emailStatus = params.get("email");
-    const restoreStatus = params.get("restore");
-    if (emailStatus === "verified") setEmailMessage("Correo confirmado. Revisa tu bandeja de entrada para tu bienvenida.");
-    if (emailStatus === "unsubscribed") setEmailMessage("Ya no recibirás recordatorios de carrito.");
-    if (emailStatus === "expired") setEmailMessage("El enlace de correo venció. Guarda tu correo de nuevo para recibir otro.");
-    if (restoreStatus === "ok") setMessage("Tu carrito fue restaurado.");
-    if (restoreStatus === "unavailable") setMessage("Los objetos de ese carrito ya no están disponibles.");
+    const frame = window.requestAnimationFrame(() => {
+      const params = new URLSearchParams(window.location.search);
+      const emailStatus = params.get("email");
+      const restoreStatus = params.get("restore");
+      if (emailStatus === "verified") setEmailMessage("Correo confirmado. Revisa tu bandeja de entrada para tu bienvenida.");
+      if (emailStatus === "unsubscribed") setEmailMessage("Ya no recibirás recordatorios de carrito.");
+      if (emailStatus === "expired") setEmailMessage("El enlace de correo venció. Guarda tu correo de nuevo para recibir otro.");
+      if (restoreStatus === "ok") setMessage("Tu carrito fue restaurado.");
+      if (restoreStatus === "unavailable") setMessage("Los objetos de ese carrito ya no están disponibles.");
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
   async function remove(itemId: string) { setMessage(await commerce.removeCartItem(itemId)); }
   async function removeUnavailable() {
@@ -81,7 +90,7 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
             <div className="cart-item-image cart-item-missing"><span aria-hidden="true">!</span></div>
             <div className="cart-item-copy"><p>OFERTA FINALIZADA</p><h2>Objeto ya no disponible</h2><span>Salió del catálogo actual</span></div>
           </div>}
-          <div className="cart-line-price"><strong>{available && item?.priceMxn !== null ? formatMxn(item?.priceMxn ?? 0) : "No disponible"}</strong><span>{available ? "MXN" : "Quítalo para continuar"}</span></div>
+          <div className="cart-line-price"><strong>{available && item && item.priceMxn !== null ? getRegionalPrice(region, item.finalPriceVbucks, item.priceMxn).label : "No disponible"}</strong><span>{available ? currency : "Quítalo para continuar"}</span></div>
           <button className="cart-remove" onClick={() => void remove(itemId)} aria-label={`Quitar ${item?.name ?? "objeto no disponible"} del carrito`}><Trash2 aria-hidden="true" size={16} /><span>Eliminar</span></button>
         </article>)}
         {message && <p className="notice error">{message}</p>}
@@ -94,7 +103,8 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
         </section>
         <div className="cart-summary-heading"><div><p className="eyebrow">RESUMEN</p><h2>Tu pedido</h2></div><b>{lines.length}</b></div>
         <div className="cart-summary-row"><span>Objetos</span><strong>{lines.length}</strong></div>
-        <div className="cart-summary-total"><span>Total estimado</span><strong>{formatMxn(total)} <small>MXN</small></strong></div>
+        {region === "us" && <div className="cart-summary-row"><span>Comisión PayPal</span><strong>{formatUsdCents(PAYPAL_FEE_USD_CENTS)} USD</strong></div>}
+        <div className="cart-summary-total"><span>Total estimado</span><strong>{formatTotal} {region === "mx" && <small>{currency}</small>}</strong></div>
         <p className="cart-summary-note"><ShieldCheck aria-hidden="true" size={17} />{nextStep}</p>
         <section className="cart-email-capture" aria-label="Guardar correo para el carrito">
           <strong>Guarda tu carrito</strong><p>Recibe un recordatorio si no terminas tu compra.</p>
@@ -105,7 +115,7 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
         {canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
         <ol className="cart-next-steps" aria-label="Progreso de compra"><li className="complete active" aria-current="step"><b><Check aria-hidden="true" size={12} /></b><span>Carrito</span></li><li><b>2</b><span>ID y precio</span></li><li><b>3</b><span>Contacto y orden</span></li></ol>
       </aside>
-      <SystemActionBar className="mobile-cart-checkout" primaryFull><span><small>Resumen de compra</small><strong>{formatMxn(total)}</strong><em>{nextStep}</em></span>{canContinue ? <button type="button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button disabled>No disponible</button>}</SystemActionBar>
+      <SystemActionBar className="mobile-cart-checkout" primaryFull><span><small>Resumen de compra</small><strong>{formatTotal}</strong><em>{nextStep}</em></span>{canContinue ? <button type="button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button disabled>No disponible</button>}</SystemActionBar>
     </div>}
   </section>;
 }

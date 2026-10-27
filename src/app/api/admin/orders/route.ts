@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   let query = staff.database
     .from("orders")
-    .select("id,created_at,customer_email,epic_display_name,epic_account_id,recipient_platform,contact_whatsapp,amount_mxn_cents,status,order_items(item_main_id,item_name,item_image_url,vbucks_price,quantity,unit_amount_mxn_cents),transfer_receipts(id,storage_path,mime_type,created_at)")
+    .select("id,created_at,customer_email,epic_display_name,epic_account_id,recipient_platform,contact_whatsapp,amount_mxn_cents,status,order_items(item_main_id,item_name,item_image_url,vbucks_price,quantity,unit_amount_mxn_cents),transfer_receipts(id,storage_path,mime_type,created_at),delivery_feedback(comment,image_storage_path,created_at)")
     .order("created_at", { ascending: false });
   if (from.data) query = query.gte("created_at", `${from.data}T00:00:00-06:00`);
   if (to.data) {
@@ -42,7 +42,16 @@ export async function GET(request: Request) {
     const signedTicket = ticket
       ? await staff.database.storage.from("transfer-receipts").createSignedUrl(ticket.storage_path, 10 * 60)
       : null;
-    return { ...order, paymentTicketUrl: signedTicket?.data?.signedUrl ?? null, history: auditByOrder.get(order.id) ?? [] };
+    const feedback = Array.isArray(order.delivery_feedback) ? order.delivery_feedback[0] : order.delivery_feedback;
+    const signedFeedbackImage = feedback?.image_storage_path
+      ? await staff.database.storage.from("delivery-feedback").createSignedUrl(feedback.image_storage_path, 10 * 60)
+      : null;
+    return {
+      ...order,
+      paymentTicketUrl: signedTicket?.data?.signedUrl ?? null,
+      deliveryFeedback: feedback ? { comment: feedback.comment, createdAt: feedback.created_at, imageUrl: signedFeedbackImage?.data?.signedUrl ?? null } : null,
+      history: auditByOrder.get(order.id) ?? [],
+    };
   }));
 
   return NextResponse.json({ orders });
