@@ -867,6 +867,11 @@ body:has(.order-tracking-page) .mobile-navigation {
     padding-bottom: calc(10rem + env(safe-area-inset-bottom));
   }
 
+  /* Native "required" validation scrolls here; stay above the fixed bar. */
+  .order-tracking-page .receipt-form input {
+    scroll-margin-bottom: calc(10rem + env(safe-area-inset-bottom));
+  }
+
   .order-tracking-actions.system-action-bar-viewport {
     display: grid;
     gap: .55rem;
@@ -879,9 +884,10 @@ body:has(.order-tracking-page) .mobile-navigation {
     padding-bottom: 0;
   }
 
+  /* Keep the bottom clearance for the fixed action bar (two stacked buttons). */
   .order-tracking-page {
     gap: 1rem;
-    padding: 1.25rem .85rem 2rem;
+    padding: 1.25rem .85rem calc(10rem + env(safe-area-inset-bottom));
   }
 
   .order-tracking-page .flow-heading h1 {
