@@ -12,6 +12,8 @@ import { IdentitySheet } from "@/features/commerce/components/identity-sheet";
 import { MobileNavigation } from "@/features/commerce/components/mobile-navigation";
 import { AdminHeaderLogout } from "@/features/admin/components/admin-header-logout";
 import { AccountHeaderMenu } from "@/features/auth/components/account-header-menu";
+import { RegionProvider } from "@/features/pricing/components/region-provider";
+import { RegionSelector } from "@/features/pricing/components/region-selector";
 import "./globals.css";
 import "./system-action-bar.css";
 import "./order-operations.css";
@@ -32,7 +34,8 @@ export default function RootLayout({
   return (
     <html lang="es-MX" data-scroll-behavior="smooth">
       <body>
-        <CommerceStateProvider>
+        <RegionProvider>
+          <CommerceStateProvider>
           <div className="utility-bar">
             <div className="utility-bar-inner">
               <span className="trust-message">
@@ -81,6 +84,7 @@ export default function RootLayout({
                 </span>
               </Link>
               <div className="mobile-header-actions">
+                <RegionSelector />
                 <AccountHeaderMenu />
                 <AdminHeaderLogout />
               </div>
@@ -88,6 +92,7 @@ export default function RootLayout({
                 className="desktop-navigation"
                 aria-label="Navegación principal"
               >
+                <RegionSelector />
                 <CartLink />
                 <AccountHeaderMenu />
                 <AdminHeaderLogout />
@@ -107,6 +112,8 @@ export default function RootLayout({
             <nav className="footer-links" aria-label="Enlaces del pie">
               <Link href="/#catalogo">Tienda</Link>
               <Link href="/favoritos">Favoritos</Link>
+              <Link href="/clientes">Clientes</Link>
+              <Link href="/referencias">Referencias</Link>
               <Link href="/carrito">Carrito</Link>
             </nav>
             <div className="footer-contact">
@@ -130,7 +137,8 @@ export default function RootLayout({
           </footer>
           <MobileNavigation />
           <IdentitySheet />
-        </CommerceStateProvider>
+          </CommerceStateProvider>
+        </RegionProvider>
       </body>
     </html>
   );

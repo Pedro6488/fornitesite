@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { formatMxn } from "@/features/pricing/domain/price-calculator";
+import { RegionalPrice } from "@/features/pricing/components/regional-price";
 import { filterCatalogDiscovery, sortCatalog } from "../application/catalog-query";
 import type { CatalogItem } from "../domain/catalog-item";
 
@@ -71,7 +71,7 @@ export function CatalogHero({ items }: { items: readonly CatalogItem[] }) {
                 <strong>{item.name}</strong>
                 <span>
                   <small>◉ {item.finalPriceVbucks.toLocaleString("es-MX")}</small>
-                  <b>{item.priceMxn === null ? "Consultar" : formatMxn(item.priceMxn)}</b>
+                  <b><RegionalPrice vbucks={item.finalPriceVbucks} mxnPrice={item.priceMxn} /></b>
                 </span>
               </span>
             </Link>

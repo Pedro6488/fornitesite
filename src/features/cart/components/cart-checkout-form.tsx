@@ -8,7 +8,9 @@ import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
 import { CommerceSheet } from "@/features/commerce/components/commerce-sheet";
-import { formatMxn } from "@/features/pricing/domain/price-calculator";
+import { calculateUsdPrice, formatMxn, formatUsdCents, PAYPAL_FEE_USD_CENTS } from "@/features/pricing/domain/price-calculator";
+import { formatRegionalPrice, getRegionalPrice } from "@/features/pricing/components/regional-price";
+import { useStoreRegion } from "@/features/pricing/components/region-provider";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
 import { resolveCartAvailability } from "../application/cart-availability";
@@ -17,6 +19,10 @@ type Quote = Readonly<{
   id: string;
   expiresAt: string;
   amountMxnCents: number;
+  currency: "MXN" | "USD";
+  subtotalUsdCents: number | null;
+  paypalFeeUsdCents: number | null;
+  amountUsdCents: number | null;
   totalVbucks: number;
   lines: readonly {
     itemMainId: string;
@@ -24,6 +30,7 @@ type Quote = Readonly<{
     imageUrl: string | null;
     vbucksPrice: number;
     amountMxnCents: number;
+    amountUsdCents: number | null;
   }[];
   validationId: string;
   itemSignature: string;
@@ -39,6 +46,7 @@ async function authHeaders(): Promise<HeadersInit> {
 export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const router = useRouter();
   const commerce = useCommerceState();
+  const { region } = useStoreRegion();
   const [email, setEmail] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -64,6 +72,15 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     (sum, item) => sum + (item.priceMxn ?? 0),
     0,
   );
+  const displayTotal = lines.reduce(
+    (sum, item) => sum + (getRegionalPrice(region, item.finalPriceVbucks, item.priceMxn).amount ?? 0),
+    0,
+  );
+  const formatRegionalAmount = (vbucks: number, amountMxnCents: number) => formatRegionalPrice(region, vbucks, amountMxnCents / 100);
+  const displayTotalWithFeeCents = Math.round(displayTotal * 100) + (region === "us" ? PAYPAL_FEE_USD_CENTS : 0);
+  const formatDisplayTotal = region === "us"
+    ? `${formatUsdCents(displayTotalWithFeeCents)} USD`
+    : formatMxn(displayTotal);
   const identity = getIdentityPresentation(commerce.validation);
   const isReady = identity.canQuote;
   const itemSignature = commerce.cartItemIds.join("|");
@@ -73,6 +90,13 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     quote.itemSignature === itemSignature
       ? quote
       : null;
+  const activeQuoteTotal = activeQuote?.lines.reduce(
+    (sum, line) => sum + (getRegionalPrice(region, line.vbucksPrice, line.amountMxnCents / 100).amount ?? 0),
+    0,
+  ) ?? displayTotal;
+  const formatActiveQuoteTotal = region === "us"
+    ? `${formatUsdCents(activeQuote?.amountUsdCents ?? displayTotalWithFeeCents)} USD`
+    : formatMxn(activeQuoteTotal);
 
   useEffect(() => {
     let canceled = false;
@@ -96,6 +120,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
         body: JSON.stringify({
           validationId: commerce.validation.id,
           itemIds: lines.map((item) => item.mainId),
+          region,
         }),
       });
       const body = await response.json();
@@ -265,11 +290,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
             </h2>
             <span>Una unidad de cada objeto</span>
           </div>
-          <strong>
-            {formatMxn(
-              (activeQuote?.amountMxnCents ?? visibleTotal * 100) / 100,
-            )}
-          </strong>
+          <strong>{formatActiveQuoteTotal}</strong>
         </div>
         <div className="checkout-items">
           {(
@@ -277,14 +298,17 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
             lines.map((item) => ({
               itemMainId: item.mainId,
               name: item.name,
+              vbucksPrice: item.finalPriceVbucks,
               amountMxnCents: (item.priceMxn ?? 0) * 100,
+              amountUsdCents: region === "us" ? calculateUsdPrice(item.finalPriceVbucks) * 100 : null,
             }))
           ).map((item) => (
             <p key={item.itemMainId}>
               <span>{item.name}</span>
-              <strong>{formatMxn(item.amountMxnCents / 100)}</strong>
+              <strong>{region === "us" && item.amountUsdCents !== null ? `${formatUsdCents(item.amountUsdCents)} USD` : formatRegionalAmount(item.vbucksPrice, item.amountMxnCents)}</strong>
             </p>
           ))}
+          {region === "us" && <p><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote?.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
         </div>
         <section className={`checkout-gate ${identity.tone}`}>
           <div>
@@ -313,7 +337,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
           <SystemActionBar className="checkout-quote-action" primaryFull>
             <span>
               <small>Total estimado</small>
-              <strong>{formatMxn(visibleTotal)}</strong>
+              <strong>{formatDisplayTotal}</strong>
               <em>
                 {lines.length} {lines.length === 1 ? "objeto" : "objetos"} · se
                 confirma antes de ordenar
@@ -335,7 +359,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
         )}
         {activeQuote && (
           <>
-            {activeQuote.amountMxnCents !== visibleTotal * 100 && (
+            {(region === "us" ? activeQuote.amountUsdCents !== displayTotalWithFeeCents : activeQuote.amountMxnCents !== visibleTotal * 100) && (
               <p className="notice">
                 El precio fue actualizado por el servidor. Revisa el total antes
                 de confirmar.
@@ -367,7 +391,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
             <div className="transfer-only">
               <span aria-hidden="true">▣</span>
               <div>
-                <strong>Transferencia bancaria</strong>
+                <strong>{region === "us" ? "Pago por PayPal" : "Transferencia bancaria"}</strong>
                 <small>
                   Después podrás subir tu comprobante o continuar por WhatsApp.
                 </small>
@@ -376,7 +400,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
             <SystemActionBar className="checkout-final-action" primaryFull>
               <span>
                 <small>Total confirmado</small>
-                <strong>{formatMxn(activeQuote.amountMxnCents / 100)}</strong>
+                <strong>{formatActiveQuoteTotal}</strong>
                 <em>
                   Reservado hasta{" "}
                   {new Date(activeQuote.expiresAt).toLocaleTimeString("es-MX", {
@@ -436,13 +460,14 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
               {activeQuote.lines.map((line) => (
                 <p key={line.itemMainId}>
                   <span>{line.name}</span>
-                  <strong>{formatMxn(line.amountMxnCents / 100)}</strong>
+                  <strong>{activeQuote.currency === "USD" && line.amountUsdCents !== null ? `${formatUsdCents(line.amountUsdCents)} USD` : formatRegionalAmount(line.vbucksPrice, line.amountMxnCents)}</strong>
                 </p>
               ))}
+              {activeQuote.currency === "USD" && <p><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
             </div>
             <div className="quote-sheet-total">
               <span>Total confirmado</span>
-              <strong>{formatMxn(activeQuote.amountMxnCents / 100)}</strong>
+              <strong>{formatActiveQuoteTotal}</strong>
             </div>
             <p className="quote-sheet-expiry">
               <ShieldCheck aria-hidden="true" size={15} />

@@ -102,6 +102,8 @@ describe("CatalogGrid", () => {
     }));
     render(<CatalogGrid items={items} />);
 
+    fireEvent.click(screen.getByRole("button", { name: /Novedades/ }));
+
     expect(screen.getByText("Modo 6")).toBeInTheDocument();
     expect(screen.queryByText("Modo 5")).not.toBeInTheDocument();
 

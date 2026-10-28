@@ -7,13 +7,15 @@ import { SupervisorOrders } from "@/features/orders/components/supervisor-orders
 import { IdentityReviewQueue } from "@/features/admin/components/identity-review-queue";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
-type Tab = "summary" | "orders" | "identities" | "carts" | "favorites" | "prices";
+type Tab = "summary" | "orders" | "identities" | "carts" | "favorites" | "prices" | "customers" | "references";
 type Metrics = { pendingOrders: number; receiptsToReview: number; activeCarts: number; abandonedCarts: number; favorites: number };
 type Cart = { id: string; status: string; updated_at: string; abandoned: boolean; estimatedAmountMxnCents: number; shopping_cart_items: { item_main_id: string }[]; validation: null | { display_name: string; platform: string; status: string }; commerce_sessions: null | { whatsapp: string | null; user_id: string | null; merged_into: string | null } };
 type FavoriteDetail = { item_main_id: string; itemName: string; commerce_session_id: string; created_at: string; commerce_sessions: null | { user_id: string | null } };
 type PriceRule = { id: string; min_vbucks: number; max_vbucks: number | null; mxn_per_hundred: number | string; active: boolean; effective_from: string; effective_until: string | null };
 type PriceOverride = { id: string; main_id: string; amount_mxn_cents: number; active: boolean; effective_from: string; effective_until: string | null };
 type CatalogOption = { mainId: string; name: string; type: string; imageUrl?: string | null; collaboration?: string | null };
+type CustomerRankingEntry = { recipientName: string; customerEmail: string | null; deliveredOrders: number };
+type DeliveryReference = { id: string; recipientName: string; recipientId: string; comment: string | null; createdAt: string; imageUrls: string[]; items: { item_name: string; item_image_url: string | null; quantity: number }[] };
 
 export function CommerceAdminDashboard() {
   const supabase = useMemo(() => getSupabaseBrowser(), []);
@@ -22,13 +24,17 @@ export function CommerceAdminDashboard() {
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loadedTab, setLoadedTab] = useState<Tab | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [customerFrom, setCustomerFrom] = useState("");
+  const [customerTo, setCustomerTo] = useState("");
   const loadRequest = useRef(0);
   const requestedTab = searchParams.get("tab");
   const selectedCartId = searchParams.get("cart");
   const selectedOrderId = searchParams.get("order");
 
   useEffect(() => {
-    if (["summary", "orders", "identities", "carts", "favorites", "prices"].includes(requestedTab ?? "")) setTab(requestedTab as Tab);
+    if (!["summary", "orders", "identities", "carts", "favorites", "prices", "customers", "references"].includes(requestedTab ?? "")) return;
+    const frame = window.requestAnimationFrame(() => setTab(requestedTab as Tab));
+    return () => window.cancelAnimationFrame(frame);
   }, [requestedTab]);
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
@@ -45,11 +51,14 @@ export function CommerceAdminDashboard() {
     const requestId = ++loadRequest.current;
     setMessage(null); setData(null); setLoadedTab(null);
     try {
-      const response = await request(activeTab === "prices" ? "/api/admin/prices" : `/api/admin/dashboard?view=${activeTab}`);
+      const customerParams = new URLSearchParams({ view: "customers" });
+      if (customerFrom) customerParams.set("from", customerFrom);
+      if (customerTo) customerParams.set("to", customerTo);
+      const response = await request(activeTab === "prices" ? "/api/admin/prices" : activeTab === "references" ? "/api/admin/references" : activeTab === "customers" ? `/api/admin/dashboard?${customerParams}` : `/api/admin/dashboard?view=${activeTab}`);
       if (requestId === loadRequest.current) { setData(response); setLoadedTab(activeTab); }
     }
     catch (error) { if (requestId === loadRequest.current) setMessage(error instanceof Error ? error.message : "No fue posible cargar el dashboard."); }
-  }, [request]);
+  }, [customerFrom, customerTo, request]);
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => void load(tab));
     return () => window.cancelAnimationFrame(frame);
@@ -57,7 +66,7 @@ export function CommerceAdminDashboard() {
 
   return <section className="admin-dashboard">
     <header className="admin-dashboard-heading"><div><p className="eyebrow">OPERACIÓN SEGURA</p><h1>Panel de comercio</h1><p>Pedidos, intención de compra y precios desde una sola fuente.</p></div><button onClick={() => void load(tab)}>Actualizar</button></header>
-    <nav className="admin-tabs" aria-label="Secciones del dashboard">{(["summary", "orders", "identities", "carts", "favorites", "prices"] as Tab[]).map((value) => <button key={value} className={tab === value ? "active" : ""} onClick={() => setTab(value)}>{({ summary: "Resumen", orders: "Pedidos", identities: "Revisión de IDs", carts: "Carritos", favorites: "Favoritos", prices: "Precios" } as const)[value]}</button>)}</nav>
+    <nav className="admin-tabs" aria-label="Secciones del dashboard">{(["summary", "orders", "identities", "carts", "favorites", "prices", "customers", "references"] as Tab[]).map((value) => <button key={value} className={tab === value ? "active" : ""} onClick={() => setTab(value)}>{({ summary: "Resumen", orders: "Pedidos", identities: "Revisión de IDs", carts: "Carritos", favorites: "Favoritos", prices: "Precios", customers: "Clientes", references: "Referencias" } as const)[value]}</button>)}</nav>
     {message && <p className="notice error">{message}</p>}
     {tab === "summary" && loadedTab === "summary" && data && <Summary metrics={data.metrics as Metrics} />}
     {tab === "orders" && <SupervisorOrders focusOrderId={selectedOrderId} />}
@@ -65,6 +74,44 @@ export function CommerceAdminDashboard() {
     {tab === "carts" && loadedTab === "carts" && data && <Carts carts={(data.carts as Cart[] | undefined) ?? []} focusCartId={selectedCartId} />}
     {tab === "favorites" && loadedTab === "favorites" && data && <Favorites ranking={(data.ranking as { itemMainId: string; itemName: string; count: number }[] | undefined) ?? []} favorites={(data.favorites as FavoriteDetail[] | undefined) ?? []} />}
     {tab === "prices" && loadedTab === "prices" && data && <Prices data={{ rules: (data.rules as PriceRule[] | undefined) ?? [], overrides: (data.overrides as PriceOverride[] | undefined) ?? [] }} request={request} reload={() => load("prices")} />}
+    {tab === "customers" && <Customers customers={loadedTab === "customers" ? ((data?.customers as CustomerRankingEntry[] | undefined) ?? []) : null} from={customerFrom} to={customerTo} onFromChange={setCustomerFrom} onToChange={setCustomerTo} reload={() => load("customers")} />}
+    {tab === "references" && <References references={loadedTab === "references" ? ((data?.references as DeliveryReference[] | undefined) ?? []) : null} />}
+  </section>;
+}
+
+function References({ references }: { references: DeliveryReference[] | null }) {
+  return <section className="admin-references">
+    <header><p className="eyebrow">ENTREGAS CONFIRMADAS</p><h2>Referencias de clientes</h2><p>Aquí aparecen las evidencias enviadas después de recibir sus objetos.</p></header>
+    {references === null ? <p className="notice">Cargando referencias…</p> : references.length === 0 ? <p className="notice">Aún no hay referencias enviadas.</p> : <div className="admin-reference-list">
+      {references.map((reference) => <article key={reference.id}>
+        <header><div><small>ID QUE RECIBIÓ</small><strong>{reference.recipientName}</strong></div><time dateTime={reference.createdAt}>{new Date(reference.createdAt).toLocaleString("es-MX")}</time></header>
+        <div className="admin-reference-content">
+          {reference.imageUrls.length ? <div className="admin-reference-gallery">{reference.imageUrls.map((imageUrl, index) => <a key={imageUrl} href={imageUrl} target="_blank" rel="noreferrer"><img src={imageUrl} alt={`Evidencia ${index + 1} de ${reference.recipientName}`} />Ver imagen {index + 1}</a>)}</div> : <span className="admin-reference-empty">Sin imágenes</span>}
+          <div><small>OBJETOS RECIBIDOS</small><ul>{reference.items.map((item, index) => <li key={`${item.item_name}-${index}`}>{item.quantity}× {item.item_name}</li>)}</ul>{reference.comment && <blockquote>“{reference.comment}”</blockquote>}</div>
+        </div>
+      </article>)}
+    </div>}
+  </section>;
+}
+
+function Customers({ customers, from, to, onFromChange, onToChange, reload }: { customers: CustomerRankingEntry[] | null; from: string; to: string; onFromChange: (value: string) => void; onToChange: (value: string) => void; reload: () => Promise<void> }) {
+  const rankLabel = (index: number) => index === 0 ? "1er lugar" : index === 1 ? "2do lugar" : index === 2 ? "3er lugar" : String(index + 1);
+
+  return <section className="admin-customers">
+    <header className="admin-customers-heading"><div><p className="eyebrow">CLIENTES RECURRENTES</p><h2>Ranking por entregas recibidas</h2><p>Solo se cuentan pedidos con estado Entregado.</p></div></header>
+    <form className="admin-customer-filters" onSubmit={(event) => { event.preventDefault(); void reload(); }}>
+      <label>Desde<input type="date" value={from} max={to || undefined} onChange={(event) => onFromChange(event.target.value)} /></label>
+      <label>Hasta<input type="date" value={to} min={from || undefined} onChange={(event) => onToChange(event.target.value)} /></label>
+      <button className="secondary-button" type="submit">Actualizar ranking</button>
+    </form>
+    {customers === null ? <p className="notice">Cargando clientes…</p> : customers.length === 0 ? <p className="notice">No hay pedidos entregados en este periodo.</p> : <div className="admin-ranking admin-customer-ranking">
+      {customers.map((customer, index) => <article key={customer.recipientName}>
+        <span className="admin-customer-place">{rankLabel(index)}</span>
+        <div><small>Destinatario de Epic</small><strong>{customer.recipientName}</strong></div>
+        <div><small>Correo registrado</small><span>{customer.customerEmail ?? "Sin correo registrado"}</span></div>
+        <b>{customer.deliveredOrders} {customer.deliveredOrders === 1 ? "compra recibida" : "compras recibidas"}</b>
+      </article>)}
+    </div>}
   </section>;
 }
 

@@ -7,7 +7,7 @@ export const ORDER_STATUSES = [
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export type PaymentMethod = "mercado_pago" | "bank_transfer";
 export type SupervisorStatus = "pending_confirmation" | "submitted_to_administrator" | "payment_received" | "sent";
-export type OrderLine = Readonly<{ itemName: string; quantity: number; unitAmountMxnCents: number }>;
+export type OrderLine = Readonly<{ itemName: string; quantity: number; unitAmountMxnCents: number; unitAmountUsdCents?: number | null; vbucksPrice?: number }>;
 
 export type Order = Readonly<{
   id: string;
@@ -22,11 +22,16 @@ export type Order = Readonly<{
   itemImageUrl: string | null;
   vbucksPrice: number;
   amountMxnCents: number;
+  currency?: "MXN" | "USD";
+  subtotalUsdCents?: number | null;
+  paypalFeeUsdCents?: number | null;
+  amountUsdCents?: number | null;
   paymentMethod: PaymentMethod;
   recipientPlatform?: "epic" | "xbl" | "psn" | "nintendo";
   contactWhatsapp?: string | null;
   supervisorStatus?: SupervisorStatus;
   statusNote?: string | null;
+  deliveryFeedbackSubmittedAt?: string | null;
   items?: readonly OrderLine[];
   createdAt: string;
 }>;

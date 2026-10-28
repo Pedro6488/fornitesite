@@ -32,14 +32,14 @@ export function IdentitySheet() {
   useEffect(() => {
     if (!commerce.identityOpen) return;
     void commerce.refresh({ advanceIdentity: true });
-  }, [commerce.identityOpen, commerce.refresh]);
+  }, [commerce, commerce.identityOpen, commerce.refresh]);
 
   useEffect(() => {
     if (!commerce.identityOpen || commerce.validation?.status !== "waiting") return;
     const initialUpdate = window.setTimeout(() => setNow(Date.now()), 0);
     const interval = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => { window.clearTimeout(initialUpdate); window.clearInterval(interval); };
-  }, [commerce.identityOpen, commerce.validation?.status]);
+  }, [commerce, commerce.identityOpen, commerce.validation?.status]);
   async function submit(event: FormEvent) {
     event.preventDefault();
     const nextMessage = await commerce.validateIdentity(displayName, platform);

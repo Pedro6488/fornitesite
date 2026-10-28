@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
+import { rankCustomersByDeliveredOrders } from "@/features/admin/application/customer-ranking";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
+
+const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional();
 
 export async function GET(request: Request) {
   const staff = await authorizeStaff(request);
@@ -9,7 +13,30 @@ export async function GET(request: Request) {
   if (view === "summary") return summary(staff.database);
   if (view === "carts") return carts(staff.database);
   if (view === "favorites") return favorites(staff.database);
+  if (view === "customers") return customers(staff.database, new URL(request.url));
   return NextResponse.json({ error: "Vista inválida." }, { status: 400 });
+}
+
+async function customers(database: NonNullable<Awaited<ReturnType<typeof authorizeStaff>>>["database"], url: URL) {
+  const from = dateSchema.safeParse(url.searchParams.get("from") || undefined);
+  const to = dateSchema.safeParse(url.searchParams.get("to") || undefined);
+  if (!from.success || !to.success) return NextResponse.json({ error: "El rango de fechas no es válido." }, { status: 400 });
+
+  let query = database.from("orders")
+    .select("epic_account_id,epic_display_name,customer_email,amount_mxn_cents,delivered_at,created_at")
+    .eq("status", "delivered")
+    .order("delivered_at", { ascending: false })
+    .limit(5000);
+  if (from.data) query = query.gte("delivered_at", `${from.data}T00:00:00-06:00`);
+  if (to.data) {
+    const nextDay = new Date(`${to.data}T00:00:00-06:00`);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    query = query.lt("delivered_at", nextDay.toISOString());
+  }
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ error: "No fue posible consultar clientes." }, { status: 503 });
+
+  return NextResponse.json({ customers: rankCustomersByDeliveredOrders(data ?? []) });
 }
 
 async function summary(database: NonNullable<Awaited<ReturnType<typeof authorizeStaff>>>["database"]) {

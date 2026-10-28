@@ -86,6 +86,7 @@ type Order = {
   status: OrderStatus;
   order_items: OrderItem[];
   paymentTicketUrl: string | null;
+  deliveryFeedback: { comment: string | null; createdAt: string; imageUrl: string | null } | null;
   history: HistoryEvent[];
 };
 
@@ -136,7 +137,9 @@ export function SupervisorOrders({ focusOrderId }: { focusOrderId?: string | nul
   useEffect(() => {
     if (!focusOrderId || !orders.length) return;
     const matching = orders.find((order) => order.id === focusOrderId);
-    if (matching) setSelectedOrder(matching);
+    if (!matching) return;
+    const frame = window.requestAnimationFrame(() => setSelectedOrder(matching));
+    return () => window.cancelAnimationFrame(frame);
   }, [focusOrderId, orders]);
 
   async function update(order: Order, status: OrderStatus, notes?: string) {
@@ -202,6 +205,19 @@ export function SupervisorOrders({ focusOrderId }: { focusOrderId?: string | nul
           <section><p className="eyebrow">ENTREGA</p><h3>{selectedOrder.epic_display_name}</h3><dl><div><dt>Plataforma</dt><dd>{selectedOrder.recipient_platform}</dd></div><div><dt>ID interno</dt><dd>{selectedOrder.epic_account_id}</dd></div><div><dt>WhatsApp</dt><dd>{selectedOrder.contact_whatsapp}</dd></div><div><dt>Correo</dt><dd>{selectedOrder.customer_email || "Sin correo"}</dd></div></dl></section>
           <section><p className="eyebrow">PRODUCTOS A ENTREGAR</p><div className="admin-order-items">{selectedOrder.order_items.map((item, index) => <button type="button" className="admin-order-item" key={`${item.item_main_id}-${index}`} onClick={() => { setSelectedOrder(null); setSelectedItem(item); }}><span className="admin-order-item-image">{item.item_image_url ? <Image src={item.item_image_url} alt="" fill sizes="48px" /> : <b aria-hidden="true">{item.item_name.slice(0, 1)}</b>}</span><span className="admin-order-item-copy"><strong>{item.item_name}</strong><small>{item.quantity}× · ◉ {item.vbucks_price.toLocaleString("es-MX")} paVos</small></span><span className="admin-order-item-price">{formatMoney(item.unit_amount_mxn_cents * item.quantity)}<small>Ver objeto</small></span></button>)}</div><div className={`admin-payment-proof ${selectedOrder.paymentTicketUrl ? "received" : ""}`}><FileCheck2 aria-hidden="true" size={18} /><span><strong>{selectedOrder.paymentTicketUrl ? "Comprobante recibido" : "Pago confirmado por operación"}</strong><small>{selectedOrder.paymentTicketUrl ? "Archivo enviado por el cliente" : "El administrador puede confirmar el pago sin archivo"}</small></span>{selectedOrder.paymentTicketUrl && <a href={selectedOrder.paymentTicketUrl} target="_blank" rel="noreferrer">Abrir ↗</a>}</div></section>
         </div>
+        {selectedOrder.deliveryFeedback && <section className="admin-delivery-feedback">
+          <div>
+            <p className="eyebrow">RECOMENDACIÓN DEL CLIENTE</p>
+            <h3>Entrega confirmada</h3>
+            <p>Enviada el {new Date(selectedOrder.deliveryFeedback.createdAt).toLocaleString("es-MX")}</p>
+          </div>
+          <dl>
+            <div><dt>ID que recibió</dt><dd>{selectedOrder.epic_display_name}</dd></div>
+            <div><dt>Objetos recibidos</dt><dd>{selectedOrder.order_items.map((item) => `${item.quantity}× ${item.item_name}`).join(", ")}</dd></div>
+          </dl>
+          {selectedOrder.deliveryFeedback.imageUrl && <a className="admin-delivery-feedback-image" href={selectedOrder.deliveryFeedback.imageUrl} target="_blank" rel="noreferrer"><img src={selectedOrder.deliveryFeedback.imageUrl} alt={`Confirmación de entrega de ${selectedOrder.epic_display_name}`} />Abrir imagen</a>}
+          {selectedOrder.deliveryFeedback.comment && <blockquote>{selectedOrder.deliveryFeedback.comment}</blockquote>}
+        </section>}
         {selectedOrder.history.length > 0 && <div className="admin-order-history"><p className="eyebrow">HISTORIAL</p>{selectedOrder.history.slice(0, 12).map((event, index) => <div key={`${event.created_at}-${index}`}><p><span>{event.after_data?.status ? labels[event.after_data.status as OrderStatus] ?? event.after_data.status : event.action}</span><small>{new Date(event.created_at).toLocaleString("es-MX")}</small></p>{event.after_data?.notes && <small className="admin-order-history-note">{event.after_data.notes}</small>}</div>)}</div>}
         <DeliveryTicketActions order={selectedOrder} />
       </div>}
@@ -261,7 +277,10 @@ function DeliveryTicketActions({ order }: { order: Order }) {
       const printWindow = window.open("", "_blank", "width=760,height=900");
       if (!printWindow) return;
       printWindow.opener = null;
-      printWindow.document.write(ticketPrintDocument(order));
+      const document = ticketPrintDocument(order);
+      printWindow.document.write(order.status === "delivered"
+        ? document.replace("COMPRA CONFIRMADA", "PRODUCTOS ENTREGADOS").replace("Pago confirmado.", "Productos entregados.")
+        : document);
       printWindow.document.close();
       printWindow.focus();
     } finally { window.setTimeout(() => setCreating(null), 300); }
@@ -276,6 +295,9 @@ function DeliveryTicketActions({ order }: { order: Order }) {
 }
 
 async function createTicketCanvas(order: Order) {
+  const delivered = order.status === "delivered";
+  const ticketTitle = delivered ? "SIGFRIEDLOOTBOX · PRODUCTOS ENTREGADOS" : "SIGFRIEDLOOTBOX · COMPRA CONFIRMADA";
+  const ticketFooter = delivered ? "PRODUCTOS ENTREGADOS" : "PAGO CONFIRMADO";
   const width = 1080;
   const height = 570 + order.order_items.length * 104;
   const canvas = document.createElement("canvas");
@@ -285,7 +307,7 @@ async function createTicketCanvas(order: Order) {
   context.fillStyle = "#091020"; context.fillRect(0, 0, width, height);
   context.fillStyle = "#151f40"; context.fillRect(38, 38, width - 76, height - 76);
   context.strokeStyle = "#2c4678"; context.lineWidth = 2; context.strokeRect(38, 38, width - 76, height - 76);
-  context.fillStyle = "#ffd51f"; context.font = "900 22px Arial"; context.fillText("SIGFRIEDLOOTBOX · COMPRA CONFIRMADA", 84, 100);
+  context.fillStyle = "#ffd51f"; context.font = "900 22px Arial"; context.fillText(ticketTitle, 84, 100);
   context.fillStyle = "#f6f8ff"; context.font = "900 48px Arial"; context.fillText(`PEDIDO #${order.id.slice(0, 8).toUpperCase()}`, 84, 165);
   context.fillStyle = "#aebddd"; context.font = "24px Arial"; context.fillText(new Date(order.created_at).toLocaleString("es-MX", { dateStyle: "long", timeStyle: "short" }), 84, 210);
   context.fillStyle = "#55d9ff"; context.font = "900 20px Arial"; context.fillText("RECEPTOR", 84, 278);
@@ -304,7 +326,7 @@ async function createTicketCanvas(order: Order) {
     context.fillStyle = "#aebddd"; context.font = "19px Arial"; context.fillText(`${item.quantity}× · ◉ ${item.vbucks_price.toLocaleString("es-MX")} paVos`, 178, top + 60);
     context.fillStyle = "#ffd51f"; context.font = "900 23px Arial"; context.textAlign = "right"; context.fillText(formatMoney(item.unit_amount_mxn_cents * item.quantity), width - 104, top + 47); context.textAlign = "left";
   });
-  context.fillStyle = "#9cffcf"; context.font = "900 20px Arial"; context.fillText("PAGO CONFIRMADO", 84, height - 84);
+  context.fillStyle = "#9cffcf"; context.font = "900 20px Arial"; context.fillText(ticketFooter, 84, height - 84);
   context.fillStyle = "#9aa9c9"; context.font = "18px Arial"; context.textAlign = "right"; context.fillText("Guarda este ticket como comprobante de tu compra.", width - 84, height - 84); context.textAlign = "left";
   return canvas;
 }

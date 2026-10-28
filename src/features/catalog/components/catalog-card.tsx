@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { CalendarClock, ChevronRight } from "lucide-react";
-import { formatMxn } from "@/features/pricing/domain/price-calculator";
+import { RegionalPrice } from "@/features/pricing/components/regional-price";
 import { getCatalogCategory } from "../application/catalog-query";
 import { canPurchase, type CatalogItem } from "../domain/catalog-item";
 import { FavoriteButton } from "./favorite-button";
@@ -59,10 +59,7 @@ export function CatalogCard({
               </div>
               <div className="catalog-card-price">
                 <strong>
-                  {item.priceMxn === null
-                    ? "Consultar"
-                    : formatMxn(item.priceMxn)}
-                  {item.priceMxn !== null && <small>MXN</small>}
+                  <RegionalPrice vbucks={item.finalPriceVbucks} mxnPrice={item.priceMxn} />
                 </strong>
               </div>
             </div>
