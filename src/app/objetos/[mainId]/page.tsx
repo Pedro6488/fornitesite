@@ -59,7 +59,7 @@ export default async function ItemPage({
       <section className="detail-shell">
         <div className="detail-visual">
           <div className="detail-navigation">
-            <BackButton fallbackHref={fromAdmin ? "/admin" : "/#catalogo"} label={fromAdmin ? "Volver al panel" : "Volver al catálogo"} preferFallback={fromAdmin} />
+            <BackButton fallbackHref={fromAdmin ? "/admin" : "/fortnite#catalogo"} label={fromAdmin ? "Volver al panel" : "Volver al catálogo"} preferFallback={fromAdmin} />
           </div>
           <ItemPreview
             imageUrl={item.imageUrl}
@@ -145,7 +145,7 @@ export default async function ItemPage({
                 <p className="eyebrow">SIGUE EXPLORANDO</p>
                 <h2 id="related-title">También te puede gustar</h2>
               </div>
-              <Link href="/#catalogo">
+              <Link href="/fortnite#catalogo">
                 Ver todo <ArrowRight aria-hidden="true" size={16} />
               </Link>
             </header>

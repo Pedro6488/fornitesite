@@ -9165,3 +9165,19 @@ body:has(.detail-shell, .cart-page, .checkout-flow) .site-footer {
     bottom: .75rem;
   }
 }
+
+/* Custom store logo, kept proportional on desktop and mobile. */
+.brand-mark {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .brand-mark {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}

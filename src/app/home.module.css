@@ -1,0 +1,88 @@
+.home {
+  background: radial-gradient(ellipse at 8% 0%, #384baf26, transparent 52%), radial-gradient(ellipse at 96% 70%, #55d9ff0b, transparent 40%);
+  color: var(--ink);
+  min-height: calc(100svh - 135px);
+  padding: clamp(48px, 6vw, 96px) clamp(20px, 5vw, 80px) 48px;
+}
+.content { max-width: 1360px; margin: 0 auto; }
+.purchaseTrust { display: flex; align-items: center; gap: 10px; margin: 26px 0 0; color: var(--muted); font-size: clamp(13px, 1.2vw, 16px); line-height: 1.6; }
+.purchaseTrust svg { flex-shrink: 0; color: var(--success); }
+.purchaseTrust strong { color: var(--ink); font-weight: 800; }
+.intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 64px; }
+.eyebrow { display: flex; align-items: center; gap: 10px; color: var(--accent); font-size: 11px; font-weight: 850; letter-spacing: .16em; margin: 0 0 24px; line-height: 1.7; }
+.title { font-size: clamp(48px, 5.8vw, 84px); font-weight: 900; line-height: 1.02; letter-spacing: -.065em; max-width: none; margin: 0; }
+.title span { background: linear-gradient(105deg, #f7f8ff 5%, var(--cyan) 62%, #ace4ac); background-clip: text; color: transparent; }
+.description { color: var(--muted); font-size: 16px; line-height: 1.8; max-width: 260px; margin: 0 0 5px; }
+.introContact { max-width: 340px; }
+.contactButton { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding: 15px 16px; border: 1px solid #4be19a40; border-radius: 14px; background: #4be19a0a; transition: background .2s ease, border-color .2s ease; }
+.contactButton:hover { background: #4be19a18; border-color: #4be19a80; }
+.contactButton:focus-visible { outline: 3px solid var(--success); outline-offset: 4px; }
+.whatsappIcon { width: 26px; height: 26px; flex-shrink: 0; color: #4be19a; }
+.contactButton > span { display: flex; flex-direction: column; gap: 4px; }
+.contactButton strong { color: var(--ink); font-size: 14px; }
+.contactButton > span > span { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.contactButton > svg:last-child { flex-shrink: 0; margin-left: auto; color: #4be19a; }
+.sectionHeading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 22px; }
+.sectionHeading h2 { font-size: 18px; letter-spacing: -.03em; margin: 0; }
+.sectionHeading > span { font-size: 10px; letter-spacing: .18em; color: #8992b4; font-weight: 750; }
+.games { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; padding: 0; margin: 0; list-style: none; }
+.games > li { min-width: 0; }
+.card { position: relative; display: flex; align-items: flex-end; isolation: isolate; overflow: hidden; min-height: 350px; aspect-ratio: 3 / 4; border-radius: 20px; background: #161c32; box-shadow: 0 16px 40px #0003; }
+.card::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #070a1440 0%, transparent 25%, #090c1955 45%, #090c19f5 85%); }
+.art { object-fit: cover; object-position: center 30%; z-index: -2; transition: transform .5s ease; }
+.badge { position: absolute; top: 18px; left: 18px; border: 1px solid #ffffff20; border-radius: 999px; background: #090c19b8; backdrop-filter: blur(12px); color: #dde2f3; padding: 7px 11px; font-size: 10px; font-weight: 750; }
+.cardContent { width: 100%; padding: 24px; }
+.subtitle { color: #c0c8e0; font-size: 9px; font-weight: 800; letter-spacing: .17em; margin: 0 0 9px; }
+.cardContent h3 { font-size: clamp(23px, 2.2vw, 34px); letter-spacing: -.05em; line-height: 1.1; margin: 0 0 18px; }
+.comingSoon { color: #aeb5d4; font-size: 11px; line-height: 1.5; display: block; min-height: 40px; padding-top: 10px; border-top: 1px solid #ffffff17; }
+.live { color: #a5f2cd; display: flex; align-items: center; gap: 6px; }
+.live i { width: 6px; height: 6px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px #4be19a70; }
+.action { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--accent); color: #101321; padding: 12px 14px; border-radius: 10px; font-size: 12px; font-weight: 850; }
+.available { transition: transform .25s ease, box-shadow .25s ease; box-shadow: 0 16px 48px #25389b26; }
+.available:hover { transform: translateY(-6px); box-shadow: 0 20px 50px #25389b40; }
+.available:hover .art { transform: scale(1.06); }
+.available:focus-visible { outline: 3px solid var(--cyan); outline-offset: 5px; }
+.robloxArt { position: absolute; inset: 0; z-index: -2; background: radial-gradient(ellipse at 55% 35%, #434b77, #161b30 65%); display: flex; flex-direction: column; align-items: center; padding-top: 30%; gap: 25px; }
+.robloxArt span { display: block; width: 85px; height: 85px; background: linear-gradient(135deg, #fff, #9faaca); transform: rotate(18deg); box-shadow: 15px 20px 30px #0003; position: relative; }
+.robloxArt span::after { content: ''; position: absolute; inset: 30%; background: #303854; }
+.robloxArt b { color: #e7eaff; font-size: 25px; font-weight: 950; letter-spacing: -.06em; }
+.note { display: flex; align-items: center; justify-content: center; gap: 10px; color: #8992b4; font-size: 12px; line-height: 1.6; margin: 30px 0 0; text-align: center; }
+.note > span { height: 4px; width: 4px; flex-shrink: 0; border-radius: 50%; background: var(--cyan); }
+@media (max-width: 1000px) {
+  .games { gap: 14px; }
+  .card { min-height: 300px; }
+  .cardContent { padding: 18px; }
+  .badge { left: 12px; top: 12px; font-size: 9px; padding: 6px 9px; }
+  .action { font-size: 11px; padding: 11px 10px; }
+}
+@media (max-width: 800px) {
+  .games { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .intro { margin-bottom: 44px; }
+  .description { max-width: 190px; font-size: 14px; }
+  .card { min-height: 320px; }
+  .robloxArt { padding-top: 22%; }
+}
+@media (max-width: 540px) {
+  .home { padding: 44px 18px 36px; }
+  .intro { display: block; margin-bottom: 36px; }
+  .eyebrow { font-size: 8px; gap: 8px; letter-spacing: .12em; margin-bottom: 18px; }
+  .title { font-size: clamp(40px, 10vw, 54px); }
+  .description { max-width: 280px; margin: 20px 0 0; font-size: 14px; }
+  .sectionHeading > span { display: none; }
+  .games { gap: 12px; }
+  .card { min-height: 265px; border-radius: 15px; }
+  .cardContent { padding: 14px; }
+  .cardContent h3 { font-size: 23px; margin-bottom: 14px; }
+  .subtitle { font-size: 7px; letter-spacing: .1em; }
+  .badge { left: 10px; top: 10px; font-size: 8px; padding: 6px 8px; }
+  .comingSoon { font-size: 10px; min-height: 45px; }
+  .action { font-size: 10px; padding: 10px 8px; }
+  .action svg { width: 15px; }
+  .robloxArt { padding-top: 37%; gap: 20px; }
+  .robloxArt span { width: 55px; height: 55px; }
+  .robloxArt b { font-size: 18px; }
+  .note { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .available, .art, .contactButton { transition: none; }
+}

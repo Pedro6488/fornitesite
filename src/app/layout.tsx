@@ -20,7 +20,8 @@ import "./order-operations.css";
 
 export const metadata: Metadata = {
   title: "SigfriedLootBox",
-  description: "Catálogo independiente de objetos disponibles en Fortnite.",
+  icons: { icon: "/games/logofin.png", apple: "/games/logofin.png" },
+  description: "Elige tu juego en SigfriedLootBox y explora nuestro catálogo de Fortnite.",
 };
 export const viewport: Viewport = {
   width: "device-width",
@@ -73,10 +74,10 @@ export default function RootLayout({
               >
                 <Image
                   className="brand-mark"
-                  src="/sigfriedlootbox-mark.svg"
+                  src="/games/logofin.png"
                   alt=""
-                  width={48}
-                  height={48}
+                  width={64}
+                  height={64}
                   priority
                 />
                 <span>
@@ -110,7 +111,7 @@ export default function RootLayout({
               </p>
             </div>
             <nav className="footer-links" aria-label="Enlaces del pie">
-              <Link href="/#catalogo">Tienda</Link>
+              <Link href="/fortnite#catalogo">Tienda</Link>
               <Link href="/favoritos">Favoritos</Link>
               <Link href="/clientes">Clientes</Link>
               <Link href="/referencias">Referencias</Link>
