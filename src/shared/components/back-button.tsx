@@ -10,7 +10,7 @@ type BackButtonProps = Readonly<{
 }>;
 
 export function BackButton({
-  fallbackHref = "/#catalogo",
+  fallbackHref = "/fortnite#catalogo",
   label = "Volver al catálogo",
   preferFallback = false
 }: BackButtonProps) {

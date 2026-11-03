@@ -140,7 +140,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     } finally {
       setLoading(false);
     }
-  }, [commerce.validation, itemSignature, lines]);
+  }, [commerce.validation, itemSignature, lines, region]);
 
   const closeQuoteSheet = useCallback(() => setQuoteSheetOpen(false), []);
 
@@ -209,7 +209,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
         <div className="flow-heading">
           <p className="eyebrow">SOLICITUD</p>
           <h1>Tu carrito está vacío.</h1>
-          <Link className="primary-button" href="/#catalogo">
+          <Link className="primary-button" href="/fortnite#catalogo">
             Explorar tienda
           </Link>
         </div>

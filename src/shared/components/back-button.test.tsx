@@ -18,7 +18,7 @@ describe("BackButton", () => {
   });
 
   it("regresa al historial cuando la navegación nació en el mismo sitio", () => {
-    vi.spyOn(document, "referrer", "get").mockReturnValue(`${window.location.origin}/#catalogo`);
+    vi.spyOn(document, "referrer", "get").mockReturnValue(`${window.location.origin}/fortnite#catalogo`);
 
     render(<BackButton />);
     fireEvent.click(screen.getByRole("button", { name: "Volver al catálogo" }));
@@ -33,7 +33,7 @@ describe("BackButton", () => {
     render(<BackButton />);
     fireEvent.click(screen.getByRole("button", { name: "Volver al catálogo" }));
 
-    expect(router.push).toHaveBeenCalledWith("/#catalogo");
+    expect(router.push).toHaveBeenCalledWith("/fortnite#catalogo");
     expect(router.back).not.toHaveBeenCalled();
   });
 

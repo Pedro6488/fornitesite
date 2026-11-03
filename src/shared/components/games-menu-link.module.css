@@ -1,0 +1,4 @@
+.navigation { max-width: 1520px; margin: 0 auto; padding: 28px clamp(20px, 5vw, 80px) 0; }
+.link { display: inline-flex; align-items: center; gap: 9px; padding: 11px 15px; border: 1px solid #55d9ff30; border-radius: 12px; background: #55d9ff08; color: var(--ink); font-size: 13px; font-weight: 700; }
+.link:hover { background: #55d9ff18; border-color: #55d9ff65; }
+.link:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }

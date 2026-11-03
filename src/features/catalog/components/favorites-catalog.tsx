@@ -36,7 +36,7 @@ export function FavoritesCatalog({ items }: { items: readonly CatalogItem[] }) {
         <span aria-hidden="true">♡</span>
         <h2>Guarda los objetos que te gustan</h2>
         <p>Usa el corazón de cada tarjeta para reunir aquí tus favoritos.</p>
-        <Link href="/#catalogo">Explorar la tienda</Link>
+        <Link href="/fortnite#catalogo">Explorar la tienda</Link>
       </div>
     );
   }

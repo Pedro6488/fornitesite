@@ -310,8 +310,8 @@ export function OrderStatus({
             </button>
           )}
           {order.status === "delivered" && <>
-            <a className="primary-button order-store-link" href="/#catalogo">Regresar a la tienda</a>
-            <BackButton label="Atrás" fallbackHref="/#catalogo" />
+            <a className="primary-button order-store-link" href="/fortnite#catalogo">Regresar a la tienda</a>
+            <BackButton label="Atrás" fallbackHref="/fortnite#catalogo" />
           </>}
         </SystemActionBar>
       {message && (

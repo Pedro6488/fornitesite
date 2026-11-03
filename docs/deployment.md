@@ -5,10 +5,10 @@
 | Rama | Uso | Destino |
 |---|---|---|
 | `development` | Integración continua | Preview de desarrollo |
-| `qa-release` | Candidato validado | Preview/QA estable |
+| `qa_release` | Candidato validado | Preview/QA estable |
 | `main` | Producción | Dominio productivo |
 
-Protege las tres ramas en GitHub. Exige `CI / quality`, revisión y conversación resuelta. No permitas push directo a `qa-release` ni `main`.
+Protege las tres ramas en GitHub. Exige `CI / quality`, revisión y conversación resuelta. No permitas push directo a `qa_release` ni `main`.
 
 ## Supabase
 
@@ -66,16 +66,18 @@ explícita con el dominio correspondiente para que los retornos de pago apunten
 al ambiente correcto.
 
 No reutilices credenciales entre QA y producción. La transferencia bancaria es
-el único método de pago expuesto; WhatsApp funciona únicamente como postventa.
+el único método de pago expuesto en el checkout de Fortnite. Free Fire y los
+códigos canjeables de Roblox usan formularios que preparan una solicitud por
+WhatsApp para coordinar el pago y la entrega con el administrador.
 
 ## Liberación
 
 1. Feature commits en `development`.
 2. Ejecutar CI y pruebas del flujo comercial con proveedores QA.
-3. Merge commit `development → qa-release`.
+3. Merge commit `development → qa_release`.
 4. Aplicar migraciones al Supabase QA.
 5. Probar catálogo, amistad de 48 horas, cotización, transferencia, comprobante privado y entrega controlada.
-6. Merge commit `qa-release → main`.
+6. Merge commit `qa_release → main`.
 7. Aplicar migraciones de producción.
 8. Verificar `/health`, limpieza programada, RLS, URLs firmadas y logs.
 

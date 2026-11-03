@@ -132,7 +132,7 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
       {message && <p className="notice error">{message}</p>}
     </section>
     <section id="account-panel-orders" className="orders-panel account-tab-panel" role="tabpanel" aria-labelledby="account-tab-orders" hidden={activeTab !== "orders"}>
-      <div className="orders-heading"><div><p className="eyebrow">MIS COMPRAS</p><h3>Estado de tus pedidos</h3><p>{orders.filter((order) => order.status === "delivered").length} entregas confirmadas</p></div><Link href="/#catalogo">Ir a la tienda</Link></div>
+      <div className="orders-heading"><div><p className="eyebrow">MIS COMPRAS</p><h3>Estado de tus pedidos</h3><p>{orders.filter((order) => order.status === "delivered").length} entregas confirmadas</p></div><Link href="/fortnite#catalogo">Ir a la tienda</Link></div>
       {orders.length === 0 ? <p className="empty-orders">Aún no tienes pedidos asociados a esta cuenta.</p> : orders.map((order) => <Link className="account-order" key={order.id} href={`/pedidos/${order.id}?access=${order.public_token}`}><span><b>Pedido #{order.id.slice(0, 8).toUpperCase()}</b><small>{new Date(order.created_at).toLocaleDateString("es-MX")} · Ver compra y objetos</small></span><strong className={`order-${order.status}`}>{orderLabel(order.status)}</strong></Link>)}
     </section>
     <section id="account-panel-favorites" className="account-favorites-panel account-tab-panel" role="tabpanel" aria-labelledby="account-tab-favorites" hidden={activeTab !== "favorites"}>
