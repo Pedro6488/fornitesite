@@ -1,6 +1,5 @@
 import Image from "next/image";
-import robuxImage from "../../../public/games/robux.png";
 
 export function RobuxArt({ className }: { className?: string }) {
-  return <Image src={robuxImage} className={className} alt="" sizes="(max-width: 800px) 50vw, 33vw" />;
+  return <Image src="/games/robux.png" width={367} height={367} className={className} alt="" sizes="(max-width: 800px) 50vw, 33vw" />;
 }

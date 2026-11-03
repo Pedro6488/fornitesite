@@ -2,10 +2,6 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RobloxCheckout } from "./checkout";
 
-vi.mock("../../../public/games/robux.png", () => ({
-  default: { src: "/games/robux.png", width: 460, height: 382 },
-}));
-
 describe("RobloxCheckout", () => {
   afterEach(() => vi.restoreAllMocks());
 
