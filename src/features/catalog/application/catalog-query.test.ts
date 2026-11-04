@@ -7,6 +7,7 @@ import {
   filterCatalogFacets,
   getCatalogCategory,
   getLatestShopDate,
+  orderCatalogGroups,
   sortCatalog
 } from "./catalog-query";
 
@@ -110,5 +111,37 @@ describe("catalog-query", () => {
     expect(counts.Todos).toBe(2);
     expect(counts.Atuendos).toBe(1);
     expect(counts.Picos).toBe(1);
+  });
+});
+
+describe("categorías con los textos en español de la tienda", () => {
+  it.each([
+    ["Atuendo", "Atuendos"],
+    ["Mochila retro", "Mochilas"],
+    ["Papel", "Envoltorios"],
+    ["Calzado", "Calzado"],
+    ["Compañero", "Compañeros"],
+    ["Pista de improvisación", "Música"],
+    ["Lote", "Lotes"]
+  ])("clasifica %s como %s", (type, category) => {
+    expect(getCatalogCategory(catalogItem({ type }))).toBe(category);
+  });
+});
+
+describe("orden de las secciones del catálogo", () => {
+  it("deja al final lo que no tiene colección y después la música", () => {
+    const groups = [
+      { name: "Pistas de improvisación", items: [catalogItem({ type: "Pista de improvisación" })] },
+      { name: "Otros objetos", items: [catalogItem()] },
+      { name: "DC", items: [catalogItem()] },
+      { name: "Rambo", items: [catalogItem()] }
+    ];
+
+    expect(orderCatalogGroups(groups).map((group) => group.name)).toEqual([
+      "DC",
+      "Rambo",
+      "Otros objetos",
+      "Pistas de improvisación"
+    ]);
   });
 });

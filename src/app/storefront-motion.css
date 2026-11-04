@@ -1,0 +1,31 @@
+/* React 19.3 owns the View Transition lifecycle. No manual startViewTransition. */
+::view-transition { pointer-events: none; }
+::view-transition-group(*) { animation-duration: 260ms; animation-timing-function: cubic-bezier(.22, .8, .25, 1); }
+::view-transition-old(root) { animation: none; opacity: 0; }
+::view-transition-new(root) { animation: none; }
+::view-transition-old(.loot-forward) { animation: loot-exit-left 170ms ease-out both; }
+::view-transition-new(.loot-forward) { animation: loot-enter-right 260ms cubic-bezier(.22,.8,.25,1) both; }
+::view-transition-old(.loot-back) { animation: loot-exit-right 170ms ease-out both; }
+::view-transition-new(.loot-back) { animation: loot-enter-left 260ms cubic-bezier(.22,.8,.25,1) both; }
+::view-transition-old(.loot-fade) { animation: loot-fade-out 160ms ease-out both; }
+::view-transition-new(.loot-fade) { animation: loot-fade-in 210ms ease-out both; }
+@keyframes loot-exit-left { to { opacity: 0; transform: translateX(-18px); } }
+@keyframes loot-enter-right { from { opacity: 0; transform: translateX(22px); } }
+@keyframes loot-exit-right { to { opacity: 0; transform: translateX(18px); } }
+@keyframes loot-enter-left { from { opacity: 0; transform: translateX(-22px); } }
+@keyframes loot-fade-out { to { opacity: 0; } }
+@keyframes loot-fade-in { from { opacity: 0; } }
+.loot-link { position: relative; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.loot-link-feedback { display: none; }
+.loot-link-feedback[data-pending] { display: block; position: absolute; bottom: 3px; left: 12px; right: 12px; height: 3px; background: currentColor; opacity: .8; transform-origin: left; animation: loot-pending 800ms ease-in-out infinite alternate; pointer-events: none; }
+.loot-link-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+@keyframes loot-pending { from { transform: scaleX(.25); opacity: .4; } to { transform: scaleX(1); opacity: .85; } }
+.storefront-view :is(button, a) { touch-action: manipulation; }
+.storefront-view button:not(:disabled):active { transform: scale(.97); }
+.storefront-view #catalogo { scroll-margin-top: 100px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  ::view-transition-old(*), ::view-transition-new(*), ::view-transition-group(*) { animation-duration: 0s !important; animation-delay: 0s !important; }
+  .loot-link-feedback[data-pending] { animation: none; transform: none; }
+  .storefront-view button:not(:disabled):active { transform: none; }
+}

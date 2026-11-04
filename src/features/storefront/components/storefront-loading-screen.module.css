@@ -1,0 +1,62 @@
+.screen {
+  align-content: center;
+  background: radial-gradient(circle at 50% 42%, #d6ff4512, transparent 26rem);
+  display: grid;
+  justify-items: center;
+  min-height: calc(100dvh - 5rem);
+  padding: 2rem 1.25rem 6rem;
+  text-align: center;
+}
+
+.emblem {
+  align-items: center;
+  display: flex;
+  height: 7rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  width: 7rem;
+}
+
+.emblem img {
+  height: 4.5rem;
+  object-fit: contain;
+  width: 4.5rem;
+}
+
+.ring {
+  animation: spin 900ms linear infinite;
+  border: 3px solid #ffffff14;
+  border-top-color: #d6ff45;
+  inset: 0;
+  position: absolute;
+}
+
+.title {
+  color: #f4f6ff;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  margin: 0 0 .55rem;
+  text-transform: uppercase;
+  transform: skewX(-6deg);
+}
+
+.detail {
+  color: #b1b5c6;
+  font-size: .9rem;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 26rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    animation-duration: 3s;
+  }
+}

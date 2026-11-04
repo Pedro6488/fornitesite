@@ -1,0 +1,71 @@
+/* Compra de Free Fire y Roblox: paneles y campos iguales a los del resto de la tienda. */
+.page { margin: 0 auto; max-width: 1400px; padding: 1.5rem clamp(20px, 4vw, 60px) 4.5rem; }
+.layout { align-items: start; display: grid; gap: 1.25rem; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+.leftColumn { display: grid; gap: 1.25rem; min-width: 0; }
+
+.summary, .form, .profileGuide {
+  background: linear-gradient(100deg, #151a3ae8, #0d1127f2);
+  border-left: 4px solid #d6ff45;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.profileGuide { border-left-color: #ffffff2e; }
+.summary h2, .form h2, .profileGuide h2 { font-size: 1.6rem; line-height: 1.05; margin: 0 0 1rem; }
+.profileGuide h2 { align-items: center; display: flex; font-size: 1.35rem; gap: .55rem; }
+.profileGuide h2 svg { color: #d6ff45; flex-shrink: 0; }
+.profileGuide > p, .profileSteps p { color: #c7cde0; font-size: .85rem; line-height: 1.5; margin: 0; }
+
+.profileFigure { margin: 1rem 0; }
+.profileFigure a { cursor: zoom-in; display: block; overflow: hidden; }
+.profileImage { display: block; height: auto; width: 100%; }
+.profileFigure figcaption { color: var(--muted); font-size: .75rem; line-height: 1.5; margin-top: .5rem; }
+.profileSteps { display: grid; gap: .85rem; list-style: none; margin: 1rem 0 0; padding: 0; }
+.profileSteps li { align-items: flex-start; display: flex; gap: .7rem; }
+.profileSteps li > span { background: #d6ff45; clip-path: polygon(.2rem 0, 100% 0, calc(100% - .2rem) 100%, 0 100%); color: #0c0f1e; display: grid; flex-shrink: 0; font-family: 'Loot Display', Impact, sans-serif; font-size: 1.05rem; font-weight: 800; height: 1.7rem; place-items: center; width: 2rem; }
+.profileSteps strong { display: block; font-size: .9rem; margin-bottom: .15rem; }
+
+.order { align-items: center; display: flex; gap: 1rem; padding-bottom: 1rem; }
+.orderImage { flex-shrink: 0; height: auto; object-fit: contain; width: clamp(60px, 8vw, 88px); }
+.order h3 { color: #fff; font-family: 'Loot Display', Impact, sans-serif; font-size: 1.75rem; font-weight: 800; line-height: 1; margin: 0 0 .25rem; }
+.order p { color: #c7cde0; font-size: .85rem; line-height: 1.4; margin: 0; }
+.order span { display: none; }
+
+.total { align-items: center; border-top: 1px solid #ffffff1a; display: flex; flex-wrap: wrap; gap: .75rem; justify-content: space-between; padding-top: .9rem; }
+.total > span { color: var(--muted); font-size: .85rem; font-weight: 700; }
+.total strong { color: #d6ff45; font-family: 'Loot Display', Impact, sans-serif; font-size: 2.75rem; font-weight: 800; line-height: 1; }
+.total small { color: #b8c3de; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: .75rem; font-weight: 700; }
+
+.note, .help { color: var(--muted); font-size: .8rem; line-height: 1.5; }
+.note { margin: .9rem 0 0; }
+.back { align-items: center; color: #d6ff45; display: inline-flex; font-size: .85rem; font-weight: 700; gap: .4rem; margin-top: .75rem; }
+.help { margin: .45rem 0 0; }
+
+.form > label, .player > label { color: #c7cde0; display: block; font-size: .78rem; font-weight: 700; letter-spacing: .02em; margin-bottom: .4rem; text-transform: none; }
+.form input:not([type=checkbox]), .form select { background: #090d1b; border: 1px solid #ffffff24; color: var(--ink); min-height: 3rem; min-width: 0; padding: .7rem .85rem; width: 100%; }
+.form input:focus-visible, .form select:focus-visible { border-color: #d6ff45; box-shadow: 0 0 0 2px #d6ff4533; outline: 0; }
+.phone { display: grid; gap: .5rem; grid-template-columns: 9rem minmax(0, 1fr); }
+
+.player { background: #ffffff06; border: 1px solid #ffffff1f; margin: 1.1rem 0 1rem; min-width: 0; padding: 1rem; }
+.player legend { align-items: center; color: #d6ff45; display: inline-flex; font-size: .8rem; font-weight: 800; gap: .4rem; padding: 0 .4rem; }
+.player .help { margin-bottom: 1rem; }
+.player .help:last-child { margin-bottom: 0; }
+
+.form .confirm { align-items: flex-start; display: flex; font-size: .82rem; font-weight: 500; gap: .55rem; line-height: 1.45; margin-top: .9rem; text-transform: none; }
+.confirm input { accent-color: #d6ff45; flex-shrink: 0; margin-top: .2rem; }
+
+.submit { align-items: center; background: #d6ff45; border: 0; clip-path: polygon(.7rem 0, 100% 0, calc(100% - .7rem) 100%, 0 100%); color: #0c0f1e; cursor: pointer; display: flex; font-family: 'Loot Display', Impact, sans-serif; font-size: 1.3rem; font-weight: 800; gap: .55rem; justify-content: center; letter-spacing: .02em; margin-top: 1rem; min-height: 3.25rem; padding: .6rem 1rem; text-transform: uppercase; width: 100%; }
+.submit:hover, .submit:focus-visible { background: #fff; outline: 0; }
+.error { color: var(--danger); font-size: .85rem; line-height: 1.5; margin: .75rem 0 0; }
+
+@media (max-width: 800px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .page { padding: 1rem 14px 3rem; }
+}
+
+@media (max-width: 420px) {
+  .phone { grid-template-columns: 7.25rem minmax(0, 1fr); }
+  .form select { font-size: .8rem; padding-inline: .5rem; }
+  .submit { font-size: 1.1rem; }
+}

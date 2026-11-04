@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import { BadgeCheck, Clock3, ShieldCheck } from "lucide-react";
+import Image from "next/image";
+import { BadgeCheck, Clock3, ShieldCheck, ShoppingBag } from "lucide-react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
@@ -13,6 +14,8 @@ import { formatRegionalPrice, getRegionalPrice } from "@/features/pricing/compon
 import { useStoreRegion } from "@/features/pricing/components/region-provider";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
+import { PurchaseSteps } from "./purchase-steps";
 import { resolveCartAvailability } from "../application/cart-availability";
 
 type Quote = Readonly<{
@@ -81,6 +84,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const formatDisplayTotal = region === "us"
     ? `${formatUsdCents(displayTotalWithFeeCents)} USD`
     : formatMxn(displayTotal);
+  const catalogById = useMemo(() => new Map(items.map((item) => [item.mainId, item])), [items]);
   const identity = getIdentityPresentation(commerce.validation);
   const isReady = identity.canQuote;
   const itemSignature = commerce.cartItemIds.join("|");
@@ -140,7 +144,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     } finally {
       setLoading(false);
     }
-  }, [commerce.validation, itemSignature, lines]);
+  }, [commerce.validation, itemSignature, lines, region]);
 
   const closeQuoteSheet = useCallback(() => setQuoteSheetOpen(false), []);
 
@@ -206,26 +210,31 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   if (commerce.ready && commerce.cartItemIds.length === 0)
     return (
       <section className="flow-shell">
-        <div className="flow-heading">
-          <p className="eyebrow">SOLICITUD</p>
-          <h1>Tu carrito está vacío.</h1>
-          <Link className="primary-button" href="/#catalogo">
-            Explorar tienda
-          </Link>
+        <GamePageHero slim word="CHECKOUT" accent="#8b5cf6" eyebrow="Solicitud" title={<>Tu carrito está <span>vacío</span></>} />
+        <div className="loot-page-body">
+          <div className="loot-empty">
+            <span aria-hidden="true"><ShoppingBag size={26} /></span>
+            <h2>Todavía no hay nada que confirmar</h2>
+            <p>Agrega objetos a tu carrito y vuelve aquí para terminar tu compra.</p>
+            <Link className="primary-button" href="/fortnite#catalogo">
+              Explorar tienda
+            </Link>
+          </div>
         </div>
       </section>
     );
   if (commerce.ready && unavailableEntries.length > 0)
     return (
       <section className="flow-shell checkout-flow">
-        <div className="flow-heading">
-          <p className="eyebrow">CARRITO ACTUALIZADO</p>
-          <h1>Algunos objetos ya no están disponibles.</h1>
-          <p>
-            Salieron de la tienda antes de confirmar tu solicitud. No se generó
-            ningún pedido ni cobro.
-          </p>
-        </div>
+        <GamePageHero
+          slim
+          word="CHECKOUT"
+          accent="#ff2d6b"
+          eyebrow="Carrito actualizado"
+          title={<>Algunos objetos <span>ya no están</span></>}
+          lead="Salieron de la tienda antes de confirmar tu solicitud. No se generó ningún pedido ni cobro."
+        />
+        <div className="loot-page-body">
         <div className="checkout-card expired-selection" role="alert">
           <div className="checkout-items">
             {unavailableEntries.map((entry) => (
@@ -248,155 +257,170 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
           </Link>
           {error && <p className="notice error">{error}</p>}
         </div>
+        </div>
       </section>
     );
 
   return (
     <section className="flow-shell checkout-flow">
-      <div className="flow-heading">
-        <p className="eyebrow">CHECKOUT SEGURO</p>
-        <h1>Confirma tu solicitud.</h1>
-        <p>{identity.description}</p>
-        <ol className="checkout-steps" aria-label="Progreso de compra">
-          <li className="complete">
-            <span>
-              <BadgeCheck aria-hidden="true" size={13} />
-            </span>
-            Carrito
-          </li>
-          <li
-            className={activeQuote ? "complete" : "active"}
-            aria-current={!activeQuote ? "step" : undefined}
-          >
-            <span>
-              {activeQuote ? <BadgeCheck aria-hidden="true" size={13} /> : "2"}
-            </span>
-            ID y precio
-          </li>
-          <li
-            className={activeQuote ? "active" : ""}
-            aria-current={activeQuote ? "step" : undefined}
-          >
-            <span>3</span>Contacto y orden
-          </li>
-        </ol>
-      </div>
+      <GamePageHero
+        slim
+        word="CHECKOUT"
+        accent="#8b5cf6"
+        eyebrow="Checkout seguro"
+        title={<>Confirma tu <span>solicitud</span></>}
+        lead="Revisa tu pedido y confirma el precio antes de crear tu orden."
+        aside={<PurchaseSteps current={activeQuote ? 3 : 2} />}
+      />
+      <div className="loot-page-body">
       <form className="checkout-card" onSubmit={submit}>
-        <div className="order-summary">
-          <div>
-            <p className="eyebrow">TU PEDIDO</p>
-            <h2>
-              {lines.length} {lines.length === 1 ? "objeto" : "objetos"}
-            </h2>
-            <span>Una unidad de cada objeto</span>
-          </div>
-          <strong>{formatActiveQuoteTotal}</strong>
-        </div>
-        <div className="checkout-items">
-          {(
-            activeQuote?.lines ??
-            lines.map((item) => ({
-              itemMainId: item.mainId,
-              name: item.name,
-              vbucksPrice: item.finalPriceVbucks,
-              amountMxnCents: (item.priceMxn ?? 0) * 100,
-              amountUsdCents: region === "us" ? calculateUsdPrice(item.finalPriceVbucks) * 100 : null,
-            }))
-          ).map((item) => (
-            <p key={item.itemMainId}>
-              <span>{item.name}</span>
-              <strong>{region === "us" && item.amountUsdCents !== null ? `${formatUsdCents(item.amountUsdCents)} USD` : formatRegionalAmount(item.vbucksPrice, item.amountMxnCents)}</strong>
-            </p>
-          ))}
-          {region === "us" && <p><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote?.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
-        </div>
-        <section className={`checkout-gate ${identity.tone}`}>
-          <div>
-            <small>PASO 2 · ID Y PRECIO</small>
-            <strong>
-              {commerce.validation?.display_name ?? identity.label}
-            </strong>
-            <p>
-              {identity.label}. {identity.description}
-            </p>
-          </div>
-          <button type="button" onClick={commerce.openIdentity}>
-            {isReady ? "Cambiar ID" : identity.actionLabel}
-          </button>
-        </section>
-        {commerce.ready && !commerce.authenticated && (
-          <aside id="checkout-account" className="checkout-guest-access">
+        <section className="checkout-order" aria-labelledby="checkout-order-title">
+          <header className="order-summary">
             <div>
-              <strong>Compra sin crear una cuenta</strong>
-              <p>Tu ID receptor y WhatsApp son suficientes para continuar.</p>
+              <p className="eyebrow">LO QUE COMPRAS</p>
+              <h2 id="checkout-order-title">
+                {lines.length} {lines.length === 1 ? "objeto" : "objetos"}
+              </h2>
+              <span>Una unidad de cada objeto</span>
             </div>
-            <Link href="/cuenta?next=/checkout">Prefiero iniciar sesión</Link>
-          </aside>
-        )}
-        {!activeQuote && (
-          <SystemActionBar className="checkout-quote-action" primaryFull>
-            <span>
-              <small>Total estimado</small>
-              <strong>{formatDisplayTotal}</strong>
-              <em>
-                {lines.length} {lines.length === 1 ? "objeto" : "objetos"} · se
-                confirma antes de ordenar
-              </em>
-            </span>
-            <button
-              type="button"
-              className="primary-button"
-              disabled={loading || !lines.length}
-              onClick={isReady ? openQuoteSheet : commerce.openIdentity}
-            >
-              {loading
-                ? "Confirmando…"
-                : isReady
-                  ? "Confirmar precio y continuar"
-                  : identity.actionLabel}
-            </button>
-          </SystemActionBar>
-        )}
-        {activeQuote && (
-          <>
-            {(region === "us" ? activeQuote.amountUsdCents !== displayTotalWithFeeCents : activeQuote.amountMxnCents !== visibleTotal * 100) && (
-              <p className="notice">
-                El precio fue actualizado por el servidor. Revisa el total antes
-                de confirmar.
+            <Link className="cart-secondary" href="/carrito">
+              Volver al carrito
+            </Link>
+          </header>
+          <div className="checkout-items">
+            {(
+              activeQuote?.lines ??
+              lines.map((item) => ({
+                itemMainId: item.mainId,
+                name: item.name,
+                vbucksPrice: item.finalPriceVbucks,
+                amountMxnCents: (item.priceMxn ?? 0) * 100,
+                amountUsdCents: region === "us" ? calculateUsdPrice(item.finalPriceVbucks) * 100 : null,
+              }))
+            ).map((item) => (
+              <p key={item.itemMainId}>
+                <span className="checkout-item-name">
+                  <span className="checkout-item-art" data-rarity={catalogById.get(item.itemMainId)?.rarity ?? ""} aria-hidden="true">
+                    {catalogById.get(item.itemMainId)?.imageUrl && <Image src={catalogById.get(item.itemMainId)?.imageUrl ?? ""} alt="" fill sizes="48px" />}
+                  </span>
+                  <span>{item.name}</span>
+                </span>
+                <strong>{region === "us" && item.amountUsdCents !== null ? `${formatUsdCents(item.amountUsdCents)} USD` : formatRegionalAmount(item.vbucksPrice, item.amountMxnCents)}</strong>
+              </p>
+            ))}
+            {region === "us" && <p className="checkout-fee"><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote?.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
+          </div>
+          <p className="checkout-order-total">
+            <span>{activeQuote ? "Total confirmado" : "Total estimado"}</span>
+            <strong>{formatActiveQuoteTotal}</strong>
+          </p>
+        </section>
+        <div className="checkout-path">
+          <section className={`checkout-gate ${identity.tone}`} aria-labelledby="checkout-recipient-title">
+            <header className="checkout-step-title">
+              <b>2</b>
+              <div>
+                <small>ID Y PRECIO</small>
+                <h2 id="checkout-recipient-title">¿Quién recibe tu compra?</h2>
+              </div>
+            </header>
+            <div className="checkout-gate-state">
+              <div>
+                <strong>{commerce.validation?.display_name ?? "Aún no eliges un ID"}</strong>
+                <p>
+                  {commerce.validation && <b>{identity.label}. </b>}
+                  {identity.description}
+                </p>
+              </div>
+              {isReady && (
+                <button type="button" onClick={commerce.openIdentity}>
+                  Cambiar ID
+                </button>
+              )}
+            </div>
+          </section>
+          <section className={`checkout-contact ${activeQuote ? "" : "is-locked"}`} aria-labelledby="checkout-contact-title">
+            <header className="checkout-step-title">
+              <b>3</b>
+              <div>
+                <small>CONTACTO Y ORDEN</small>
+                <h2 id="checkout-contact-title">¿Cómo te contactamos?</h2>
+              </div>
+            </header>
+            {!activeQuote && (
+              <p className="checkout-locked-note">
+                Se activa cuando confirmes el precio. Ahí nos dejas tu WhatsApp y creas tu orden.
               </p>
             )}
-            <div id="checkout-contact" />
-            <label>
-              WhatsApp de contacto
-              <input
-                required
-                inputMode="tel"
-                autoComplete="tel"
-                pattern="[0-9+ ()-]{8,24}"
-                value={whatsapp}
-                onChange={(event) => setWhatsapp(event.target.value)}
-                placeholder="55 5555 5555"
-              />
-            </label>
-            <label>
-              Correo electrónico <span>(opcional)</span>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="tu@correo.com"
-              />
-            </label>
-            <div className="transfer-only">
-              <span aria-hidden="true">▣</span>
-              <div>
-                <strong>{region === "us" ? "Pago por PayPal" : "Transferencia bancaria"}</strong>
-                <small>
-                  Después podrás subir tu comprobante o continuar por WhatsApp.
-                </small>
-              </div>
-            </div>
+            {activeQuote && (
+              <>
+                {(region === "us" ? activeQuote.amountUsdCents !== displayTotalWithFeeCents : activeQuote.amountMxnCents !== visibleTotal * 100) && (
+                  <p className="notice">
+                    El precio fue actualizado por el servidor. Revisa el total antes
+                    de confirmar.
+                  </p>
+                )}
+                <div id="checkout-contact" />
+                <label>
+                  WhatsApp de contacto
+                  <input
+                    required
+                    inputMode="tel"
+                    autoComplete="tel"
+                    pattern="[0-9+ ()-]{8,24}"
+                    value={whatsapp}
+                    onChange={(event) => setWhatsapp(event.target.value)}
+                    placeholder="55 5555 5555"
+                  />
+                </label>
+                <label>
+                  Correo electrónico <span>(opcional)</span>
+                  <input
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="tu@correo.com"
+                  />
+                </label>
+                <div className="transfer-only">
+                  <span aria-hidden="true">▣</span>
+                  <div>
+                    <strong>{region === "us" ? "Pago por PayPal" : "Transferencia bancaria"}</strong>
+                    <small>
+                      Después podrás subir tu comprobante o continuar por WhatsApp.
+                    </small>
+                  </div>
+                </div>
+              </>
+            )}
+          </section>
+          {!activeQuote && (
+            <SystemActionBar className="checkout-quote-action" primaryFull>
+              <span>
+                <small>Total estimado</small>
+                <strong>{formatDisplayTotal}</strong>
+                <em>
+                  {isReady
+                    ? "Se confirma antes de crear tu orden"
+                    : "Necesitas un ID listo para continuar"}
+                </em>
+              </span>
+              <button
+                type="button"
+                className="primary-button"
+                disabled={loading || !lines.length}
+                onClick={isReady ? openQuoteSheet : commerce.openIdentity}
+              >
+                {loading
+                  ? "Confirmando…"
+                  : isReady
+                    ? "Confirmar precio y continuar"
+                    : identity.actionLabel}
+              </button>
+            </SystemActionBar>
+          )}
+          {activeQuote && (
             <SystemActionBar className="checkout-final-action" primaryFull>
               <span>
                 <small>Total confirmado</small>
@@ -412,23 +436,25 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
               <button className="primary-button" disabled={loading}>
                 {loading ? "Creando pedido…" : "Confirmar pedido"}
               </button>
-              <Link className="cart-secondary" href="/carrito">
-                Volver al carrito
-              </Link>
             </SystemActionBar>
-          </>
-        )}
-        {error && (
-          <p className="notice error" role="alert">
-            {error}
-          </p>
-        )}
-        {!activeQuote && (
-          <Link className="cart-secondary" href="/carrito">
-            Volver al carrito
-          </Link>
-        )}
+          )}
+          {error && (
+            <p className="notice error" role="alert">
+              {error}
+            </p>
+          )}
+          {commerce.ready && !commerce.authenticated && (
+            <aside id="checkout-account" className="checkout-guest-access">
+              <div>
+                <strong>Compra sin crear una cuenta</strong>
+                <p>Tu ID receptor y WhatsApp son suficientes para continuar.</p>
+              </div>
+              <Link href="/cuenta?next=/checkout">Prefiero iniciar sesión</Link>
+            </aside>
+          )}
+        </div>
       </form>
+      </div>
       <CommerceSheet
         open={quoteSheetOpen}
         onClose={closeQuoteSheet}

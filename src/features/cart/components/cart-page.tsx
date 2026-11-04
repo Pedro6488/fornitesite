@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, Check, ShieldCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ShieldCheck, ShoppingBag, Trash2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { formatMxn, formatUsdCents, PAYPAL_FEE_USD_CENTS } from "@/features/pricing/domain/price-calculator";
@@ -12,6 +12,11 @@ import { useStoreRegion } from "@/features/pricing/components/region-provider";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
+import { CatalogCard } from "@/features/catalog/components/catalog-card";
+import { ProductRail } from "@/features/catalog/components/product-rail";
+import { suggestForCart } from "../application/cart-suggestions";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
+import { PurchaseSteps } from "./purchase-steps";
 import { resolveCartAvailability } from "../application/cart-availability";
 
 export function CartPage({ items }: { items: readonly CatalogItem[] }) {
@@ -31,6 +36,11 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   const totalWithFee = region === "us" ? total + PAYPAL_FEE_USD_CENTS / 100 : total;
   const formatTotal = region === "us" ? `${formatUsdCents(Math.round(totalWithFee * 100))} USD` : formatMxn(total);
   const canContinue = lines.length > 0 && unavailableLines.length === 0;
+  const suggestions = useMemo(() => commerce.ready ? suggestForCart(items, commerce.cartItemIds) : [], [commerce.cartItemIds, commerce.ready, items]);
+  const suggestionRail = suggestions.length > 0 && <section className="detail-discovery-section cart-suggestions" aria-labelledby="cart-suggestions-title">
+    <header><div><p className="eyebrow">SIGUE EXPLORANDO</p><h2 id="cart-suggestions-title">También te puede gustar</h2></div><Link href="/fortnite#catalogo">Ver todo <ArrowRight aria-hidden="true" size={16} /></Link></header>
+    <ProductRail label="objetos sugeridos">{suggestions.map((item, index) => <CatalogCard key={item.mainId} item={item} index={index} />)}</ProductRail>
+  </section>;
   const identity = getIdentityPresentation(commerce.validation);
   const nextStep = !commerce.validation ? "Siguiente: agregar ID"
     : commerce.validation.status === "manual_review" ? "ID en revisión"
@@ -78,11 +88,13 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   }
 
   return <section className="cart-page">
-    <header className="cart-heading"><div><p className="eyebrow">TU CARRITO</p><h1>Tu selección</h1><p>{unavailableLines.length ? `${unavailableLines.length} ${unavailableLines.length === 1 ? "objeto requiere" : "objetos requieren"} atención.` : lines.length === 1 ? "1 objeto listo para continuar." : `${lines.length} objetos listos para continuar.`}</p></div></header>
-    {!commerce.ready ? <div className="cart-empty"><h2>Cargando tu carrito…</h2></div> : lines.length === 0 ? <div className="cart-empty"><h2>Tu carrito está vacío</h2><p>Explora los objetos disponibles y agrega los que quieras solicitar.</p><Link href="/#catalogo">Ver tienda</Link></div> : <div className="cart-layout">
+    <GamePageHero slim word="CARRITO" accent="#8b5cf6" eyebrow="Tu carrito" title={<>Tu <span>selección</span></>} lead={!commerce.ready ? undefined : unavailableLines.length ? `${unavailableLines.length} ${unavailableLines.length === 1 ? "objeto requiere" : "objetos requieren"} atención.` : lines.length === 0 ? "Todavía no agregas objetos." : lines.length === 1 ? "1 objeto listo para continuar." : `${lines.length} objetos listos para continuar.`} aside={<PurchaseSteps current={1} />} />
+    <div className="loot-page-body">
+    {!commerce.ready ? <div className="loot-empty"><h2>Cargando tu carrito…</h2></div> : lines.length === 0 ? <div className="loot-empty"><span aria-hidden="true"><ShoppingBag size={26} /></span><h2>Tu carrito está vacío</h2><p>Explora los objetos disponibles y agrega los que quieras solicitar.</p><Link className="primary-button" href="/fortnite#catalogo">Ver tienda</Link></div> : <div className="cart-layout">
+      <div className="cart-main">
       <div className="cart-lines">
         {unavailableLines.length > 0 && <div className="cart-unavailable-notice" role="status"><div><strong>Tu carrito cambió</strong><span>Estos objetos salieron de la tienda y deben quitarse antes de continuar.</span></div><button type="button" onClick={() => void removeUnavailable()} disabled={commerce.syncing}>Quitar no disponibles</button></div>}
-        {lines.map(({ itemId, item, available }) => <article className={`cart-line ${available ? "" : "cart-line-unavailable"}`} key={itemId}>
+        {lines.map(({ itemId, item, available }) => <article className={`cart-line ${available ? "" : "cart-line-unavailable"}`} data-rarity={item?.rarity ?? ""} key={itemId}>
           {item ? <Link className="cart-product-link" href={`/objetos/${encodeURIComponent(item.mainId)}`}>
             <div className="cart-item-image">{item.imageUrl ? <Image src={item.imageUrl} alt="" fill sizes="(max-width: 600px) 72px, 88px" /> : <span aria-hidden="true">{item.name.slice(0, 1)}</span>}</div>
             <div className="cart-item-copy"><p>{item.type} · {item.rarity}</p><h2>{item.name}</h2><span>{available ? `◉ ${item.finalPriceVbucks.toLocaleString("es-MX")} · 1 unidad` : "Ya no está disponible en la tienda"}</span></div>
@@ -94,28 +106,34 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
           <button className="cart-remove" onClick={() => void remove(itemId)} aria-label={`Quitar ${item?.name ?? "objeto no disponible"} del carrito`}><Trash2 aria-hidden="true" size={16} /><span>Eliminar</span></button>
         </article>)}
         {message && <p className="notice error">{message}</p>}
-        <Link className="cart-continue-shopping" href="/#catalogo"><ArrowLeft aria-hidden="true" size={15} />Seguir comprando</Link>
+        <Link className="cart-continue-shopping" href="/fortnite#catalogo"><ArrowLeft aria-hidden="true" size={15} />Seguir comprando</Link>
+      </div>
+      <section className="cart-email-capture" aria-label="Guardar correo para el carrito">
+        <div><strong>Guarda tu carrito <span>(opcional)</span></strong><p>Recibe un recordatorio si no terminas tu compra.</p></div>
+        <div className="cart-email-fields">
+          <label>Correo electrónico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" /></label>
+          <label className="cart-email-consent"><input type="checkbox" checked={emailConsent} onChange={(event) => setEmailConsent(event.target.checked)} />Acepto recibir bienvenida y recordatorios de este carrito.</label>
+          {emailMessage && <small className="notice">{emailMessage}</small>}
+        </div>
+      </section>
+      {suggestionRail}
       </div>
       <aside className="cart-summary">
+        <div className="cart-summary-heading"><div><p className="eyebrow">RESUMEN</p><h2>Tu pedido</h2></div><b>{lines.length}</b></div>
+        <div className="cart-summary-row"><span>Objetos</span><strong>{lines.length}</strong></div>
+        <div className="cart-summary-row"><span>Recibe</span><strong>{commerce.validation?.display_name ?? "Por definir"}</strong></div>
+        {region === "us" && <div className="cart-summary-row"><span>Comisión PayPal</span><strong>{formatUsdCents(PAYPAL_FEE_USD_CENTS)} USD</strong></div>}
+        <div className="cart-summary-total"><span>Total estimado</span><strong>{formatTotal} {region === "mx" && <small>{currency}</small>}</strong></div>
+        <p className="cart-summary-note"><ShieldCheck aria-hidden="true" size={17} />{nextStep}</p>
+        {canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
         <section className="cart-trust-panel" aria-label="Compra protegida">
           <span><ShieldCheck aria-hidden="true" size={19} /></span>
           <div><strong>Compra protegida</strong><p>Precio y disponibilidad se confirman antes de crear tu pedido.</p></div>
         </section>
-        <div className="cart-summary-heading"><div><p className="eyebrow">RESUMEN</p><h2>Tu pedido</h2></div><b>{lines.length}</b></div>
-        <div className="cart-summary-row"><span>Objetos</span><strong>{lines.length}</strong></div>
-        {region === "us" && <div className="cart-summary-row"><span>Comisión PayPal</span><strong>{formatUsdCents(PAYPAL_FEE_USD_CENTS)} USD</strong></div>}
-        <div className="cart-summary-total"><span>Total estimado</span><strong>{formatTotal} {region === "mx" && <small>{currency}</small>}</strong></div>
-        <p className="cart-summary-note"><ShieldCheck aria-hidden="true" size={17} />{nextStep}</p>
-        <section className="cart-email-capture" aria-label="Guardar correo para el carrito">
-          <strong>Guarda tu carrito</strong><p>Recibe un recordatorio si no terminas tu compra.</p>
-          <label>Correo electrónico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" /></label>
-          <label className="cart-email-consent"><input type="checkbox" checked={emailConsent} onChange={(event) => setEmailConsent(event.target.checked)} />Acepto recibir bienvenida y recordatorios de este carrito.</label>
-          {emailMessage && <small className="notice">{emailMessage}</small>}
-        </section>
-        {canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
-        <ol className="cart-next-steps" aria-label="Progreso de compra"><li className="complete active" aria-current="step"><b><Check aria-hidden="true" size={12} /></b><span>Carrito</span></li><li><b>2</b><span>ID y precio</span></li><li><b>3</b><span>Contacto y orden</span></li></ol>
       </aside>
-      <SystemActionBar className="mobile-cart-checkout" primaryFull><span><small>Resumen de compra</small><strong>{formatTotal}</strong><em>{nextStep}</em></span>{canContinue ? <button type="button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button disabled>No disponible</button>}</SystemActionBar>
+      <SystemActionBar className="mobile-cart-checkout" primaryFull><span><small>Resumen de compra</small><strong>{formatTotal}</strong><em>{nextStep}</em></span>{canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>No disponible</button>}</SystemActionBar>
     </div>}
+    {commerce.ready && lines.length === 0 && suggestionRail}
+    </div>
   </section>;
 }

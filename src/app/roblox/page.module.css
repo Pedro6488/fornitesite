@@ -1,0 +1,8 @@
+.page { --game-accent: #e8b94a; }
+.packages { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.art { display: grid; place-items: center; background: linear-gradient(145deg, #202c47, #12172a); aspect-ratio: 2; }
+.coin { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .3s cubic-bezier(.2, .9, .25, 1.15), filter .3s ease; }
+.packages > li:focus-within .coin { transform: scale(1.06); filter: brightness(1.12); }
+@media (hover: hover) and (pointer: fine) { .packages > li:hover .coin { transform: scale(1.06); filter: brightness(1.12); } }
+@media (max-width: 800px) { .packages { grid-template-columns: repeat(2, minmax(0, 1fr)); } .art { aspect-ratio: 1.45; } }
+@media (prefers-reduced-motion: reduce) { .coin { transition: none; } .packages > li:hover .coin, .packages > li:focus-within .coin { transform: none; } }

@@ -1,0 +1,201 @@
+.home { --electric: #d6ff45; --subtle: #a7a8b5; --display: 'Loot Display', Impact, sans-serif; background: #101114; color: #f5f5ef; color-scheme: dark; overflow: clip; }
+.home a:focus-visible, .home summary:focus-visible { outline: 3px solid var(--electric); outline-offset: 5px; }
+.primary { display: inline-flex; align-items: center; justify-content: center; gap: 18px; min-height: 49px; font-size: 12px; font-weight: 750; transition: transform .2s, background .2s; }
+.primary { background: var(--electric); color: #151a07; padding: 15px 23px; border: 1px solid #e1ff78; box-shadow: 0 4px 18px #d6ff4512; }
+.primary:hover { background: #e6ff97; transform: translateY(-2px); }
+.arena { max-width: 1280px; margin: auto; padding: 20px 40px 0; scroll-margin-top: 100px; }
+.launcherBar { display: flex; align-items: end; justify-content: space-between; gap: 15px; margin-bottom: 22px; }
+.eyebrow { color: #a4a7b0; font-size: 9px; letter-spacing: .15em; font-weight: 650; margin: 0 0 10px; }
+.launcherBar h2 { font-family: var(--display); font-weight: 800; font-size: 42px; line-height: 1; letter-spacing: -.01em; margin: 0; }
+.available { display: flex; align-items: center; gap: 7px; color: #adb1bb; font-size: 10px; padding-bottom: 4px; }
+.available i { width: 5px; height: 5px; background: var(--electric); }
+.games { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.game { position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px; overflow: hidden; background: #292238; isolation: isolate; border: 1px solid #ffffff15; }
+.game::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #11121c22, #11121c22 25%, #11121ce6 80%); }
+.gameArt { object-fit: cover; object-position: center 28%; z-index: -2; transition: transform .5s; }
+.gameTop { display: flex; align-items: center; justify-content: space-between; padding: 18px; }
+.gameTag { font-size: 8px; font-weight: 700; letter-spacing: .08em; padding: 6px 8px; background: #11121ca3; border: 1px solid #ffffff2a; backdrop-filter: blur(8px); }
+.gameNumber { font-size: 10px; color: #e3e0f5a6; }
+.gameContent { padding: 20px; }
+.gameKicker { font-size: 8px; letter-spacing: .1em; color: #c7c8d2; font-weight: 600; }
+.gameContent h3 { font-family: var(--display); font-weight: 800; font-size: 43px; line-height: 1; letter-spacing: -.01em; margin: 7px 0 10px; color: #fff; }
+.gameContent p { color: #c7c8d2; font-size: 11px; line-height: 1.65; margin: 0 0 17px; }
+.gameContent p strong { color: #fff; }
+.gameAction { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #ffffff25; font-size: 11px; font-weight: 700; }
+.gameAction svg { color: var(--electric); transition: transform .2s; }
+.freefire .gameArt { object-position: center 19%; }
+.roblox { background: #4035a2; }
+.roblox::after { background: linear-gradient(180deg, transparent 10%, #18123e60 50%, #111323 100%); }
+.robloxGrid { position: absolute; inset: 0; background: linear-gradient(90deg, #fff1 1px, transparent 1px), linear-gradient(#fff1 1px, transparent 1px); background-size: 30px 30px; z-index: -2; }
+.robloxSymbol { position: absolute; top: 38px; right: 55px; width: 100px; height: 100px; background: linear-gradient(135deg, #faf6ff, #a89de2); transform: rotate(23deg); box-shadow: 7px 9px 0 #6d61b9, 15px 20px 25px #07031e88; z-index: -1; transition: transform .5s; }
+.robloxSymbol span { position: absolute; inset: 34%; background: #4035a2; box-shadow: inset 5px 5px 0 #2a226e; }
+.launcherFoot { display: flex; justify-content: space-between; gap: 15px; align-items: center; padding: 18px 0; font-size: 9px; color: #a1a5b1; }
+.launcherFoot > span { display: flex; align-items: center; gap: 6px; }
+.launcherFoot svg { color: #999dba; flex-shrink: 0; }
+.soon small { font-size: 7px; padding: 4px 5px; border: 1px solid #ffffff20; color: #818591; }
+.arenaCaption { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid #ffffff15; border-bottom: 1px solid #ffffff15; margin-top: 22px; padding: 20px 0; font-family: var(--display); font-size: clamp(26px, 4vw, 52px); letter-spacing: .015em; color: #62656b; }
+.arenaCaption strong { color: #e5e7df; font-weight: 800; }
+.arenaCaption > span[aria-hidden] { color: var(--electric); font-family: system-ui, sans-serif; font-size: 24px; }
+.how { max-width: 1280px; margin: auto; padding: 80px 40px; scroll-margin-top: 100px; }
+.sectionIntro { display: grid; grid-template-columns: 1.4fr 1fr; align-items: end; gap: 0 60px; }
+.sectionIntro > .eyebrow { grid-column: 1 / -1; }
+.sectionIntro h2, .support h2, .faq h2 { font-family: var(--display); font-weight: 800; font-size: clamp(36px, 4vw, 55px); line-height: 1; letter-spacing: -.01em; margin: 0; }
+.sectionIntro h2 span { color: #8b8f9b; }
+.sectionIntro > p:last-child { font-size: 12px; color: var(--subtle); line-height: 1.8; margin: 0 0 4px; }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 35px; }
+.steps article { border-top: 1px solid #ffffff22; padding-top: 20px; }
+.stepIcon { display: flex; align-items: center; justify-content: space-between; color: var(--electric); }
+.stepIcon > span { color: #717580; font-size: 11px; }
+.steps h3 { font-size: 16px; font-weight: 650; margin: 20px 0 10px; }
+.steps p { color: var(--subtle); font-size: 12px; line-height: 1.8; margin: 0; max-width: 300px; }
+.support { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 60px; padding: 50px; max-width: 1200px; margin: auto; border: 1px solid #a98bff33; background: #191723; }
+.support .eyebrow { color: #bb9bff; }
+.support h2 { font-size: 66px; }
+.support > div > p:not(.eyebrow) { color: #b0adbf; font-size: 12px; line-height: 1.8; margin: 18px 0 22px; }
+.supportVisual { position: relative; min-height: 240px; display: flex; flex-direction: column; justify-content: center; background-image: radial-gradient(#9e87bf44 1px, transparent 1px); background-size: 16px 16px; }
+.chatBubble, .chatReply { display: flex; align-items: center; gap: 12px; padding: 20px; font-size: 12px; font-weight: 650; }
+.chatBubble { margin-right: 30px; background: #30303e; color: #e2e2ed; transform: rotate(-5deg); border: 1px solid #ffffff22; }
+.chatBubble svg { color: #ba9aff; flex-shrink: 0; }
+.chatReply { align-self: end; margin-top: 15px; background: var(--electric); color: #131807; transform: rotate(4deg); }
+.supportStamp { position: absolute; bottom: 0; left: 12px; font-size: 8px; color: #81808e; line-height: 1.6; letter-spacing: .13em; }
+.faq { max-width: 1280px; margin: auto; padding: 80px 40px; display: grid; grid-template-columns: .8fr 1.2fr; gap: 90px; }
+.faq h2 span { color: var(--electric); }
+.faq > div > a { display: inline-flex; align-items: center; gap: 12px; font-size: 11px; padding-block: 14px; margin-top: 15px; }
+.questions details { border-bottom: 1px solid #ffffff22; }
+.questions details:first-child { border-top: 1px solid #ffffff22; }
+.questions summary { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 70px; padding-block: 20px; font-size: 13px; font-weight: 600; cursor: pointer; list-style: none; }
+.questions summary::-webkit-details-marker { display: none; }
+.questions summary svg { color: #abb09c; flex-shrink: 0; transition: transform .2s; }
+.questions details[open] summary svg { transform: rotate(180deg); }
+.questions details > p { font-size: 12px; color: var(--subtle); line-height: 1.8; margin: 0; padding: 0 25px 20px 0; }
+.signoff { max-width: 1280px; margin: auto; padding: 0 40px 35px; display: flex; align-items: center; justify-content: space-between; font-family: var(--display); font-size: clamp(50px, 10vw, 145px); line-height: 1; color: #282b30; }
+.signoff span { color: var(--electric); font-family: system-ui, sans-serif; font-weight: 300; }
+@media (hover: hover) and (pointer: fine) {.game:hover .gameArt { transform: scale(1.04); }.game:hover .gameAction svg { transform: translate(3px, -3px); }.game:hover .robloxSymbol { transform: rotate(12deg) translateY(-5px); } }
+@media (max-width: 1000px) {.arena, .how, .faq { padding-inline: 28px; }.support { margin-inline: 28px; padding: 35px; gap: 30px; }.primary { font-size: 11px; gap: 9px; }.gameContent h3 { font-size: 37px; }.launcherFoot { flex-wrap: wrap; }.soon { margin-left: auto; } }
+@media (max-width: 650px) {
+  .primary { min-height: 46px; font-size: 11px; gap: 8px; }
+  .primary { padding: 13px 15px; }
+  .arena { padding: 24px 18px 0; scroll-margin-top: 90px; }
+  .launcherBar { align-items: end; gap: 10px; margin-bottom: 16px; }
+  .launcherBar h2 { font-size: 32px; }
+  .available { font-size: 8px; white-space: nowrap; }
+  .eyebrow { font-size: 8px; }
+  .games { grid-template-columns: 1fr; gap: 12px; }
+  .game { min-height: 213px; }
+  .game::after { background: linear-gradient(90deg, #13121eee, #13121e44); }
+  .gameArt { object-position: right 30%; left: 25% !important; width: 75% !important; }
+  .gameTop { padding: 14px 16px; }
+  .gameContent { padding: 0 16px 16px; max-width: 77%; }
+  .gameContent h3 { font-size: 37px; }
+  .gameKicker { font-size: 7px; }
+  .gameContent p { margin-bottom: 12px; }
+  .gameContent p br { display: none; }
+  .gameAction { font-size: 11px; }
+  .robloxSymbol { top: 55px; right: 30px; width: 90px; height: 90px; }
+  .launcherFoot { display: grid; gap: 10px; font-size: 9px; }
+  .launcherFoot > .soon { margin: 0; }
+  .arenaCaption { gap: 10px; padding: 17px 0; margin-top: 14px; font-size: clamp(20px, 6vw, 32px); }
+  .arenaCaption > span[aria-hidden] { font-size: 15px; }
+  .how { padding: 45px 22px; }
+  .sectionIntro { display: block; }
+  .sectionIntro > p:last-child { margin-top: 18px; }
+  .steps { grid-template-columns: 1fr; gap: 25px; margin-top: 28px; }
+  .steps article { padding-top: 16px; }
+  .steps h3 { margin-top: 14px; }
+  .steps p { max-width: none; }
+  .support { grid-template-columns: 1fr; margin-inline: 18px; padding: 26px; gap: 30px; }
+  .support h2 { font-size: 54px; }
+  .supportVisual { min-height: 170px; order: 2; }
+  .chatBubble, .chatReply { font-size: 10px; padding: 14px; gap: 8px; }
+  .chatBubble { margin-right: 0; }
+  .supportStamp { display: none; }
+  .faq { display: block; padding: 45px 22px; }
+  .questions { margin-top: 25px; }
+  .questions summary { font-size: 12px; min-height: 70px; }
+  .signoff { padding: 0 22px 25px; font-size: 12vw; }
+}
+@media (prefers-reduced-motion: reduce) { .home *, .home *::before, .home *::after { transition: none; scroll-behavior: auto; }.primary:hover, .game:hover .gameArt, .game:hover .gameAction svg { transform: none; }.game:hover .robloxSymbol { transform: rotate(23deg); } }
+
+.primary > svg { transition: transform 180ms ease; }
+.primary:active { transform: translateY(1px) scale(.97); box-shadow: none; }
+.gameAction { border: 1px solid #ffffff25; background: #ffffff0c; padding: 11px 15px; backdrop-filter: blur(10px); transition: background 180ms, border-color 180ms; }
+.game:active { transform: scale(.99); }
+@media (hover: hover) and (pointer: fine) { .primary:hover { box-shadow: 0 6px 28px #d6ff4529; }.primary:hover > svg { transform: translate(2px,-2px); }.game:hover .gameAction { background: #d6ff4517; border-color: #d6ff4570; } }
+@media (prefers-reduced-motion: reduce) {.primary:active, .game:active { transform: none; }.primary > svg, .gameAction { transition: none; }.primary:hover > svg { transform: none; } }
+
+.quickGames { display: none; }
+@media (max-width: 650px) { .quickGames { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px 0; }.quickGames a { display: inline-flex; justify-content: center; flex: 1; padding: 10px 12px; min-height: 44px; border: 1px solid #ffffff20; background: #ffffff04; font-size: 11px; font-weight: 650; }.quickGames a:hover { border-color: #d6ff4580; color: #d6ff45; }.quickGames a:active { background: #d6ff4515; } }
+
+/* Resto del inicio con el lenguaje del escenario: inclinación, lima y texto legible. */
+.arena, .how, .faq, .signoff { max-width: 1400px; padding-inline: clamp(20px, 4vw, 60px); }
+.home { background: var(--background); }
+.eyebrow { color: var(--electric); font-size: 12px; font-weight: 800; letter-spacing: .14em; }
+.launcherBar h2, .sectionIntro h2, .support h2, .faq h2 { transform: skewX(-6deg); transform-origin: left bottom; }
+.launcherBar h2 { font-size: clamp(40px, 5vw, 64px); }
+.sectionIntro h2, .support h2, .faq h2 { font-size: clamp(42px, 5vw, 68px); }
+.sectionIntro h2 span { color: var(--electric); }
+.sectionIntro > p:last-child, .support > div > p:not(.eyebrow), .questions details > p { color: #c7cde0; font-size: 15px; line-height: 1.6; }
+.available { font-size: 13px; }
+.primary { background: var(--electric); border: 0; box-shadow: none; clip-path: polygon(.8rem 0, 100% 0, calc(100% - .8rem) 100%, 0 100%); color: #0c0f1e; font-family: var(--display); font-size: 1.3rem; font-weight: 800; gap: .5rem; min-height: 3.25rem; padding: 0 1.75rem; text-transform: uppercase; }
+.primary:hover { background: #fff; box-shadow: none; transform: none; }
+
+.games { gap: .85rem; }
+.game { border: 1px solid color-mix(in srgb, var(--game-accent) 45%, #ffffff10); min-height: 360px; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; --game-accent: #a855f7; }
+.freefire { --game-accent: #f97316; }
+.roblox { --game-accent: #38bdf8; }
+.gameTag { background: var(--game-accent); backdrop-filter: none; border: 0; clip-path: polygon(.3rem 0, 100% 0, calc(100% - .3rem) 100%, 0 100%); color: #0c0f1e; font-size: 12px; font-weight: 800; letter-spacing: .02em; padding: 5px 12px; }
+.gameNumber { color: #fff; font-family: var(--display); font-size: 22px; font-weight: 800; }
+.gameKicker { color: #e6e8f2; font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+.gameContent h3 { font-size: 58px; line-height: .95; transform: skewX(-6deg); transform-origin: left bottom; }
+.gameContent p { color: #e6e8f2; font-size: 14px; line-height: 1.45; }
+.gameAction { background: var(--electric); backdrop-filter: none; border: 0; clip-path: polygon(.5rem 0, 100% 0, calc(100% - .5rem) 100%, 0 100%); color: #0c0f1e; font-family: var(--display); font-size: 1.2rem; font-weight: 800; min-height: 2.9rem; padding: 0 1.1rem; text-transform: uppercase; }
+.gameAction svg { color: #0c0f1e; }
+.launcherFoot { color: #c7cde0; font-size: 13px; }
+.launcherFoot svg { color: var(--electric); }
+.soon small { color: #c7cde0; font-size: 11px; }
+.arenaCaption { border-color: #ffffff1f; color: #8b93ad; }
+.arenaCaption span, .arenaCaption strong { transform: skewX(-6deg); }
+.arenaCaption strong { color: var(--electric); }
+
+.steps { gap: .85rem; }
+.steps article { background: #0d1228; border: 1px solid #ffffff14; border-left: 4px solid var(--electric); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%); padding: 1.25rem 1.35rem 1.5rem; }
+.stepIcon > span { color: transparent; font-family: var(--display); font-size: 3.25rem; font-weight: 800; line-height: 1; -webkit-text-stroke: 1.5px #ffffff40; }
+.steps h3 { font-family: var(--display); font-size: 1.75rem; font-weight: 800; margin: .5rem 0 .4rem; text-transform: uppercase; }
+.steps p { color: #c7cde0; font-size: 15px; line-height: 1.55; max-width: none; }
+
+.support { background: radial-gradient(circle at 12% 50%, #7c3aed40, transparent 55%), linear-gradient(120deg, #151a3a, #0d1228); border: 1px solid #ffffff14; border-left: 4px solid #a855f7; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1.75rem), calc(100% - 1.75rem) 100%, 0 100%); margin-inline: auto; max-width: min(1280px, calc(100% - 2 * clamp(20px, 4vw, 60px))); }
+.support .eyebrow { color: var(--electric); }
+.chatBubble, .chatReply { font-size: 15px; }
+.supportStamp { color: #c7cde0; font-size: 11px; }
+
+.questions summary { font-size: 16px; font-weight: 700; }
+.questions summary svg { color: var(--electric); }
+.questions details[open] summary { color: var(--electric); }
+.faq > div > a { color: var(--electric); font-size: 14px; font-weight: 700; }
+
+.signoff { color: transparent; font-size: clamp(36px, 7.6vw, 112px); font-weight: 800; -webkit-text-stroke: 1.5px #ffffff2e; transform: skewX(-6deg); }
+.signoff span { -webkit-text-stroke: 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .game:hover { border-color: var(--game-accent); box-shadow: 0 0 0 1px var(--game-accent), 0 1rem 2.4rem color-mix(in srgb, var(--game-accent) 30%, transparent); transform: translateY(-4px); }
+  .game:hover .gameAction { background: #fff; }
+}
+@media (max-width: 650px) {
+  .quickGames a { background: #ffffff0d; border: 0; clip-path: polygon(.5rem 0, 100% 0, calc(100% - .5rem) 100%, 0 100%); font-family: var(--display); font-size: 1rem; font-weight: 800; text-transform: uppercase; }
+  .quickGames { background: #0a0d20; gap: .25rem; padding: .5rem 14px; }
+  .launcherBar { flex-wrap: wrap; }
+  .game { min-height: 250px; }
+  .gameContent h3 { font-size: 46px; }
+  .gameTag { font-size: 11px; }
+  .gameKicker { font-size: 11px; }
+  .launcherFoot { font-size: 12px; }
+  .available { font-size: 12px; }
+  .steps article { padding: 1rem 1.1rem 1.25rem; }
+  .chatBubble, .chatReply { font-size: 13px; }
+  .questions summary { font-size: 15px; }
+  .primary { font-size: 1.15rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .game { transition: none; }
+  .game:hover { transform: none; }
+}

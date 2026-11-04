@@ -1,11 +1,10 @@
-/* Shared action footer: transactional actions sit on the system edge with
-   one top divider, matching sheets and respecting the device safe area. */
+/* Barra de acción compartida: en móvil vive pegada al borde, con la línea de luz de los escenarios. */
 .system-action-bar {
   box-sizing: border-box;
 }
 
 .system-action-bar-contained {
-  border-top: 1px solid rgba(126, 175, 255, .22);
+  border-top: 1px solid rgba(255, 255, 255, .14);
 }
 
 .product-action-price {
@@ -20,7 +19,7 @@
 .product-action-buttons {
   display: grid;
   gap: .55rem;
-  grid-template-columns: minmax(0, 1fr) 3.5rem;
+  grid-template-columns: minmax(0, 1fr) 3.25rem;
   min-width: 0;
   width: 100%;
 }
@@ -30,63 +29,25 @@
   width: 100%;
 }
 
-.checkout-final-action {
-  display: grid;
-  gap: .65rem;
-}
-
-.checkout-final-action>span,
-.checkout-quote-action>span {
-  display: grid;
-  gap: .1rem;
-}
-
-.checkout-final-action>span small,
-.checkout-quote-action>span small {
-  color: #aeb9d7;
-  font-size: .58rem;
-  font-style: normal;
-  font-weight: 850;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-}
-
-.checkout-final-action>span strong,
-.checkout-quote-action>span strong {
-  color: var(--accent);
-  font-size: 1.45rem;
-  line-height: 1.05;
-}
-
-.checkout-final-action>span em,
-.checkout-quote-action>span em {
-  color: #93a0c0;
-  font-size: .61rem;
-  font-style: normal;
-  line-height: 1.35;
-}
-
-.checkout-final-action .primary-button,
-.quote-sheet-actions .primary-button {
-  margin: 0;
-  width: 100%;
-}
-
 .quote-sheet-actions {
   margin-top: .15rem;
   padding-top: .8rem;
 }
 
+.quote-sheet-actions .primary-button {
+  margin: 0;
+  width: 100%;
+}
+
 .identity-add-another {
   align-items: center;
   background: transparent;
-  border: 1px solid rgba(85, 217, 255, .28);
-  border-radius: .75rem;
+  border: 1px solid rgba(214, 255, 69, .28);
   color: var(--cyan);
   cursor: pointer;
   display: inline-flex;
-  font-size: .7rem;
-  font-weight: 900;
+  font-size: .78rem;
+  font-weight: 800;
   gap: .4rem;
   justify-content: center;
   min-height: 2.75rem;
@@ -108,7 +69,6 @@
 .purchase-confetti i {
   animation: purchase-confetti-fall 2.8s cubic-bezier(.18, .72, .34, 1) var(--confetti-delay) both;
   background: var(--confetti-color);
-  border-radius: 2px;
   height: .72rem;
   left: var(--confetti-left);
   opacity: 0;
@@ -135,198 +95,163 @@
 }
 
 @media (max-width: 800px) {
-
-  .system-action-bar-viewport,
-  .product-main-actions.system-action-bar-viewport,
-  .checkout-quote-action.system-action-bar-viewport,
-  .checkout-final-action.system-action-bar-viewport,
-  .mobile-cart-checkout.system-action-bar-viewport {
-    background: rgba(9, 14, 32, .98);
-    border: 1px solid rgba(126, 175, 255, .34);
-    border-bottom: 0;
-    border-radius: 1.15rem 1.15rem 0 0;
+  .system-action-bar-viewport {
+    backdrop-filter: blur(14px);
+    background: #0a0d20f5;
     bottom: 0;
-    box-shadow: 0 -.8rem 2rem rgba(0, 0, 0, .34);
+    box-shadow: 0 -.8rem 2rem #00000073;
+    display: grid;
+    gap: .55rem;
+    grid-template-columns: minmax(0, 1fr);
     left: 0;
     margin: 0;
-    padding: .7rem max(.85rem, env(safe-area-inset-left)) calc(.7rem + env(safe-area-inset-bottom)) max(.85rem, env(safe-area-inset-right));
+    padding: .65rem max(14px, env(safe-area-inset-right)) calc(.65rem + env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
     position: fixed;
     right: 0;
     width: 100%;
     z-index: 85;
-    display: flex;
-    flex-direction: column;
   }
 
+  .system-action-bar-viewport::before {
+    background: linear-gradient(90deg, transparent, #d6ff45 22%, var(--stage-glow, #8b5cf6) 72%, transparent);
+    content: "";
+    height: 2px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  /* Detalle: precio y compra en una sola fila, para que la barra no se coma la pantalla. */
   .product-main-actions.system-action-bar-viewport {
-    display: flex;
-    gap: .6rem;
-    padding-block: .65rem calc(.65rem + env(safe-area-inset-bottom));
+    align-items: center;
+    gap: .7rem;
+    grid-template-columns: auto minmax(0, 1fr);
   }
 
   .product-action-price {
-    align-items: end;
-    display: flex;
-    gap: 1rem;
-    justify-content: space-between;
-  }
-
-  .product-action-price>span {
     display: grid;
-    gap: .12rem;
+    gap: .15rem;
   }
 
-  .product-action-price>span:last-child {
-    justify-items: end;
-    text-align: right;
-  }
-
-  .product-action-price small {
-    color: #8f9dbc;
-    font-size: .52rem;
-    font-weight: 850;
-    letter-spacing: .04em;
-    text-transform: uppercase;
+  .product-action-price > span > small {
+    display: none;
   }
 
   .product-action-price strong {
-    color: var(--accent);
-    font-size: 1.4rem;
-    letter-spacing: -.04em;
-    line-height: 1;
+    color: #d6ff45;
+    font-family: 'Loot Display', Impact, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: .95;
+    white-space: nowrap;
+  }
+
+  .product-action-price strong small {
+    color: #b8c3de;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+    font-size: .62rem;
+    font-weight: 700;
+    margin-left: .2rem;
   }
 
   .product-action-price b {
-    color: #eef2ff;
-    font-size: .72rem;
+    color: #c7cde0;
+    font-size: .66rem;
+    font-weight: 700;
+    white-space: nowrap;
   }
 
   .product-action-buttons {
-    grid-template-columns: minmax(0, 1fr) 3.5rem;
+    grid-template-columns: minmax(0, 1fr) 2.9rem;
   }
 
-  .product-action-buttons .primary-button,
+  .product-action-buttons .primary-button {
+    font-size: 1.05rem;
+    min-height: 3rem;
+    padding-inline: .9rem;
+    white-space: nowrap;
+  }
+
   .product-action-buttons .favorite-button-detail {
-    min-height: 3.45rem;
+    height: 2.9rem;
+    min-height: 2.9rem;
+    width: 2.9rem;
   }
 
-  .checkout-quote-action.system-action-bar-viewport,
-  .checkout-final-action.system-action-bar-viewport {
-    align-items: stretch;
+  /* Teléfonos muy angostos: el botón conserva su texto completo. */
+  @media (max-width: 360px) {
+    .product-main-actions.system-action-bar-viewport {
+      gap: .5rem;
+    }
+
+    .product-action-price strong {
+      font-size: 1.45rem;
+    }
+
+    .product-action-buttons {
+      gap: .35rem;
+      grid-template-columns: minmax(0, 1fr) 2.6rem;
+    }
+
+    .product-action-buttons .primary-button {
+      font-size: .9rem;
+      padding-inline: .7rem;
+    }
+
+    .product-action-buttons .favorite-button-detail {
+      height: 2.6rem;
+      min-height: 2.6rem;
+      width: 2.6rem;
+    }
+  }
+
+  /* Carrito y checkout: total arriba y el botón completo debajo. */
+  .system-action-bar-primary-full > span {
+    align-items: baseline;
+    column-gap: .75rem;
     display: grid;
-    gap: .65rem;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr);
+    min-width: 0;
   }
 
-  .checkout-quote-action .primary-button,
-  .checkout-final-action .primary-button {
-    min-height: 3.45rem;
+  .system-action-bar-primary-full > span small {
+    display: none;
+  }
+
+  .system-action-bar-primary-full > span strong {
+    color: #d6ff45;
+    font-family: 'Loot Display', Impact, sans-serif;
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .system-action-bar-primary-full > span em {
+    color: #c7cde0;
+    font-size: .72rem;
+    font-style: normal;
+    line-height: 1.3;
+    text-align: right;
+  }
+
+  .system-action-bar-primary-full > .primary-button,
+  .system-action-bar-primary-full > button {
+    margin: 0;
+    min-height: 3rem;
     width: 100%;
   }
 
-  .checkout-final-action .cart-secondary {
+  .system-action-bar-primary-full > .cart-secondary {
+    justify-self: center;
     margin: 0;
-    min-height: 2.15rem;
-  }
-
-  .mobile-cart-checkout.system-action-bar-viewport {
-    display: flex;
-  }
-
-  .catalog-filter-actions.system-action-bar-contained {
-    border-top: 1px solid rgba(126, 175, 255, .28);
-  }
-
-  .detail-discovery {
-    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom));
-  }
-
-  .cart-page,
-  .checkout-flow:has(.checkout-quote-action),
-  .checkout-flow:has(.checkout-final-action) {
-    padding-bottom: calc(10rem + env(safe-area-inset-bottom));
+    min-height: 1.75rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .purchase-confetti {
     display: none;
-  }
-}
-
-/* The primary transactional action is never a small secondary control on a
-   phone. It forms the lower row of the fixed action sheet. */
-@media (max-width: 800px) {
-  .system-action-bar-viewport.system-action-bar-primary-full {
-    align-items: stretch;
-    background: rgba(9, 14, 32, .985);
-    border: 1px solid rgba(126, 175, 255, .34);
-    border-bottom: 0;
-    border-radius: 1.2rem 1.2rem 0 0;
-    bottom: 0 !important;
-    box-shadow: 0 -1rem 2.4rem rgba(0, 0, 0, .42);
-    display: grid;
-    gap: .65rem;
-    grid-template-columns: minmax(0, 1fr);
-    left: 0 !important;
-    margin: 0;
-    padding: .9rem max(1rem, env(safe-area-inset-left)) calc(.9rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-right));
-    position: fixed;
-    right: 0 !important;
-    width: 100%;
-    z-index: 90;
-  }
-
-  .system-action-bar-viewport.system-action-bar-primary-full > span {
-    display: grid;
-    gap: .14rem;
-    min-width: 0;
-    width: 100%;
-  }
-
-  .system-action-bar-viewport.system-action-bar-primary-full > .primary-button,
-  .system-action-bar-viewport.system-action-bar-primary-full > a:not(.cart-secondary),
-  .system-action-bar-viewport.system-action-bar-primary-full > button {
-    align-items: center;
-    display: flex;
-    justify-content: center;
-    margin: 0;
-    font-size: .88rem;
-    font-weight: 950;
-    min-height: 3.55rem;
-    width: 100%;
-  }
-
-  .system-action-bar-viewport.system-action-bar-primary-full > span small {
-    color: #b9c5e2;
-    font-size: .68rem;
-    font-weight: 850;
-    letter-spacing: .035em;
-    text-transform: uppercase;
-  }
-
-  .system-action-bar-viewport.system-action-bar-primary-full > span strong {
-    color: var(--accent);
-    font-size: 1.5rem;
-    letter-spacing: -.035em;
-    line-height: 1;
-  }
-
-  .system-action-bar-viewport.system-action-bar-primary-full > span em {
-    color: #9eaccb;
-    font-size: .68rem;
-    font-style: normal;
-    line-height: 1.35;
-  }
-
-  .system-action-bar-viewport.system-action-bar-primary-full > .cart-secondary {
-    justify-self: center;
-    margin: 0;
-    min-height: 2rem;
-  }
-
-  .checkout-flow:has(.system-action-bar-primary-full),
-  .cart-page:has(.system-action-bar-primary-full) {
-    padding-bottom: calc(12rem + env(safe-area-inset-bottom));
   }
 }

@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CatalogItem } from "../domain/catalog-item";
 import { CatalogHero } from "./catalog-hero";
 
@@ -23,6 +23,28 @@ const item = (index: number): CatalogItem => ({
 });
 
 describe("CatalogHero", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("rota los destacados y deja fijo el que la persona elige", () => {
+    vi.useFakeTimers();
+    render(<CatalogHero items={[item(1), item(2), item(3)]} />);
+    expect(screen.getByRole("link", { name: /Ver Objeto destacado 3/ })).toBeInTheDocument();
+
+    act(() => { vi.advanceTimersByTime(6_000); });
+    expect(screen.getByRole("link", { name: /Ver Objeto destacado 2/ })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Mostrar Objeto destacado 1" }));
+    act(() => { vi.advanceTimersByTime(30_000); });
+    expect(screen.getByRole("link", { name: /Ver Objeto destacado 1/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Pausar/ })).not.toBeInTheDocument();
+  });
+
+  it("no incluye música en los destacados", () => {
+    render(<CatalogHero items={[item(1), { ...item(9), name: "Everlong", type: "Pista de improvisación" }]} />);
+
+    expect(screen.queryByRole("link", { name: /Ver Everlong/ })).not.toBeInTheDocument();
+  });
+
   it("convierte lo más nuevo en enlaces con precio en paVos y MXN", () => {
     const newestItems = Array.from({ length: 7 }, (_, index) => item(index));
     const olderItem = { ...item(99), shopInDate: "2026-09-25T00:00:00Z" };

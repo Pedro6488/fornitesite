@@ -1,0 +1,225 @@
+/* Paquetes de Free Fire y Roblox: la misma familia que las tarjetas del catálogo. */
+.page {
+  --game-accent: #f97316;
+  margin: 0 auto;
+  max-width: 1400px;
+  padding: 1.75rem clamp(20px, 4vw, 60px) 4.5rem;
+}
+
+.heading {
+  align-items: center;
+  border-bottom: 1px solid #ffffff1a;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: .6rem;
+}
+
+.heading h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  line-height: 1.05;
+  margin: 0;
+  padding-left: .75rem;
+  position: relative;
+}
+
+.heading h2::before {
+  background: #d6ff45;
+  bottom: .15em;
+  content: "";
+  left: 0;
+  position: absolute;
+  top: .15em;
+  transform: skewX(-12deg);
+  width: .3rem;
+}
+
+.heading > span {
+  color: var(--muted);
+  flex-shrink: 0;
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+.packages {
+  display: grid;
+  gap: .85rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.package {
+  background: #0d1228;
+  border: 1px solid color-mix(in srgb, var(--game-accent) 38%, #ffffff10);
+  min-width: 0;
+  overflow: hidden;
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.package:focus-within {
+  border-color: var(--game-accent);
+}
+
+.art {
+  aspect-ratio: 1.45;
+  background: #101725;
+  border-bottom: 2px solid var(--game-accent);
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+
+.art::after {
+  background: linear-gradient(105deg, transparent 58%, #ffffff12 58% 72%, transparent 72%);
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.diamondImage {
+  object-fit: cover;
+  object-position: center;
+  transition: transform .3s cubic-bezier(.2, .9, .25, 1.15), filter .3s ease;
+}
+
+.number {
+  background: var(--game-accent);
+  clip-path: polygon(.3rem 0, 100% 0, calc(100% - .3rem) 100%, 0 100%);
+  color: #0c0f1e;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  left: 0;
+  padding: .15rem .7rem;
+  position: absolute;
+  top: .7rem;
+  z-index: 1;
+}
+
+.details {
+  padding: .85rem .95rem .95rem;
+}
+
+.details h3 {
+  color: #fff;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+}
+
+.details h3 span {
+  color: #c7cde0;
+  display: block;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: .85rem;
+  font-weight: 700;
+  margin-top: .15rem;
+}
+
+.price {
+  color: #d6ff45;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: .7rem 0;
+}
+
+.price span {
+  color: #b8c3de;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: .72rem;
+  font-weight: 700;
+  margin-left: .3rem;
+}
+
+.buy {
+  align-items: center;
+  background: #d6ff45;
+  clip-path: polygon(.5rem 0, 100% 0, calc(100% - .5rem) 100%, 0 100%);
+  color: #0c0f1e;
+  display: flex;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  gap: .4rem;
+  justify-content: center;
+  min-height: 2.9rem;
+  text-transform: uppercase;
+  transition: background .15s ease;
+}
+
+.buy:hover, .buy:focus-visible {
+  background: #fff;
+  outline: 0;
+}
+
+.note {
+  color: var(--muted);
+  font-size: .86rem;
+  line-height: 1.6;
+  margin: 1.5rem auto 0;
+  max-width: 44rem;
+  text-align: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .package:hover {
+    border-color: var(--game-accent);
+    box-shadow: 0 0 0 1px var(--game-accent), 0 .9rem 2.2rem color-mix(in srgb, var(--game-accent) 28%, transparent);
+    transform: translateY(-4px);
+  }
+
+  .package:hover .diamondImage {
+    filter: brightness(1.12);
+    transform: scale(1.06);
+  }
+}
+
+@media (max-width: 1050px) {
+  .packages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .page {
+    padding: 1.25rem 14px 3rem;
+  }
+
+  .packages {
+    gap: .55rem;
+  }
+
+  .details {
+    padding: .6rem .65rem .7rem;
+  }
+
+  .details h3 {
+    font-size: 2rem;
+  }
+
+  .price {
+    font-size: 1.7rem;
+  }
+
+  .buy {
+    font-size: 1.05rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .package, .diamondImage, .buy {
+    transition: none;
+  }
+
+  .package:hover, .package:hover .diamondImage {
+    transform: none;
+  }
+}

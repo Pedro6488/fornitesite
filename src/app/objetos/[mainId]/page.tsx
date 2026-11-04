@@ -1,9 +1,12 @@
+import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { RegionalPrice } from "@/features/pricing/components/regional-price";
 import { BackButton } from "@/shared/components/back-button";
+import { GameStageBackdrop } from "@/features/storefront/components/game-stage";
+import stage from "@/features/storefront/components/game-stage.module.css";
 import { ProductPurchaseActions } from "@/features/catalog/components/product-purchase-actions";
 import { ItemPreview } from "@/features/catalog/components/item-preview";
 import { CatalogCard } from "@/features/catalog/components/catalog-card";
@@ -52,14 +55,16 @@ export default async function ItemPage({
       (left, right) =>
         Number(right.type === item.type) - Number(left.type === item.type),
     )
-    .slice(0, 8);
+    .slice(0, 10);
 
   return (
-    <>
+    <StorefrontTransition>
+      <div className={`${stage.stage} detail-stage`} data-rarity={item.rarity}>
+      <GameStageBackdrop word="FORTNITE" />
       <section className="detail-shell">
         <div className="detail-visual">
           <div className="detail-navigation">
-            <BackButton fallbackHref={fromAdmin ? "/admin" : "/#catalogo"} label={fromAdmin ? "Volver al panel" : "Volver al catálogo"} preferFallback={fromAdmin} />
+            <BackButton fallbackHref={fromAdmin ? "/admin" : "/fortnite#catalogo"} label={fromAdmin ? "Volver al panel" : "Volver al catálogo"} preferFallback={fromAdmin} />
           </div>
           <ItemPreview
             imageUrl={item.imageUrl}
@@ -108,6 +113,7 @@ export default async function ItemPage({
           <ProductPurchaseActions item={item} />
         </div>
       </section>
+      </div>
       <div className="detail-discovery">
         {collectionItems.length > 0 && (
           <section
@@ -145,7 +151,7 @@ export default async function ItemPage({
                 <p className="eyebrow">SIGUE EXPLORANDO</p>
                 <h2 id="related-title">También te puede gustar</h2>
               </div>
-              <Link href="/#catalogo">
+              <Link href="/fortnite#catalogo">
                 Ver todo <ArrowRight aria-hidden="true" size={16} />
               </Link>
             </header>
@@ -161,6 +167,6 @@ export default async function ItemPage({
           </section>
         )}
       </div>
-    </>
+    </StorefrontTransition>
   );
 }

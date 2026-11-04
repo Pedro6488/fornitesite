@@ -24,9 +24,11 @@ export function AddToCartButton({ item, compact = false, redirectTo, disabled = 
   }
 
   const label = disabled ? "No disponible" : error ? "Intenta de nuevo" : added ? "Agregado" : "Agregar al carrito";
+  // En tarjetas no caben dos líneas: el icono de la bolsa ya dice "carrito" y la etiqueta accesible va completa.
+  const visibleLabel = compact && !disabled && !error && !added ? "Agregar" : label;
 
   return <button type="button" aria-label={`${label}: ${item.name}`} aria-pressed={added} disabled={disabled || commerce?.syncing} className={`${compact ? "cart-add cart-add-compact" : "primary-button"} ${added ? "is-added" : ""}`} onClick={() => void add()}>
     {compact && (added ? <Check aria-hidden="true" size={15} /> : <ShoppingBag aria-hidden="true" size={15} />)}
-    {label}
+    {visibleLabel}
   </button>;
 }

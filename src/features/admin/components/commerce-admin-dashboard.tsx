@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import { SupervisorOrders } from "@/features/orders/components/supervisor-orders";
@@ -65,7 +66,8 @@ export function CommerceAdminDashboard() {
   }, [load, tab]);
 
   return <section className="admin-dashboard">
-    <header className="admin-dashboard-heading"><div><p className="eyebrow">OPERACIÓN SEGURA</p><h1>Panel de comercio</h1><p>Pedidos, intención de compra y precios desde una sola fuente.</p></div><button onClick={() => void load(tab)}>Actualizar</button></header>
+    <GamePageHero slim word="ADMIN" accent="#8b5cf6" eyebrow="Operación segura" title={<>Panel de <span>comercio</span></>} lead="Pedidos, intención de compra y precios desde una sola fuente." aside={<button className="secondary-button admin-refresh" onClick={() => void load(tab)}>Actualizar</button>} />
+    <div className="admin-dashboard-body">
     <nav className="admin-tabs" aria-label="Secciones del dashboard">{(["summary", "orders", "identities", "carts", "favorites", "prices", "customers", "references"] as Tab[]).map((value) => <button key={value} className={tab === value ? "active" : ""} onClick={() => setTab(value)}>{({ summary: "Resumen", orders: "Pedidos", identities: "Revisión de IDs", carts: "Carritos", favorites: "Favoritos", prices: "Precios", customers: "Clientes", references: "Referencias" } as const)[value]}</button>)}</nav>
     {message && <p className="notice error">{message}</p>}
     {tab === "summary" && loadedTab === "summary" && data && <Summary metrics={data.metrics as Metrics} />}
@@ -76,6 +78,7 @@ export function CommerceAdminDashboard() {
     {tab === "prices" && loadedTab === "prices" && data && <Prices data={{ rules: (data.rules as PriceRule[] | undefined) ?? [], overrides: (data.overrides as PriceOverride[] | undefined) ?? [] }} request={request} reload={() => load("prices")} />}
     {tab === "customers" && <Customers customers={loadedTab === "customers" ? ((data?.customers as CustomerRankingEntry[] | undefined) ?? []) : null} from={customerFrom} to={customerTo} onFromChange={setCustomerFrom} onToChange={setCustomerTo} reload={() => load("customers")} />}
     {tab === "references" && <References references={loadedTab === "references" ? ((data?.references as DeliveryReference[] | undefined) ?? []) : null} />}
+    </div>
   </section>;
 }
 

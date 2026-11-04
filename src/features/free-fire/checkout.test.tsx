@@ -1,0 +1,50 @@
+import { fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { FreeFireCheckout } from "./checkout";
+
+describe("FreeFireCheckout", () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  function fillPlayer(nick = "SigfriedXD64") {
+    fireEvent.change(screen.getByLabelText("Tu WhatsApp"), { target: { value: "5612345678" } });
+    fireEvent.change(screen.getByLabelText("UID del jugador"), { target: { value: "3075674651" } });
+    fireEvent.change(screen.getByLabelText("Nick del jugador"), { target: { value: nick } });
+  }
+
+  it("envía el paquete, el precio y el destinatario elegido al administrador", () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    render(<FreeFireCheckout pack={{ diamonds: 2398, price: 340 }} whatsapp="5215619857749" />);
+    fillPlayer("  SigfriedXD64  ");
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.submit(screen.getByRole("button", { name: "Enviar solicitud por WhatsApp" }).closest("form")!);
+    const url = new URL(String(open.mock.calls[0][0]));
+    expect(url.hostname).toBe("wa.me");
+    expect(url.pathname).toBe("/5215619857749");
+    const text = url.searchParams.get("text");
+    expect(text).toContain("2,398 diamantes");
+    expect(text).toContain("$340.00 MXN");
+    expect(text).toContain("Nick: SigfriedXD64\n");
+    expect(text).toContain("UID: 3075674651");
+    expect(text).toContain("Mi WhatsApp: +525612345678");
+  });
+
+  it("impide continuar sin confirmar los datos del jugador", () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    render(<FreeFireCheckout pack={{ diamonds: 1166, price: 170 }} whatsapp="5215619857749" />);
+    fillPlayer();
+    fireEvent.submit(screen.getByRole("button").closest("form")!);
+    expect(open).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+
+  it("rechaza un UID incompleto y un nick que solo contiene espacios", () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    render(<FreeFireCheckout pack={{ diamonds: 6160, price: 790 }} whatsapp="5215619857749" />);
+    fillPlayer("   ");
+    fireEvent.change(screen.getByLabelText("UID del jugador"), { target: { value: "123" } });
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.submit(screen.getByRole("button").closest("form")!);
+    expect(open).not.toHaveBeenCalled();
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+  });
+});

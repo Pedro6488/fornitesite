@@ -149,6 +149,7 @@ export function OrderStatus({
   return (
     <div className="order-status-card">
       <PurchaseConfetti />
+      <div className="order-status-main">
       <div className="order-summary">
         <div>
           <p className="eyebrow">PEDIDO {order.id.slice(0, 8).toUpperCase()}</p>
@@ -179,6 +180,8 @@ export function OrderStatus({
             : "Este es el ID que recibirá el pedido y no puede cambiarse después de confirmar."}
         </p>
       </div>
+      </div>
+      <div className="order-status-side">
       <div className={`canonical-order-status status-${order.status}`}>
         <span>ESTADO DEL PEDIDO</span>
         <strong>{statusCopy[order.status]}</strong>
@@ -310,8 +313,8 @@ export function OrderStatus({
             </button>
           )}
           {order.status === "delivered" && <>
-            <a className="primary-button order-store-link" href="/#catalogo">Regresar a la tienda</a>
-            <BackButton label="Atrás" fallbackHref="/#catalogo" />
+            <a className="primary-button order-store-link" href="/fortnite#catalogo">Regresar a la tienda</a>
+            <BackButton label="Atrás" fallbackHref="/fortnite#catalogo" />
           </>}
         </SystemActionBar>
       {message && (
@@ -321,6 +324,7 @@ export function OrderStatus({
           {message}
         </p>
       )}
+      </div>
     </div>
   );
 }
