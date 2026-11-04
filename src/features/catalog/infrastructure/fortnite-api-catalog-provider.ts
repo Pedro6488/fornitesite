@@ -18,6 +18,15 @@ function optionalInteger(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : null;
 }
 
+/** La API traduce casi todo con `language`, salvo estos textos fijos. "Bundle" no describe nada: el tipo ya dice "Lote". */
+function bundleDescription(info: string): string {
+  return /^bundle$/i.test(info.trim()) ? "" : info;
+}
+
+function rarityLabel(value: string): string {
+  return value.trim() === "SERIE DE DC" ? "Serie de DC" : value.trim();
+}
+
 function jamTrackDescription(track: UnknownRecord): string {
   const artist = text(track.artist);
   const album = text(track.album);
@@ -28,7 +37,7 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
   constructor(private readonly baseUrl: string) {}
 
   async getCurrentCatalog(): Promise<readonly CatalogItem[]> {
-    const response = await fetch(`${this.baseUrl}/shop`, { next: { revalidate: 300 } });
+    const response = await fetch(`${this.baseUrl}/shop?language=es-419`, { next: { revalidate: 300 } });
     if (!response.ok) throw new Error(`Fortnite-API respondió ${response.status}.`);
     const payload = record(await response.json());
     const data = record(payload.data);
@@ -70,10 +79,10 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
         mainId,
         offerId: offerId || null,
         name: bundleName || (isIndividualJamTrack ? text(track.title, "Objeto sin nombre") : text(first.name, "Objeto sin nombre")),
-        description: text(bundle.info, isIndividualJamTrack ? jamTrackDescription(track) : text(first.description)),
+        description: bundleDescription(text(bundle.info, isIndividualJamTrack ? jamTrackDescription(track) : text(first.description))),
         imageUrl: bundleImage || (isIndividualJamTrack ? text(track.albumArt) : text(images.featured, text(images.icon))) || renderImageUrl || null,
-        type: isBundle ? "Lote" : isIndividualJamTrack ? "Pista de Jam" : text(type.displayValue, "Objeto"),
-        rarity: text(rarity.displayValue, "Común"),
+        type: isBundle ? "Lote" : isIndividualJamTrack ? "Pista de improvisación" : text(type.displayValue, "Objeto"),
+        rarity: rarityLabel(text(rarity.displayValue, "Común")),
         regularPriceVbucks: integer(entry.regularPrice) || finalPrice,
         finalPriceVbucks: finalPrice,
         priceMxn: null,

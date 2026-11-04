@@ -2,9 +2,11 @@ import { StorefrontTransition } from "@/features/storefront/components/storefron
 import type { Metadata } from "next";
 import { StorefrontLink as Link } from "@/features/storefront/components/storefront-link";
 import Image from "next/image";
-import { ArrowUpRight, ShoppingBag } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { GamesMenuLink } from "@/shared/components/games-menu-link";
 import { FREE_FIRE_PACKAGES } from "@/features/free-fire/packages";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
+import stage from "@/features/storefront/components/game-stage.module.css";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -16,14 +18,18 @@ export default function FreeFirePage() {
   return (
     <StorefrontTransition>
     <GamesMenuLink />
+    <GamePageHero
+      word="FREE FIRE"
+      accent="#f97316"
+      eyebrow="Free Fire · Diamantes"
+      title={<>Más diamantes.<br /><span>Más posibilidades.</span></>}
+      lead="Elige tus diamantes y solicita la recarga por WhatsApp. Necesitarás tu nick y UID."
+      image="/games/diamantes-freefire.png"
+      imageClassName={stage.artDiamonds}
+    />
     <div className={styles.page}>
-      <header className={styles.intro}>
-        <p className={styles.eyebrow}>FREE FIRE · DIAMANTES</p>
-        <h1>Más diamantes.<br /><span>Más posibilidades.</span></h1>
-        <p>Elige tus diamantes y solicita la recarga por WhatsApp. Necesitarás tu nick y UID.</p>
-      </header>
       <section aria-labelledby="packages-title">
-        <div className={styles.heading}><h2 id="packages-title">Elige tu recarga</h2><span>PRECIOS EN MXN</span></div>
+        <div className={styles.heading}><h2 id="packages-title">Elige tu recarga</h2><span>Precios en MXN</span></div>
         <ul className={styles.packages}>
           {FREE_FIRE_PACKAGES.map(({ diamonds, price }, index) => {
             const quantity = diamonds.toLocaleString("es-MX");
@@ -34,11 +40,10 @@ export default function FreeFirePage() {
                   <Image src="/games/diamantes-freefire.png" alt="" fill sizes="(max-width: 1050px) 50vw, 25vw" className={styles.diamondImage} />
                 </div>
                 <div className={styles.details}>
-                  <p className={styles.game}>FREE FIRE</p>
                   <h3>{quantity} <span>diamantes</span></h3>
                   <p className={styles.price}>${price}<span>MXN</span></p>
                   <Link href={`/free-fire/comprar/${diamonds}`} className={styles.buy} aria-label={`Comprar ${quantity} diamantes por $${price} MXN`}>
-                    <ShoppingBag size={17} aria-hidden="true" /> Solicitar <ArrowUpRight size={17} aria-hidden="true" />
+                    Solicitar <ArrowUpRight size={17} aria-hidden="true" />
                   </Link>
                 </div>
               </li>

@@ -87,7 +87,7 @@ describe("FortniteApiCatalogProvider", () => {
       expect.objectContaining({
         mainId: "spooky-jam-bundle",
         name: "Spooky Szn '26 Jam Bundle",
-        description: "Bundle",
+        description: "",
         imageUrl: "https://fortnite-api.com/spooky-bundle.png",
         type: "Lote"
       }),
@@ -97,7 +97,7 @@ describe("FortniteApiCatalogProvider", () => {
         name: "(Don't Fear) The Reaper",
         description: "Blue Öyster Cult · Agents of Fortune",
         imageUrl: "https://cdn.fortnite-api.com/reaper.jpg",
-        type: "Pista de Jam"
+        type: "Pista de improvisación"
       })
     ]);
   });

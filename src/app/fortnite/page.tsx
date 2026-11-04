@@ -2,6 +2,7 @@ import { StorefrontTransition } from "@/features/storefront/components/storefron
 import { CatalogGrid } from "@/features/catalog/components/catalog-grid";
 import { CatalogHero } from "@/features/catalog/components/catalog-hero";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
+import { ScrollToPendingAnchor } from "@/features/storefront/components/route-scroll";
 import { GamesMenuLink } from "@/shared/components/games-menu-link";
 
 export default async function FortnitePage() {
@@ -12,13 +13,10 @@ export default async function FortnitePage() {
     <StorefrontTransition>
       <GamesMenuLink />
       <CatalogHero items={items} />
-      <section className="shop-section" id="catalogo">
-        <div className="section-heading">
-          <div><p className="eyebrow">ELIGE TU FAVORITO</p><h2>Encuentra lo que buscas</h2></div>
-          <p>Filtra por colección, confirma el valor en pesos y guarda tus favoritos antes de solicitar.</p>
-        </div>
+      <section className="shop-section" id="catalogo" aria-label="Catálogo de Fortnite">
         <CatalogGrid items={items} />
       </section>
+      <ScrollToPendingAnchor />
     </StorefrontTransition>
   );
 }

@@ -1,5 +1,6 @@
 import { FavoritesCatalog } from "@/features/catalog/components/favorites-catalog";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 
 export default async function FavoritesPage() {
   const catalog = await getCatalogService();
@@ -7,12 +8,17 @@ export default async function FavoritesPage() {
 
   return (
     <section className="favorites-page">
-      <header className="favorites-heading">
-        <p className="eyebrow">TU SELECCIÓN</p>
-        <h1>Tus favoritos</h1>
-        <p>Guarda opciones mientras exploras y compáralas cuando estés listo para elegir.</p>
-      </header>
-      <FavoritesCatalog items={items} />
+      <GamePageHero
+        slim
+        word="FAVORITOS"
+        accent="#ff2d6b"
+        eyebrow="Tu selección"
+        title={<>Tus <span>favoritos</span></>}
+        lead="Guarda opciones mientras exploras y compáralas cuando estés listo para elegir."
+      />
+      <div className="loot-page-body">
+        <FavoritesCatalog items={items} />
+      </div>
     </section>
   );
 }

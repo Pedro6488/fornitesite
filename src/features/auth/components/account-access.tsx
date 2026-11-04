@@ -6,6 +6,9 @@ import { useEffect, useMemo, useState, type FormEvent, type KeyboardEvent as Rea
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
+import { GameStageBackdrop } from "@/features/storefront/components/game-stage";
+import stage from "@/features/storefront/components/game-stage.module.css";
 
 type CustomerOrder = { id: string; status: string; item_name: string; amount_mxn_cents: number; public_token: string; created_at: string };
 type AccountTab = "identities" | "orders" | "favorites";
@@ -108,9 +111,10 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
     setSubmitting(false);
   }
 
-  if (checking) return adminAccess ? <div className="account-card"><p>Cargando tu cuenta…</p></div> : <section className="account-auth-flow"><div className="auth-loading">Cargando acceso seguro…</div></section>;
+  if (checking) return adminAccess ? <div className="account-card"><p>Cargando tu cuenta…</p></div> : <section className={`account-auth-flow ${stage.stage}`}><GameStageBackdrop word="SIGFRIED" /><div className="auth-loading">Cargando acceso seguro…</div></section>;
   if (orders) return <div className="account-dashboard">
-    <div className="account-welcome"><p className="eyebrow">MI CUENTA</p><h2>Administra tu experiencia de compra.</h2><p>Cambia de sección sin perder el ID seleccionado para tu próxima entrega.</p></div>
+    <GamePageHero slim word="MI CUENTA" accent="#8b5cf6" eyebrow="Mi cuenta" title={<>Administra <span>tu cuenta</span></>} lead="Cambia de sección sin perder el ID seleccionado para tu próxima entrega." />
+    <div className="loot-page-body">
     <div className="account-tabs" role="tablist" aria-label="Secciones de mi cuenta">
       <button id="account-tab-identities" type="button" role="tab" aria-selected={activeTab === "identities"} aria-controls="account-panel-identities" tabIndex={activeTab === "identities" ? 0 : -1} onKeyDown={(event) => moveAccountTab(event, "identities")} onClick={() => setActiveTab("identities")}><Gamepad2 aria-hidden="true" size={17} /><span>Destinatarios</span><b>{commerce.validations.length}</b></button>
       <button id="account-tab-orders" type="button" role="tab" aria-selected={activeTab === "orders"} aria-controls="account-panel-orders" tabIndex={activeTab === "orders" ? 0 : -1} onKeyDown={(event) => moveAccountTab(event, "orders")} onClick={() => setActiveTab("orders")}><PackageCheck aria-hidden="true" size={17} /><span>Mis compras</span><b>{orders.length}</b></button>
@@ -132,17 +136,19 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
       {message && <p className="notice error">{message}</p>}
     </section>
     <section id="account-panel-orders" className="orders-panel account-tab-panel" role="tabpanel" aria-labelledby="account-tab-orders" hidden={activeTab !== "orders"}>
-      <div className="orders-heading"><div><p className="eyebrow">MIS COMPRAS</p><h3>Estado de tus pedidos</h3><p>{orders.filter((order) => order.status === "delivered").length} entregas confirmadas</p></div><Link href="/fortnite#catalogo">Ir a la tienda</Link></div>
+      <div className="orders-heading"><div><p className="eyebrow">MIS COMPRAS</p><h3>Estado de tus pedidos</h3><p>{(() => { const delivered = orders.filter((order) => order.status === "delivered").length; return delivered === 1 ? "1 entrega confirmada" : `${delivered} entregas confirmadas`; })()}</p></div><Link href="/fortnite#catalogo">Ir a la tienda</Link></div>
       {orders.length === 0 ? <p className="empty-orders">Aún no tienes pedidos asociados a esta cuenta.</p> : orders.map((order) => <Link className="account-order" key={order.id} href={`/pedidos/${order.id}?access=${order.public_token}`}><span><b>Pedido #{order.id.slice(0, 8).toUpperCase()}</b><small>{new Date(order.created_at).toLocaleDateString("es-MX")} · Ver compra y objetos</small></span><strong className={`order-${order.status}`}>{orderLabel(order.status)}</strong></Link>)}
     </section>
     <section id="account-panel-favorites" className="account-favorites-panel account-tab-panel" role="tabpanel" aria-labelledby="account-tab-favorites" hidden={activeTab !== "favorites"}>
       <span><Heart aria-hidden="true" size={24} /></span><div><p className="eyebrow">FAVORITOS</p><h3>{commerce.favoriteItemIds.size === 1 ? "1 objeto guardado" : `${commerce.favoriteItemIds.size} objetos guardados`}</h3><p>Consulta cuáles siguen disponibles antes de agregarlos al carrito.</p><Link href="/favoritos">Ver mis favoritos</Link></div>
     </section>
+    </div>
   </div>;
 
   if (adminAccess) return <form className="account-card register-card" onSubmit={authenticate}><p className="eyebrow">ACCESO RESTRINGIDO</p><h2>Panel de administración</h2><p>Ingresa con el correo y la contraseña de una cuenta autorizada.</p><label>Correo de administrador<input type="email" required value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder="tu@correo.com" autoComplete="email" /></label><label>Contraseña<input type="password" required minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" /></label><button className="primary-button" disabled={submitting}>{submitting ? "Entrando…" : "Entrar al panel"}</button>{message && <p className="notice">{message}</p>}<small className="account-note">Solo las cuentas con rol de administrador pueden continuar.</small></form>;
 
-  return <section className="account-auth-flow">
+  return <section className={`account-auth-flow ${stage.stage}`}>
+    <GameStageBackdrop word="SIGFRIED" />
     <div className="auth-brand" aria-label="SigfriedLootBox">Sigfried<span>LootBox</span></div>
     <form className="account-auth-card" onSubmit={authenticate}>
       <header><p className="eyebrow">ACCESO SEGURO</p><h1>{authMode === "login" ? "Bienvenido de vuelta" : "Crea tu cuenta"}</h1><p>{authMode === "login" ? "Recupera tus destinatarios, favoritos y compras." : "Guarda tus destinatarios, favoritos, carrito e historial."}</p></header>

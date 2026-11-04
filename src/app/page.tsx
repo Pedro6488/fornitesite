@@ -1,8 +1,8 @@
 import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import Image from "next/image";
 import { StorefrontLink as Link } from "@/features/storefront/components/storefront-link";
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, ChevronDown, Gamepad2, MessageCircle, MousePointer2, ShieldCheck, Sparkles, Ticket } from "lucide-react";
-import { ContinueGameLink } from "@/features/storefront/components/continue-game-link";
+import { ArrowRight, ArrowUpRight, Check, ChevronDown, Gamepad2, MessageCircle, MousePointer2, ShieldCheck, Sparkles, Ticket } from "lucide-react";
+import { HomeHero } from "@/features/storefront/components/home-hero";
 import { FREE_FIRE_STARTING_PRICE, ROBLOX_STARTING_PRICE, formatStoreMxn } from "@/features/storefront/games";
 import styles from "./home.module.css";
 
@@ -17,28 +17,7 @@ export default function HomePage() {
   const contactUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Hola, tengo una duda sobre una compra en SigfriedLootBox.")}`;
   return <StorefrontTransition><div className={styles.home} data-storefront-home>
     <nav className={styles.quickGames} aria-label="Acceso rápido a juegos"><Link href="/fortnite#catalogo">Fortnite</Link><Link href="/free-fire">Free Fire</Link><Link href="/roblox">Roblox</Link></nav>
-    <section className={styles.hero} aria-labelledby="home-title">
-      <div className={styles.heroCopy}>
-        <p className={styles.heroBadge}><span className={styles.statusDot} /> PARA LOS QUE VIVEN EL JUEGO <span>/ 001</span></p>
-        <h1 id="home-title">TU PRÓXIMO<br /><span>DROP</span> ESTÁ<br />AQUÍ<span className={styles.titlePeriod}>.</span></h1>
-        <p className={styles.heroDescription}>Tu squad reconoce tu nombre.<br /><strong>Que también reconozca tu estilo.</strong><br /><span>Objetos de Fortnite, diamantes y Robux.</span></p>
-        <div className={styles.heroActions}>
-          <ContinueGameLink className={styles.primary} />
-          <a href="#juegos" className={styles.secondary}>Todos los juegos <ArrowDown size={17} aria-hidden="true" /></a>
-        </div>
-        <p className={styles.heroReassurance}><ShieldCheck size={15} aria-hidden="true" /> Tu contraseña se queda contigo.</p>
-      </div>
-      <div className={styles.heroVisual}>
-        <span className={styles.visualWord} aria-hidden="true">PLAY</span>
-        <Link href="/fortnite#catalogo" className={styles.featuredGame} aria-label="Explorar el catálogo de Fortnite">
-          <Image src="/games/fortnite.jpg" alt="" fill sizes="(max-width: 650px) 100vw, 50vw" className={styles.featuredArt} preload />
-          <div className={styles.featuredTop}><span><i /> FORTNITE</span><ArrowUpRight size={27} aria-hidden="true" /></div>
-          <div className={styles.featuredBottom}><span>EL SIGUIENTE DROP ES TUYO</span><strong>HAZ TU<br />ENTRADA.</strong><span className={styles.featuredCta}>Explorar objetos <ArrowRight size={19} aria-hidden="true" /></span></div>
-        </Link>
-        <div className={styles.lootSticker} aria-hidden="true"><Sparkles size={20} /><span>NEW LOOK.<br /><strong>SAME PLAYER.</strong></span></div>
-        <div className={styles.visualCaption}><span>01 / FORTNITE</span><span>OBJETOS · ESTILO · TU PARTIDA</span></div>
-      </div>
-    </section>
+    <HomeHero />
 
     <section className={styles.arena} id="juegos" aria-labelledby="games-title">
 
@@ -67,7 +46,7 @@ export default function HomePage() {
         </div>
         <div className={styles.launcherFoot}><span><ShieldCheck size={15} aria-hidden="true" /> Fortnite: compra en la web</span><span><MessageCircle size={15} aria-hidden="true" /> Free Fire y Roblox: solicitud por WhatsApp</span><span className={styles.soon}>Call of Duty <small>PRÓXIMAMENTE</small></span></div>
       </div>
-      <div className={styles.arenaCaption}><span>YOUR GAME</span><span aria-hidden="true">✳</span><strong>YOUR RULES</strong><span aria-hidden="true">✳</span><span>YOUR LOOT</span></div>
+      <div className={styles.arenaCaption}><span>TU JUEGO</span><span aria-hidden="true">✳</span><strong>TUS REGLAS</strong><span aria-hidden="true">✳</span><span>TU LOOT</span></div>
     </section>
 
     <section className={styles.how} id="como-comprar" aria-labelledby="how-title">
@@ -80,11 +59,11 @@ export default function HomePage() {
     </section>
 
     <section className={styles.support} aria-labelledby="support-title">
-      <div className={styles.supportVisual} aria-hidden="true"><div className={styles.chatBubble}><Gamepad2 size={24} /><span>¿Listo para la siguiente?</span><Check size={16} /></div><div className={styles.chatReply}><span>Vamos por ese loot.</span><Sparkles size={18} /></div><span className={styles.supportStamp}>PLAYER<br />SUPPORT ↗</span></div>
+      <div className={styles.supportVisual} aria-hidden="true"><div className={styles.chatBubble}><Gamepad2 size={24} /><span>¿Listo para la siguiente?</span><Check size={16} /></div><div className={styles.chatReply}><span>Vamos por ese loot.</span><Sparkles size={18} /></div><span className={styles.supportStamp}>SOPORTE<br />PARA JUGADORES ↗</span></div>
       <div><p className={styles.eyebrow}>DEL OTRO LADO, HAY PERSONAS.</p><h2 id="support-title">NO JUEGAS<br />SOLO.</h2><p>Pregunta por un producto o por cómo comprar.<br />Te ayudamos a encontrar el siguiente paso.</p><a className={styles.primary} href={contactUrl} target="_blank" rel="noopener noreferrer">Hablemos por WhatsApp <ArrowUpRight size={18} aria-hidden="true" /></a></div>
     </section>
 
     <section className={styles.faq} aria-labelledby="faq-title"><div><p className={styles.eyebrow}>ANTES DE DARLE PLAY</p><h2 id="faq-title">SIN DUDAS.<br /><span>DALE PLAY.</span></h2><Link href="/referencias">Conoce las referencias <ArrowRight size={17} aria-hidden="true" /></Link></div><div className={styles.questions}>{questions.map(({question, answer}) => <details key={question}><summary>{question}<ChevronDown size={18} aria-hidden="true" /></summary><p>{answer}</p></details>)}</div></section>
-    <div className={styles.signoff} aria-hidden="true">SEE YOU IN GAME<span>↗</span></div>
+    <div className={styles.signoff} aria-hidden="true">NOS VEMOS EN LA PARTIDA<span>↗</span></div>
   </div></StorefrontTransition>;
 }

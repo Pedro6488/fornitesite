@@ -32,11 +32,11 @@ export function FavoritesCatalog({ items }: { items: readonly CatalogItem[] }) {
 
   if (favorites.length === 0) {
     return (
-      <div className="favorites-empty">
+      <div className="loot-empty">
         <span aria-hidden="true">♡</span>
         <h2>Guarda los objetos que te gustan</h2>
         <p>Usa el corazón de cada tarjeta para reunir aquí tus favoritos.</p>
-        <Link href="/fortnite#catalogo">Explorar la tienda</Link>
+        <Link className="primary-button" href="/fortnite#catalogo">Explorar la tienda</Link>
       </div>
     );
   }

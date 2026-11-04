@@ -5,10 +5,14 @@ import { MobileNavigation } from "@/features/commerce/components/mobile-navigati
 import { RegionProvider } from "@/features/pricing/components/region-provider";
 import { StorefrontHeader } from "@/features/storefront/components/storefront-header";
 import { StorefrontFooter } from "@/features/storefront/components/storefront-footer";
+import { RouteScrollTracker } from "@/features/storefront/components/route-scroll";
 import "./globals.css";
 import "./system-action-bar.css";
 import "./order-operations.css";
 import "./storefront-motion.css";
+import "./catalog-experience.css";
+import "./game-theme.css";
+import "./site-system.css";
 
 export const metadata: Metadata = {
   title: "SigfriedLootBox",
@@ -30,6 +34,7 @@ export default function RootLayout({
         <RegionProvider>
           <CommerceStateProvider>
           <StorefrontHeader contactUrl={`https://wa.me/${whatsapp}`} />
+          <RouteScrollTracker />
           <main id="main-content">{children}</main>
           <StorefrontFooter contactUrl={`https://wa.me/${whatsapp}`} />
           <MobileNavigation />

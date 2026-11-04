@@ -1,19 +1,164 @@
-.hero { max-width: 1400px; margin: auto; padding: 34px clamp(20px, 4vw, 60px); display: grid; grid-template-columns: 1fr 1.05fr; gap: 50px; align-items: center; }
-.eyebrow { font-size: 9px; font-weight: 650; letter-spacing: .12em; color: #b1a3d7; margin: 0 0 17px; }
-.copy h1 { max-width: none; font-family: 'Loot Display', Impact, sans-serif; font-weight: 800; font-size: clamp(42px, 5vw, 70px); line-height: .94; letter-spacing: -.015em; margin: 0 0 16px; }
-.copy h1 span { color: #d6ff45; }
-.copy > p:not(.eyebrow) { font-size: 12px; color: #b1b5c6; line-height: 1.8; margin: 0 0 14px; }
-.count { font-size: 10px; color: #8d95ac; }
-.preview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.preview > a { border: 1px solid #ffffff16; border-radius: 5px; background: #191d30; overflow: hidden; transition: border-color .2s; }
-.preview > a:hover { border-color: #d6ff4570; }
-.preview > a:focus-visible { outline: 3px solid #d6ff45; outline-offset: 4px; }
-.art { position: relative; height: 155px; background: radial-gradient(ellipse at bottom, #8360d335, transparent); }
-.art img { object-fit: contain; }
-.info { display: block; padding: 12px; border-top: 1px solid #ffffff0c; }
-.info strong { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; margin-bottom: 9px; }
-.info > span { display: flex; justify-content: space-between; gap: 5px; align-items: center; flex-wrap: wrap; }
-.info small { font-size: 9px; color: #969fb6; }.info b { color: #d6ff45; font-size: 11px; }
-@media (max-width: 800px) { .hero { gap: 25px; }.art { height: 125px; }.preview { gap: 7px; }.info { padding: 8px; } }
-@media (max-width: 650px) { .hero { grid-template-columns: 1fr; gap: 22px; padding: 25px 20px 20px; }.copy h1 { font-size: 50px; }.eyebrow { margin-bottom: 13px; }.copy > p:not(.eyebrow) { font-size: 11px; margin-bottom: 10px; }.desktopBreak { display: none; }.preview { gap: 9px; }.art { height: 100px; }.info strong { font-size: 10px; }.info small { display: none; } }
-@media (prefers-reduced-motion: reduce) { .preview > a { transition: none; } }
+/* Lo propio de la portada de Fortnite; el escenario está en game-stage.module.css. */
+.actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+}
+
+.stats > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats dd {
+  color: #fff;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+}
+
+.stats dt {
+  color: #a9b4cf;
+  font-size: .72rem;
+  font-weight: 700;
+  margin-top: .15rem;
+}
+
+.platform {
+  background: radial-gradient(closest-side, var(--stage-glow), transparent);
+  bottom: -.5rem;
+  height: 3.5rem;
+  left: 12%;
+  opacity: .75;
+  position: absolute;
+  right: 12%;
+}
+
+.character {
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  transform: translateX(2.5rem) scale(.94);
+  transition: opacity .35s ease, transform .55s cubic-bezier(.2, .9, .25, 1.15);
+  visibility: hidden;
+}
+
+.character[data-active="true"] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+.character img {
+  animation: float 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 2.2rem color-mix(in srgb, var(--stage-glow) 65%, transparent)) drop-shadow(0 1rem .8rem #0008);
+  object-fit: contain;
+}
+
+@keyframes float {
+  50% { transform: translateY(-.6rem); }
+}
+
+.plateInfo {
+  color: #fff;
+  display: grid;
+  gap: .1rem;
+  min-width: 0;
+}
+
+.plateInfo small {
+  color: #b9c3dd;
+  font-size: .75rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plateInfo strong {
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: .005em;
+  line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.plateInfo:hover strong {
+  color: #d6ff45;
+}
+
+.plateMeta {
+  align-items: baseline;
+  display: flex;
+  gap: .65rem;
+}
+
+.plateMeta b {
+  color: #d6ff45;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.plateMeta em {
+  color: #c7cde0;
+  font-size: .82rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.plateActions {
+  display: grid;
+  flex: 0 0 auto;
+  gap: .4rem;
+  justify-items: stretch;
+  min-width: 8.5rem;
+}
+
+.plateActions p {
+  align-items: center;
+  color: #ffe08a;
+  display: flex;
+  font-size: .75rem;
+  font-weight: 800;
+  gap: .3rem;
+  justify-content: flex-end;
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .titleBreak, .lead, .actions {
+    display: none;
+  }
+
+  .plateInfo strong {
+    font-size: 1.35rem;
+  }
+
+  .plateActions {
+    min-width: 7.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .character img {
+    animation: none;
+  }
+
+  .character {
+    transition: none;
+  }
+}

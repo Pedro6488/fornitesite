@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { ArrowLeft, Ticket, MessageCircle } from "lucide-react";
 import type { RobloxPackage } from "./packages";
 import { RobuxArt } from "./robux-art";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import styles from "../free-fire/checkout.module.css";
 
 export function RobloxCheckout({ pack, whatsapp }: { pack: RobloxPackage; whatsapp: string }) {
@@ -32,8 +33,9 @@ export function RobloxCheckout({ pack, whatsapp }: { pack: RobloxPackage; whatsa
     window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
-  return <div className={styles.page}>
-    <header className={styles.heading}><p>ROBLOX · CÓDIGO CANJEABLE</p><h1>Completa tu compra</h1><span>Elige tus Robux y recibe un código para canjear.</span></header>
+  return <>
+  <GamePageHero slim word="ROBLOX" accent="#e8b94a" eyebrow="Roblox · Código canjeable" title={<>Completa tu <span>compra</span></>} lead="Elige tus Robux y recibe un código para canjear." />
+  <div className={styles.page}>
     <div className={styles.layout}>
       <div className={styles.leftColumn}>
         <section className={styles.summary} aria-labelledby="roblox-order-title">
@@ -62,5 +64,6 @@ export function RobloxCheckout({ pack, whatsapp }: { pack: RobloxPackage; whatsa
         <p className={styles.help}>Se abrirá WhatsApp con el código seleccionado, su precio y tu número de contacto. Envía el mensaje para coordinar el pago y la entrega del código con el administrador.</p>
       </form>
     </div>
-  </div>;
+  </div>
+  </>;
 }

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, type FormEvent } from "react";
 import { ArrowLeft, Gamepad2, MessageCircle } from "lucide-react";
 import type { FreeFirePackage } from "./packages";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import styles from "./checkout.module.css";
 
 export function FreeFireCheckout({ pack, whatsapp, profileExampleSrc }: { pack: FreeFirePackage; whatsapp: string; profileExampleSrc?: string }) {
@@ -36,8 +37,9 @@ export function FreeFireCheckout({ pack, whatsapp, profileExampleSrc }: { pack: 
     window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   }
 
-  return <div className={styles.page}>
-    <header className={styles.heading}><p>FREE FIRE · RECARGA POR UID</p><h1>Completa tu compra</h1><span>Tu paquete y los datos de tu jugador, en un solo lugar.</span></header>
+  return <>
+  <GamePageHero slim word="FREE FIRE" accent="#f97316" eyebrow="Free Fire · Recarga por UID" title={<>Completa tu <span>compra</span></>} lead="Tu paquete y los datos de tu jugador, en un solo lugar." />
+  <div className={styles.page}>
     <div className={styles.layout}>
       <div className={styles.leftColumn}>
       <section className={styles.summary} aria-labelledby="order-title">
@@ -89,5 +91,6 @@ export function FreeFireCheckout({ pack, whatsapp, profileExampleSrc }: { pack: 
         <p className={styles.help}>Se abrirá WhatsApp con el paquete, precio y datos que ingresaste. Envía el mensaje para coordinar el pago con el administrador.</p>
       </form>
     </div>
-  </div>;
+  </div>
+  </>;
 }
