@@ -1,0 +1,431 @@
+/* Tema de todo el sitio: títulos y botones principales con el lenguaje de las portadas. */
+main#main-content h1,
+main#main-content h2 {
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+main#main-content h1 {
+  line-height: .95;
+  transform: skewX(-6deg);
+  transform-origin: left bottom;
+}
+
+.eyebrow {
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+.primary-button {
+  background: var(--accent);
+  clip-path: polygon(.7rem 0, 100% 0, calc(100% - .7rem) 100%, 0 100%);
+  color: #0c0f1e;
+  cursor: pointer;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+  line-height: 1;
+  min-height: 3.25rem;
+  align-items: center;
+  text-transform: uppercase;
+  transition: background .15s ease;
+}
+
+.primary-button:hover:not(:disabled),
+.primary-button:focus-visible {
+  background: #fff;
+  outline: 0;
+}
+
+.primary-button.is-added {
+  background: #d6ff4524;
+  color: #d6ff45;
+}
+
+/* Detalle del objeto: el mismo escenario de la portada, con el color de su rareza. */
+.detail-stage {
+  --stage-glow: var(--rarity, #8b5cf6);
+  /* Por encima de lo que sigue: la barra fija de compra vive dentro del escenario. */
+  z-index: 1;
+}
+
+.detail-discovery {
+  position: relative;
+  z-index: 0;
+}
+
+.detail-stage .detail-shell {
+  gap: clamp(1.5rem, 3vw, 3rem);
+  max-width: 1400px;
+  padding: 1rem clamp(20px, 4vw, 60px) 2.5rem;
+}
+
+.detail-stage .detail-art,
+.detail-stage .detail-art[data-rarity] {
+  background: none;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.detail-stage .detail-art {
+  aspect-ratio: auto;
+  height: clamp(22rem, 44vw, 38rem);
+}
+
+.detail-stage .detail-art::before {
+  background: radial-gradient(closest-side, var(--stage-glow), transparent);
+  bottom: -.25rem;
+  content: "";
+  height: 4rem;
+  left: 12%;
+  opacity: .8;
+  position: absolute;
+  right: 12%;
+}
+
+.detail-stage .detail-art::after {
+  display: none;
+}
+
+.detail-stage .detail-art img {
+  filter: drop-shadow(0 0 2.5rem color-mix(in srgb, var(--stage-glow) 60%, transparent)) drop-shadow(0 1rem .8rem #0008);
+  object-fit: contain;
+  padding: 0;
+}
+
+/* El video trae su propio fondo: va en el marco inclinado en lugar de flotar. */
+.detail-stage .detail-art:has(video) {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--stage-glow) 70%, #0b1022), color-mix(in srgb, var(--stage-glow) 20%, #0b1022));
+  clip-path: polygon(7% 0, 100% 0, 93% 100%, 0 100%);
+  overflow: hidden;
+}
+
+.detail-stage .detail-art:has(video)::before {
+  display: none;
+}
+
+.detail-stage .detail-copy {
+  align-self: center;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  position: static;
+}
+
+.detail-stage .detail-copy>.eyebrow {
+  background: #d6ff4514;
+  border-left: 3px solid #d6ff45;
+  display: inline-block;
+  font-size: .76rem;
+  letter-spacing: .1em;
+  margin: 0 0 .9rem;
+  padding: .4rem .8rem;
+  text-transform: uppercase;
+  transform: skewX(-8deg);
+}
+
+.detail-stage .detail-copy h1 {
+  color: #fff;
+  font-size: clamp(3rem, 5.6vw, 5.5rem);
+  margin: 0 0 .9rem;
+  text-shadow: 0 .3rem 0 #00000066;
+}
+
+.detail-stage .detail-copy>p:not(.eyebrow) {
+  color: #c7cde0;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.detail-stage .detail-purchase-card {
+  background: linear-gradient(100deg, #151a3ae8, #0d1127f2);
+  border: 0;
+  border-left: 4px solid var(--stage-glow);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%);
+  margin-top: 0;
+  padding: .9rem 1.1rem 1rem;
+}
+
+.detail-stage .detail-purchase-heading .eyebrow {
+  font-size: .72rem;
+}
+
+.detail-stage .detail-purchase-heading h2 {
+  font-size: 1.35rem;
+  margin-top: .1rem;
+}
+
+.detail-stage .detail-promotion {
+  background: #ff2d6b;
+  border: 0;
+  clip-path: polygon(.3rem 0, 100% 0, calc(100% - .3rem) 100%, 0 100%);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 800;
+  padding: .3rem .75rem;
+}
+
+.detail-stage .detail-price small {
+  font-size: .72rem;
+}
+
+.detail-stage .detail-price strong {
+  color: #d6ff45;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.detail-stage .detail-price strong small {
+  color: #b8c3de;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: .8rem;
+  margin-left: .25rem;
+}
+
+.detail-stage .product-identity-status {
+  background: #d6ff450f;
+  border: 0;
+  border-left: 4px solid #d6ff45;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - .7rem), calc(100% - .7rem) 100%, 0 100%);
+  margin-top: .6rem;
+}
+
+.detail-stage .product-identity-status.warning {
+  border-left-color: #f2c230;
+}
+
+.detail-stage .product-identity-status.danger {
+  border-left-color: var(--danger);
+}
+
+.detail-stage .product-identity-status.success {
+  border-left-color: var(--success);
+}
+
+.detail-stage .product-identity-status strong {
+  color: #fff;
+  font-size: .9rem;
+}
+
+.detail-stage .product-identity-status small {
+  color: #c7cde0;
+  font-size: .78rem;
+}
+
+.detail-stage .product-identity-status button {
+  background: #d6ff4524;
+  border: 0;
+  clip-path: polygon(.4rem 0, 100% 0, calc(100% - .4rem) 100%, 0 100%);
+  color: #d6ff45;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  min-height: 2.6rem;
+  padding-inline: 1rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.detail-stage .product-identity-status button:hover {
+  background: #d6ff45;
+  color: #0c0f1e;
+}
+
+.detail-stage .detail-navigation {
+  margin-bottom: .25rem;
+}
+
+.detail-stage .back-button {
+  font-size: .84rem;
+}
+
+/* Colecciones y sugerencias debajo del detalle, igual que en el catálogo. */
+.detail-discovery {
+  gap: 2.25rem;
+  max-width: 1400px;
+  padding: 1.75rem clamp(20px, 4vw, 60px) 5rem;
+}
+
+.detail-discovery-section>header {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  padding-bottom: .6rem;
+}
+
+.detail-discovery-section>header .eyebrow {
+  font-size: .72rem;
+}
+
+.detail-discovery-section>header h2 {
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  line-height: 1.05;
+  margin: .1rem 0 0;
+}
+
+.detail-discovery-section>header>span {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 650;
+  padding: 0;
+}
+
+.detail-discovery-section>header>a {
+  color: #d6ff45;
+  font-size: .84rem;
+  font-weight: 800;
+}
+
+.detail-card-rail {
+  gap: .85rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.product-rail-controls button:not(:disabled):hover {
+  border-color: #d6ff45;
+  color: #d6ff45;
+}
+
+@media (max-width: 1279px) {
+  .detail-card-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 999px) {
+  .detail-card-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .detail-stage .detail-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .detail-stage .detail-art {
+    height: clamp(17rem, 56vw, 26rem);
+  }
+}
+
+@media (max-width: 800px) {
+  .detail-card-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .detail-stage .detail-shell {
+    gap: .75rem;
+    padding: .6rem 14px 1.25rem;
+  }
+
+  .detail-stage .detail-copy h1 {
+    font-size: clamp(2.6rem, 12vw, 3.5rem);
+  }
+
+  .detail-stage .detail-price strong {
+    font-size: 2.3rem;
+  }
+
+  .detail-discovery {
+    padding: 1.25rem 14px calc(5.5rem + env(safe-area-inset-bottom));
+  }
+
+  /* La barra fija ya muestra precio y paVos: aquí solo lo que suma. */
+  .detail-stage .detail-copy>.eyebrow {
+    font-size: .66rem;
+    letter-spacing: .06em;
+    margin-bottom: .6rem;
+    padding: .3rem .6rem;
+  }
+
+  .detail-stage .detail-copy h1 {
+    font-size: clamp(2.35rem, 10.5vw, 3.25rem);
+    margin-bottom: .65rem;
+  }
+
+  .detail-stage .detail-copy>p:not(.eyebrow) {
+    font-size: .88rem;
+    margin-bottom: .65rem;
+  }
+
+  .detail-stage .detail-purchase-card {
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - .7rem), calc(100% - .7rem) 100%, 0 100%);
+    padding: .6rem .85rem;
+  }
+
+  .detail-stage .detail-purchase-heading {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+  }
+
+  .detail-stage .detail-purchase-heading .eyebrow {
+    font-size: .7rem;
+    margin: 0;
+  }
+
+  .detail-stage .detail-purchase-heading h2 {
+    display: none;
+  }
+
+  .detail-stage .detail-price {
+    border: 0;
+    margin: .35rem 0 0;
+    padding: 0;
+  }
+
+  .detail-stage .detail-price > div:last-child,
+  .detail-stage .detail-purchase-card:not(:has(.detail-promotion)) .detail-price {
+    display: none;
+  }
+
+  .detail-stage .detail-price small {
+    display: none;
+  }
+
+  .detail-stage .product-identity-status {
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-top: .5rem;
+    padding: .65rem .85rem;
+  }
+
+  .detail-stage .product-identity-status > span {
+    display: none;
+  }
+
+  .detail-stage .product-identity-status strong {
+    font-size: .88rem;
+    line-height: 1.2;
+    white-space: normal;
+  }
+
+  .detail-stage .product-identity-status small {
+    font-size: .74rem;
+    line-height: 1.3;
+  }
+
+  /* Riel horizontal: se ven dos tarjetas y asoma la siguiente. */
+  .detail-card-rail>.catalog-card {
+    flex: 0 0 min(45vw, 13rem);
+  }
+
+  .primary-button {
+    font-size: 1.15rem;
+  }
+}
+
+/* En pantallas táctiles el riel se desliza con el dedo: las flechas solo estorban. */
+@media (hover: none), (max-width: 600px) {
+  .product-rail-controls {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary-button {
+    transition: none;
+  }
+}

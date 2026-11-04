@@ -38,7 +38,7 @@ describe("createCatalogService", () => {
 
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(
-      "https://fortnite-api.com/v2/shop",
+      "https://fortnite-api.com/v2/shop?language=es-419",
       { next: { revalidate: 300 } }
     );
     expect(item).toEqual(expect.objectContaining({

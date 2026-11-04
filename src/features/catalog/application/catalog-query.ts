@@ -7,8 +7,11 @@ export const CATALOG_CATEGORIES = [
   "Gestos",
   "Lotes",
   "Mochilas",
+  "Calzado",
+  "Compañeros",
   "Planeadores",
   "Envoltorios",
+  "Música",
   "Otros"
 ] as const;
 
@@ -39,7 +42,7 @@ export type CatalogCollaborationGroup = Readonly<{
   items: readonly CatalogItem[];
 }>;
 
-const UNGROUPED_COLLABORATION = "Otros objetos";
+export const UNGROUPED_COLLABORATION = "Otros objetos";
 
 function normalize(value: string): string {
   return value
@@ -53,11 +56,14 @@ export function getCatalogCategory(item: CatalogItem): CatalogCategory {
   const type = normalize(item.type);
   if (/(outfit|atuendo|skin)/.test(type)) return "Atuendos";
   if (/(pickaxe|pico|harvesting)/.test(type)) return "Picos";
-  if (/(emote|gesto|emoji|spray)/.test(type)) return "Gestos";
+  if (/(emote|gesto|emoji|emoticono|spray|grafiti)/.test(type)) return "Gestos";
   if (/(bundle|lote)/.test(type)) return "Lotes";
   if (/(backbling|back bling|mochila)/.test(type)) return "Mochilas";
+  if (/(shoe|calzado)/.test(type)) return "Calzado";
+  if (/(sidekick|companero)/.test(type)) return "Compañeros";
   if (/(glider|planeador)/.test(type)) return "Planeadores";
-  if (/(wrap|envoltorio)/.test(type)) return "Envoltorios";
+  if (/(wrap|envoltorio|papel)/.test(type)) return "Envoltorios";
+  if (/(pista|jam track)/.test(type)) return "Música";
   return "Otros";
 }
 
@@ -186,6 +192,18 @@ export function filterCatalogDiscovery(
   return groupCatalogByCollaboration(sortCatalog(items, "featured"))
     .slice(0, popularCollectionLimit)
     .flatMap((group) => group.items);
+}
+
+/** Colecciones primero; lo que no tiene colección y las pistas de música, al final. */
+export function orderCatalogGroups<T extends CatalogCollaborationGroup>(groups: readonly T[]): T[] {
+  const weight = (group: T) => {
+    if (group.items.every((item) => getCatalogCategory(item) === "Música")) return 2;
+    return group.name === UNGROUPED_COLLABORATION ? 1 : 0;
+  };
+  return groups
+    .map((group, index) => ({ group, index }))
+    .sort((left, right) => weight(left.group) - weight(right.group) || left.index - right.index)
+    .map(({ group }) => group);
 }
 
 export function groupCatalogByCollaboration(

@@ -34,6 +34,7 @@ class IntersectionObserverMock {
 describe("CatalogGrid", () => {
   beforeEach(() => {
     vi.stubGlobal("IntersectionObserver", IntersectionObserverMock);
+    window.history.replaceState(null, "", "/fortnite");
   });
 
   it("filtra el catálogo con una búsqueda fácil", async () => {
@@ -83,7 +84,7 @@ describe("CatalogGrid", () => {
 
     const headings = screen.getAllByRole("heading", { level: 2 });
     expect(headings[0]).toHaveTextContent("Resident Evil");
-    fireEvent.click(screen.getByRole("tab", { name: /Colecciones/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Colecciones/ }));
     fireEvent.change(screen.getByLabelText("Buscar en la tienda"), { target: { value: "resident" } });
     fireEvent.click(screen.getByRole("button", { name: /Abrir Resident Evil, 1 objeto/ }));
 
@@ -107,7 +108,7 @@ describe("CatalogGrid", () => {
     expect(screen.getByText("Modo 6")).toBeInTheDocument();
     expect(screen.queryByText("Modo 5")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /Popular ahora/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Populares/ }));
 
     await waitFor(() => expect(screen.getByText("Modo 5")).toBeInTheDocument());
     expect(screen.queryByText("Modo 0")).not.toBeInTheDocument();
@@ -131,7 +132,7 @@ describe("CatalogGrid", () => {
       })
     ]} />);
 
-    fireEvent.click(screen.getByRole("tab", { name: /Colecciones/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Colecciones/ }));
     fireEvent.click(screen.getByRole("button", { name: /Abrir Resident Evil, 1 objeto/ }));
     fireEvent.click(screen.getByRole("button", { name: /^Filtros/ }));
     expect(screen.getByRole("dialog", { name: "Filtrar catálogo" })).toBeInTheDocument();
@@ -174,5 +175,107 @@ describe("CatalogGrid", () => {
 
     await waitFor(() => expect(screen.getByText("Objeto 48")).toBeInTheDocument());
     expect(screen.getByText("Objeto 0").closest("article")).toBe(firstCard);
+  });
+
+  it("muestra una vista previa por colección y permite abrirla completa", async () => {
+    const items = Array.from({ length: 14 }, (_, index) => item({
+      mainId: `peak-${index}`,
+      name: `Objeto ${String(index).padStart(2, "0")}`,
+      collaboration: "Estilo de élite"
+    }));
+    render(<CatalogGrid items={items} />);
+
+    expect(screen.getByText("Objeto 09")).toBeInTheDocument();
+    expect(screen.queryByText("Objeto 10")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Ver los 14 objetos de Estilo de élite" }));
+
+    await waitFor(() => expect(screen.getByText("Objeto 13")).toBeInTheDocument());
+    expect(screen.getByRole("heading", { level: 2, name: "Estilo de élite" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Estilo de élite ×" })).toBeInTheDocument();
+  });
+
+  it("deja las pistas de música al final aunque sean las más nuevas", () => {
+    render(<CatalogGrid items={[
+      item({ mainId: "track", name: "Everlong", type: "Pista de improvisación", collaboration: "Pistas de improvisación", shopInDate: "2026-09-27T00:00:00Z" }),
+      item({ mainId: "outfit", name: "Harley Quinn", collaboration: "DC", shopInDate: "2026-09-20T00:00:00Z" })
+    ]} />);
+
+    const headings = screen.getAllByRole("heading", { level: 2 }).map((heading) => heading.textContent);
+    expect(headings.indexOf("DC")).toBeLessThan(headings.indexOf("Pistas de improvisación"));
+  });
+
+  it("ordena de verdad por precio, sin separar por colección", async () => {
+    render(<CatalogGrid items={[
+      item({ mainId: "caro", name: "Caro", collaboration: "Colección A", finalPriceVbucks: 2_000 }),
+      item({ mainId: "medio", name: "Medio", collaboration: "Colección B", finalPriceVbucks: 1_000 }),
+      item({ mainId: "barato", name: "Barato", collaboration: "Colección A", finalPriceVbucks: 500 })
+    ]} />);
+
+    fireEvent.change(screen.getByLabelText("Ordenar"), { target: { value: "price-asc" } });
+
+    await waitFor(() => expect(screen.queryByRole("heading", { name: "Colección A" })).not.toBeInTheDocument());
+    const names = screen.getAllByRole("article").map((card) => card.querySelector("h2")?.textContent);
+    expect(names).toEqual(["Barato", "Medio", "Caro"]);
+  });
+
+  it("actualiza los conteos de categoría según lo que se busca", async () => {
+    render(<CatalogGrid items={[
+      item({ mainId: "a", name: "Solar", type: "Outfit" }),
+      item({ mainId: "b", name: "Solar", type: "Pickaxe" }),
+      item({ mainId: "c", name: "Lunar", type: "Pickaxe" }),
+      item({ mainId: "d", name: "Lunar", type: "Emote" })
+    ]} />);
+
+    expect(screen.getByRole("button", { name: /Gestos/ })).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Buscar en la tienda"), { target: { value: "solar" } });
+
+    await waitFor(() => expect(screen.queryByRole("button", { name: /Gestos/ })).not.toBeInTheDocument());
+    expect(screen.getByRole("button", { name: /Picos/ })).toHaveTextContent("1");
+  });
+
+  it("explica una búsqueda sin resultados y permite salir de ella", async () => {
+    render(<CatalogGrid items={[item({})]} />);
+
+    fireEvent.change(screen.getByLabelText("Buscar en la tienda"), { target: { value: "asd" } });
+
+    await waitFor(() => expect(screen.getByRole("heading", { name: "No encontramos “asd”" })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: "Ver todo el catálogo" }));
+    await waitFor(() => expect(screen.getByText("Exploradora estelar")).toBeInTheDocument());
+  });
+
+  it("restaura los filtros de la URL al volver de un objeto", async () => {
+    window.history.replaceState(null, "", "/fortnite?categoria=Picos&q=solar");
+    render(<CatalogGrid items={[
+      item({ mainId: "a", name: "Exploradora solar" }),
+      item({ mainId: "b", name: "Pico solar", type: "Pickaxe" }),
+      item({ mainId: "c", name: "Pico lunar", type: "Pickaxe" })
+    ]} />);
+
+    await waitFor(() => expect(screen.getByLabelText("Buscar en la tienda")).toHaveValue("solar"));
+    expect(screen.getByText("Pico solar")).toBeInTheDocument();
+    expect(screen.queryByText("Exploradora solar")).not.toBeInTheDocument();
+    expect(screen.queryByText("Pico lunar")).not.toBeInTheDocument();
+  });
+
+  it("guarda los filtros en la URL conservando el ancla", async () => {
+    window.history.replaceState(null, "", "/fortnite#catalogo");
+    render(<CatalogGrid items={[item({ mainId: "b", name: "Pico solar", type: "Pickaxe" }), item({})]} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Picos/ }));
+
+    await waitFor(() => expect(window.location.search).toBe("?categoria=Picos"));
+    expect(window.location.hash).toBe("#catalogo");
+  });
+
+  it("devuelve el foco al botón de filtros al cerrar el panel", () => {
+    render(<CatalogGrid items={[item({})]} />);
+    const toggle = screen.getByRole("button", { name: "Filtros" });
+
+    fireEvent.click(toggle);
+    expect(screen.getAllByRole("button", { name: "Cerrar filtros" })[1]).toHaveFocus();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(toggle).toHaveFocus();
   });
 });

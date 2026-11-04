@@ -1,0 +1,147 @@
+/* Lo propio de la portada principal; el escenario está en game-stage.module.css. */
+.title {
+  /* Las tildes de "ESTÁ" y "AQUÍ" necesitan aire respecto a la línea de arriba. */
+  line-height: .92;
+}
+
+.copy strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1.5rem;
+}
+
+.secondary {
+  align-items: center;
+  color: #eeeee8;
+  display: inline-flex;
+  font-size: .9rem;
+  font-weight: 750;
+  gap: .5rem;
+  min-height: 2.75rem;
+}
+
+.secondary:hover {
+  color: #d6ff45;
+}
+
+.secondary:focus-visible {
+  outline: 3px solid #d6ff45;
+  outline-offset: 4px;
+}
+
+.reassurance {
+  align-items: center;
+  color: #a9b4cf;
+  display: flex;
+  font-size: .8rem;
+  gap: .4rem;
+  margin: .9rem 0 0;
+}
+
+.plate {
+  color: #fff;
+  transition: background .18s ease;
+}
+
+.plate:hover {
+  background: linear-gradient(100deg, #1e2452f0, #12173af5);
+}
+
+.plate:focus-visible {
+  background: #262d63;
+  outline: 0;
+}
+
+.plateCopy {
+  display: grid;
+  gap: .05rem;
+  min-width: 0;
+}
+
+.plateCopy small {
+  color: #b9c3dd;
+  font-size: .75rem;
+  font-weight: 700;
+}
+
+.plateCopy strong {
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1.02;
+  text-transform: uppercase;
+}
+
+.plateCopy > span {
+  color: #d6ff45;
+  font-size: .88rem;
+  font-weight: 800;
+}
+
+.plateAction {
+  align-items: center;
+  background: #d6ff45;
+  clip-path: polygon(.5rem 0, 100% 0, calc(100% - .5rem) 100%, 0 100%);
+  color: #0c0f1e;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  gap: .35rem;
+  min-height: 2.75rem;
+  padding: 0 1.1rem;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .actions, .reassurance, .lead, .titleBreak {
+    display: none;
+  }
+
+  .title {
+    font-size: clamp(2.6rem, 13.5vw, 4.25rem);
+    margin-bottom: .5rem;
+  }
+
+  .main {
+    height: 13rem;
+  }
+
+  .plateCopy strong {
+    font-size: 1.5rem;
+  }
+
+  .plateCopy > span {
+    font-size: .8rem;
+  }
+
+  .plateAction {
+    font-size: .95rem;
+    padding: 0 .85rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .plate {
+    align-items: stretch;
+    flex-direction: column;
+    gap: .5rem;
+  }
+
+  .plateAction {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plate {
+    transition: none;
+  }
+}

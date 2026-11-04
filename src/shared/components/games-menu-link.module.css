@@ -1,4 +1,135 @@
-.navigation { max-width: 1520px; margin: 0 auto; padding: 28px clamp(20px, 5vw, 80px) 0; }
-.link { display: inline-flex; align-items: center; gap: 9px; padding: 11px 15px; border: 1px solid #55d9ff30; border-radius: 12px; background: #55d9ff08; color: var(--ink); font-size: 13px; font-weight: 700; }
-.link:hover { background: #55d9ff18; border-color: #55d9ff65; }
-.link:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
+/* Selector de juego con la silueta inclinada de las portadas; se funde con el escenario de abajo. */
+.navigation {
+  background: #0a0d20;
+  border-bottom: 1px solid #ffffff0f;
+}
+
+.inner {
+  align-items: center;
+  display: flex;
+  gap: 1.5rem;
+  margin: 0 auto;
+  max-width: 1400px;
+  padding: .7rem clamp(20px, 4vw, 60px);
+}
+
+.back {
+  align-items: center;
+  color: #c7cde0;
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: .84rem;
+  font-weight: 700;
+  gap: .45rem;
+  min-height: 2.75rem;
+}
+
+.back:hover {
+  color: #d6ff45;
+}
+
+.back:focus-visible {
+  outline: 3px solid #d6ff45;
+  outline-offset: 3px;
+}
+
+.games {
+  align-items: center;
+  display: flex;
+  gap: .4rem;
+  min-width: 0;
+}
+
+.game {
+  align-items: center;
+  background: #ffffff0d;
+  clip-path: polygon(.65rem 0, 100% 0, calc(100% - .65rem) 100%, 0 100%);
+  color: #dfe4f5;
+  display: inline-flex;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  gap: .55rem;
+  justify-content: center;
+  letter-spacing: .02em;
+  min-height: 2.9rem;
+  padding: 0 1.35rem 0 1.15rem;
+  text-transform: uppercase;
+  transition: background .18s ease, color .18s ease;
+  white-space: nowrap;
+}
+
+.game:hover {
+  background: #ffffff24;
+  color: #fff;
+}
+
+.game:focus-visible {
+  background: #fff;
+  color: #0c0f1e;
+  outline: 0;
+}
+
+.game[aria-current="page"] {
+  background: #d6ff45;
+  color: #0c0f1e;
+}
+
+.thumb {
+  clip-path: polygon(.3rem 0, 100% 0, calc(100% - .3rem) 100%, 0 100%);
+  display: block;
+  flex: 0 0 auto;
+  height: 1.9rem;
+  overflow: hidden;
+  position: relative;
+  width: 2.5rem;
+}
+
+.thumb img {
+  object-fit: cover;
+  object-position: center 25%;
+}
+
+@media (max-width: 540px) {
+  .inner {
+    gap: .35rem;
+    padding: .5rem 14px;
+  }
+
+  .back {
+    justify-content: center;
+    width: 2.25rem;
+  }
+
+  .back span {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .games {
+    flex: 1;
+    gap: .25rem;
+  }
+
+  .game {
+    flex: 1 1 0;
+    font-size: 1rem;
+    gap: .3rem;
+    min-width: 0;
+    padding: 0 .6rem;
+  }
+
+  .thumb {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .game {
+    transition: none;
+  }
+}

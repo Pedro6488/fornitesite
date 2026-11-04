@@ -1,0 +1,164 @@
+/* Lo propio de la portada de Fortnite; el escenario está en game-stage.module.css. */
+.actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0;
+}
+
+.stats > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats dd {
+  color: #fff;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  margin: 0;
+}
+
+.stats dt {
+  color: #a9b4cf;
+  font-size: .72rem;
+  font-weight: 700;
+  margin-top: .15rem;
+}
+
+.platform {
+  background: radial-gradient(closest-side, var(--stage-glow), transparent);
+  bottom: -.5rem;
+  height: 3.5rem;
+  left: 12%;
+  opacity: .75;
+  position: absolute;
+  right: 12%;
+}
+
+.character {
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+  transform: translateX(2.5rem) scale(.94);
+  transition: opacity .35s ease, transform .55s cubic-bezier(.2, .9, .25, 1.15);
+  visibility: hidden;
+}
+
+.character[data-active="true"] {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+.character img {
+  animation: float 5s ease-in-out infinite;
+  filter: drop-shadow(0 0 2.2rem color-mix(in srgb, var(--stage-glow) 65%, transparent)) drop-shadow(0 1rem .8rem #0008);
+  object-fit: contain;
+}
+
+@keyframes float {
+  50% { transform: translateY(-.6rem); }
+}
+
+.plateInfo {
+  color: #fff;
+  display: grid;
+  gap: .1rem;
+  min-width: 0;
+}
+
+.plateInfo small {
+  color: #b9c3dd;
+  font-size: .75rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plateInfo strong {
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: .005em;
+  line-height: 1.05;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.plateInfo:hover strong {
+  color: #d6ff45;
+}
+
+.plateMeta {
+  align-items: baseline;
+  display: flex;
+  gap: .65rem;
+}
+
+.plateMeta b {
+  color: #d6ff45;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.plateMeta em {
+  color: #c7cde0;
+  font-size: .82rem;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.plateActions {
+  display: grid;
+  flex: 0 0 auto;
+  gap: .4rem;
+  justify-items: stretch;
+  min-width: 8.5rem;
+}
+
+.plateActions p {
+  align-items: center;
+  color: #ffe08a;
+  display: flex;
+  font-size: .75rem;
+  font-weight: 800;
+  gap: .3rem;
+  justify-content: flex-end;
+  margin: 0;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .titleBreak, .lead, .actions {
+    display: none;
+  }
+
+  .plateInfo strong {
+    font-size: 1.35rem;
+  }
+
+  .plateActions {
+    min-width: 7.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .character img {
+    animation: none;
+  }
+
+  .character {
+    transition: none;
+  }
+}

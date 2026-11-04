@@ -1,0 +1,889 @@
+/* Color por rareza: una sola fuente para tarjetas, detalle y portadas. */
+[data-rarity] { --rarity: #6b78c4; }
+[data-rarity*="Épico" i], [data-rarity*="Epic" i] { --rarity: #a855f7; }
+[data-rarity*="Raro" i], [data-rarity*="Rare" i] { --rarity: #2aa5ea; }
+[data-rarity*="Poco" i], [data-rarity*="Uncommon" i] { --rarity: #3fbf78; }
+[data-rarity*="Legend" i] { --rarity: #f0962e; }
+[data-rarity*="ídolos" i] { --rarity: #14c3d6; }
+[data-rarity*="Star Wars" i] { --rarity: #f2c230; }
+[data-rarity*="DC" i] { --rarity: #3b7bf0; }
+[data-rarity*="Marvel" i] { --rarity: #e5484d; }
+[data-rarity*="sombras" i] { --rarity: #8d83a8; }
+[data-rarity*="Leyendas" i] { --rarity: #6f63ff; }
+
+.item-art[data-rarity] {
+  background:
+    radial-gradient(circle at 50% 112%, color-mix(in srgb, var(--rarity) 60%, #fff 12%), transparent 62%),
+    linear-gradient(165deg, color-mix(in srgb, var(--rarity) 72%, #0b1022), color-mix(in srgb, var(--rarity) 20%, #0b1022));
+}
+
+/* Catálogo de Fortnite: mismo ancho que la portada y controles compactos. */
+.storefront-view #catalogo.shop-section {
+  max-width: 1400px;
+  padding: 1.25rem clamp(20px, 4vw, 60px) 6rem;
+}
+
+.catalog-explorer {
+  gap: .85rem;
+  /* Sin esto las filas de chips con scroll ensanchan toda la lista en pantallas angostas. */
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Qué ver: una sola fila en lugar de pestañas más tres tarjetas grandes. */
+.catalog-scope-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+  justify-content: space-between;
+}
+
+.catalog-scopes {
+  display: flex;
+  gap: .4rem;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.catalog-scopes button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .86rem;
+  font-weight: 800;
+  gap: .42rem;
+  min-height: 2.6rem;
+  padding: 0 .95rem;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.catalog-scopes button:hover {
+  border-color: rgba(214, 255, 69, .35);
+  color: var(--ink);
+}
+
+.catalog-scopes button.active {
+  background: rgba(214, 255, 69, .1);
+  border-color: rgba(214, 255, 69, .45);
+  color: #d6ff45;
+}
+
+.catalog-scopes small {
+  font-size: .74rem;
+  font-weight: 700;
+  opacity: .75;
+}
+
+.catalog-community-nav {
+  gap: 1rem;
+}
+
+.catalog-community-nav a {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  font-size: .8rem;
+  font-weight: 700;
+  padding: .5rem 0;
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.catalog-community-nav a:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+/* Búsqueda y categorías siempre a la mano mientras se recorre la lista. */
+.catalog-command-bar {
+  backdrop-filter: blur(18px);
+  background: rgba(9, 12, 25, .92);
+  border: 1px solid rgba(255, 255, 255, .09);
+  display: grid;
+  gap: .5rem;
+  padding: .55rem;
+  position: sticky;
+  top: 5.2rem;
+  z-index: 12;
+}
+
+.catalog-toolbar {
+  align-items: center;
+  backdrop-filter: none;
+  background: transparent;
+  border: 0;
+  gap: .5rem;
+  padding: 0;
+  position: static;
+}
+
+.search-field {
+  min-height: 2.85rem;
+}
+
+.search-field input,
+.search-field input:focus,
+.search-field input:focus-visible {
+  border: 0;
+  box-shadow: none;
+  min-width: 0;
+  outline: 0;
+}
+
+.search-field input {
+  appearance: none;
+  padding: .5rem 0;
+  width: 100%;
+}
+
+/* Sin esto Chrome dibuja su propia X junto a la nuestra. */
+.search-field input::-webkit-search-cancel-button,
+.search-field input::-webkit-search-decoration {
+  appearance: none;
+  display: none;
+}
+
+.search-field button {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  height: 2.25rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.25rem;
+}
+
+.search-field button:hover {
+  background: rgba(255, 255, 255, .08);
+  color: var(--ink);
+}
+
+.search-field button svg {
+  margin: 0;
+}
+
+.catalog-sort {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: .55rem;
+}
+
+.catalog-sort label {
+  color: var(--muted);
+  display: block;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  padding: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.catalog-sort .select-control {
+  width: 10.5rem;
+}
+
+.catalog-sort .select-control select {
+  border-color: rgba(255, 255, 255, .1);
+  font-size: .86rem;
+  min-height: 2.85rem;
+}
+
+.catalog-sort option {
+  background: #141a31;
+  color: #eef2ff;
+}
+
+/* El icono de ordenar solo aparece en móvil, donde el selector se reduce a un botón. */
+.catalog-sort .select-control svg:last-of-type {
+  display: none;
+}
+
+.catalog-filter-toggle {
+  flex: 0 0 auto;
+  font-size: .82rem;
+  min-height: 2.85rem;
+}
+
+.catalog-filter-toggle b {
+  align-items: center;
+  background: var(--accent);
+  color: #10121c;
+  display: inline-flex;
+  font-size: .72rem;
+  height: 1.3rem;
+  justify-content: center;
+  min-width: 1.3rem;
+}
+
+.category-list {
+  gap: .35rem;
+  padding: 0;
+  scrollbar-width: none;
+}
+
+.category-list button {
+  background: transparent;
+  font-size: .8rem;
+  gap: .4rem;
+  min-height: 2.25rem;
+  padding: 0 .55rem 0 .8rem;
+}
+
+.category-list small {
+  background: rgba(255, 255, 255, .08);
+  font-size: .7rem;
+  height: 1.3rem;
+  min-width: 1.3rem;
+}
+
+.catalog-filter-group legend {
+  font-size: .75rem;
+}
+
+.catalog-filter-options button {
+  font-size: .82rem;
+}
+
+.catalog-filter-heading span {
+  font-size: .82rem;
+}
+
+.catalog-result-bar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem 1rem;
+  min-height: 2rem;
+  scroll-margin-top: 13rem;
+}
+
+.catalog-result-count {
+  margin: 0;
+  padding: 0;
+}
+
+.catalog-result-count strong {
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+
+.catalog-result-count span {
+  font-size: .82rem;
+  text-transform: none;
+}
+
+.active-filters {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.active-filters button {
+  font-size: .78rem;
+  min-height: 2rem;
+  padding: .25rem .7rem;
+}
+
+.catalog-results {
+  min-height: 24rem;
+}
+
+.catalog-collaborations {
+  gap: 2.25rem;
+}
+
+/* Secciones sin caja, con encabezado de la misma familia que las portadas. */
+.catalog-collaboration {
+  background: transparent;
+  border: 0;
+  gap: 0;
+  padding: 0;
+}
+
+.catalog-collaboration-heading {
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, .1);
+  flex-wrap: nowrap;
+  gap: .7rem;
+  justify-content: flex-start;
+  padding-bottom: .6rem;
+}
+
+.catalog-collaboration-heading h2 {
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.05;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  padding-left: .75rem;
+  position: relative;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.catalog-collaboration-heading h2::before {
+  background: #d6ff45;
+  bottom: .15em;
+  content: "";
+  left: 0;
+  position: absolute;
+  top: .15em;
+  transform: skewX(-12deg);
+  width: .3rem;
+}
+
+.catalog-collaboration-heading>span {
+  background: transparent;
+  border: 0;
+  color: var(--muted);
+  flex: 0 0 auto;
+  font-size: .8rem;
+  font-weight: 650;
+  padding: 0;
+}
+
+.catalog-collaboration-heading button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: #d6ff45;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: .84rem;
+  font-weight: 800;
+  gap: .3rem;
+  margin-left: auto;
+  min-height: 2.25rem;
+  padding: 0 .25rem;
+}
+
+.catalog-collaboration-heading button:hover {
+  color: #fff;
+}
+
+.catalog-collaboration .catalog-grid {
+  margin-top: .9rem;
+}
+
+/* 5, 4, 3 y 2 columnas: la vista previa de una colección siempre termina en fila completa. */
+.catalog-grid {
+  gap: .85rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+@media (max-width: 1279px) {
+  .catalog-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .catalog-grid-preview .catalog-card:nth-child(n+9) { display: none; }
+}
+
+@media (max-width: 1179px) {
+  .catalog-sort label { display: none; }
+}
+
+@media (max-width: 999px) {
+  .catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .catalog-grid-preview .catalog-card:nth-child(n+9) { display: flex; }
+  .catalog-grid-preview .catalog-card:nth-child(n+10) { display: none; }
+}
+
+@media (max-width: 639px) {
+  .catalog-grid { gap: .55rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .catalog-grid-preview .catalog-card:nth-child(n+7) { display: none; }
+}
+
+
+/* Tarjeta: el arte manda, el color dice la rareza y el precio nunca pisa al personaje. */
+.catalog-card {
+  background: #0d1228;
+  border: 1px solid color-mix(in srgb, var(--rarity) 38%, rgba(255, 255, 255, .06));
+  box-shadow: none;
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.catalog-card:hover {
+  border-color: var(--rarity);
+  box-shadow: 0 0 0 1px var(--rarity), 0 .9rem 2.2rem color-mix(in srgb, var(--rarity) 32%, transparent);
+  transform: translateY(-4px);
+}
+
+.catalog-card:has(.cart-add:disabled) {
+  border-color: color-mix(in srgb, var(--rarity) 38%, rgba(255, 255, 255, .06));
+}
+
+.catalog-card>a {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.catalog-card .item-art {
+  aspect-ratio: 1 / 1.04;
+  border-bottom: 2px solid var(--rarity);
+}
+
+/* Franja inclinada y plataforma de luz: el mismo escenario de las portadas, a escala de tarjeta. */
+.catalog-card .item-art::after {
+  background:
+    radial-gradient(ellipse 60% 14% at 50% 90%, rgba(255, 255, 255, .28), transparent),
+    linear-gradient(105deg, transparent 60%, rgba(255, 255, 255, .07) 60% 74%, rgba(255, 255, 255, .14) 74% 76%, transparent 76%);
+}
+
+.catalog-rarity-tag {
+  background: var(--rarity);
+  bottom: 0;
+  clip-path: polygon(0 0, 100% 0, calc(100% - .35rem) 100%, 0 100%);
+  color: #0a0d20;
+  font-size: .68rem;
+  font-weight: 800;
+  left: 0;
+  line-height: 1;
+  max-width: 88%;
+  overflow: hidden;
+  padding: .3rem .85rem .3rem .8rem;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.catalog-card:hover .card-copy h2 {
+  color: #d6ff45;
+}
+
+.catalog-card .item-art img {
+  filter: drop-shadow(0 .8rem .7rem rgba(0, 0, 0, .35));
+  padding: .45rem .45rem 1.1rem;
+  transform: none;
+  transition: transform .3s cubic-bezier(.2, .9, .25, 1.15);
+}
+
+.catalog-card:hover .item-art img {
+  filter: drop-shadow(0 .8rem .7rem rgba(0, 0, 0, .35));
+  transform: scale(1.06);
+}
+
+.catalog-promotion-chip {
+  background: #ff2d6b;
+  border: 0;
+  clip-path: polygon(.3rem 0, 100% 0, calc(100% - .3rem) 100%, 0 100%);
+  font-size: .78rem;
+  left: 0;
+  padding: .28rem .7rem;
+  top: .7rem;
+}
+
+.catalog-card .card-copy {
+  padding: .7rem .8rem .3rem;
+}
+
+.catalog-card .item-meta {
+  color: color-mix(in srgb, var(--rarity) 45%, #fff);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.catalog-card .card-copy h2 {
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: .003em;
+  line-height: 1.02;
+  margin: .2rem 0 0;
+  min-height: 2.04em;
+  text-transform: uppercase;
+}
+
+.catalog-card-offer {
+  background: none;
+  margin-top: auto;
+  padding: .15rem .8rem .55rem;
+  position: static;
+}
+
+.catalog-card-offer-prices {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 .55rem;
+  justify-content: space-between;
+}
+
+.catalog-card-price {
+  color: #d6ff45;
+  display: inline-flex;
+  align-items: baseline;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  gap: .2rem;
+  justify-items: start;
+  letter-spacing: 0;
+  line-height: 1;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.catalog-card-price small {
+  color: #b8c3de;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: .64rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+
+.catalog-card-vbucks {
+  align-items: baseline;
+  color: #d5dcf0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  font-size: .78rem;
+  font-weight: 700;
+  gap: 0 .35rem;
+  justify-items: end;
+  white-space: nowrap;
+}
+
+.catalog-card-vbucks>span {
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.catalog-card-vbucks del {
+  color: #8d99b8;
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+.catalog-card .catalog-price-assurance {
+  align-items: center;
+  border: 0;
+  color: #ffe08a;
+  display: flex;
+  font-size: .72rem;
+  gap: .3rem;
+  margin: .35rem 0 0;
+  padding: 0;
+}
+
+.catalog-card-actions {
+  border-top: 0;
+  gap: .4rem;
+  grid-template-columns: minmax(0, 1fr) 2.75rem;
+  padding: 0 .8rem .8rem;
+}
+
+.catalog-card-actions:has(.catalog-detail-wide) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.storefront-view .catalog-card .catalog-detail-link {
+  font-size: .82rem;
+  min-height: 2.75rem;
+}
+
+.catalog-detail-icon {
+  padding: 0;
+}
+
+/* Botón de carrito: una sola línea y la misma silueta inclinada de las portadas. */
+.cart-add.cart-add-compact {
+  background: #d6ff45;
+  border: 0;
+  clip-path: polygon(.5rem 0, 100% 0, calc(100% - .5rem) 100%, 0 100%);
+  color: #0c0f1e;
+  font-family: 'Loot Display', Impact, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  gap: .4rem;
+  letter-spacing: .02em;
+  line-height: 1;
+  min-height: 2.75rem;
+  padding: 0 .9rem;
+  text-transform: uppercase;
+  transition: background .15s ease, color .15s ease;
+  white-space: nowrap;
+}
+
+.cart-add.cart-add-compact:hover:not(:disabled),
+.cart-add.cart-add-compact:focus-visible {
+  background: #fff;
+  outline: 0;
+}
+
+.cart-add.cart-add-compact.is-added {
+  background: #d6ff4524;
+  color: #d6ff45;
+}
+
+.cart-add.cart-add-compact.is-added:hover:not(:disabled) {
+  background: #d6ff4524;
+}
+
+.cart-add.cart-add-compact:disabled {
+  background: rgba(212, 202, 154, .18);
+  color: #d5cfb5;
+}
+
+.catalog-collection-showcase {
+  grid-template-columns: repeat(auto-fill, minmax(min(15rem, 100%), 1fr));
+}
+
+.catalog-collection-art {
+  height: 10.5rem;
+}
+
+.catalog-collection-copy {
+  align-items: center;
+}
+
+.catalog-collection-copy strong {
+  min-width: 0;
+}
+
+.catalog-collection-copy b {
+  font-size: .76rem;
+}
+
+.catalog-empty h3 {
+  overflow-wrap: anywhere;
+}
+
+.catalog-load-more span {
+  font-size: .8rem;
+}
+
+@media (max-width: 760px) {
+  .storefront-view #catalogo.shop-section {
+    padding-inline: 14px;
+    padding-top: .75rem;
+  }
+
+  .catalog-command-bar {
+    margin-inline: -.35rem;
+    top: 4.7rem;
+  }
+
+  .catalog-toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: .4rem;
+  }
+
+  .catalog-search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .search-field {
+    border-color: rgba(255, 255, 255, .1);
+    box-shadow: none;
+    padding: 0 .35rem 0 .65rem;
+  }
+
+  .search-field svg {
+    margin-right: .45rem;
+  }
+
+  .search-field input {
+    font-size: 1rem;
+  }
+
+  /* Selector nativo reducido a un botón de icono: conserva su etiqueta y el menú del sistema. */
+  .catalog-sort {
+    flex: 0 0 2.85rem;
+    width: 2.85rem;
+  }
+
+  .catalog-sort label {
+    clip-path: inset(50%);
+    display: block;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .catalog-sort .select-control {
+    width: 2.85rem;
+  }
+
+  .catalog-sort .select-control select {
+    color: transparent;
+    padding: 0;
+  }
+
+  .catalog-sort .select-control svg:first-of-type {
+    display: none;
+  }
+
+  .catalog-sort .select-control svg:last-of-type {
+    color: var(--ink);
+    display: block;
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+  }
+
+  .catalog-filter-toggle {
+    flex: 0 0 auto;
+    min-width: 2.85rem;
+    padding: 0 .7rem;
+    position: relative;
+  }
+
+  .catalog-filter-label {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .catalog-filter-toggle b {
+    position: absolute;
+    right: -.3rem;
+    top: -.3rem;
+  }
+
+  .category-list {
+    display: flex;
+    margin-right: -.55rem;
+    padding-right: .55rem;
+  }
+
+  .catalog-result-count {
+    display: block;
+  }
+
+  .catalog-collaborations {
+    gap: 1.6rem;
+  }
+
+  .catalog-filter-options.compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Aquí el encabezado deja de ser fijo (ver storefront-shell.module.css). */
+@media (max-width: 600px) {
+  .catalog-command-bar {
+    top: .4rem;
+  }
+
+  .catalog-card .card-copy {
+    padding: .55rem .6rem .25rem;
+  }
+
+  .catalog-card .card-copy h2 {
+    font-size: 1.12rem;
+  }
+
+  .catalog-card .item-meta {
+    font-size: .68rem;
+  }
+
+  .catalog-card-offer {
+    padding: .1rem .6rem .45rem;
+  }
+
+  .catalog-card-price {
+    font-size: 1.45rem;
+  }
+
+  .catalog-card-actions {
+    gap: .3rem;
+    grid-template-columns: minmax(0, 1fr) 2.5rem;
+    padding: 0 .6rem .6rem;
+  }
+
+  .cart-add.cart-add-compact {
+    font-size: 1rem;
+    padding: 0 .55rem;
+  }
+
+  .storefront-view .catalog-card .catalog-detail-link {
+    font-size: .78rem;
+  }
+
+  /* El nombre de la colección importa más que el conteo; "Ver todos" ya lleva a la lista. */
+  .catalog-collaboration-heading>span {
+    display: none;
+  }
+
+  .catalog-collaboration-heading h2 {
+    font-size: 1.45rem;
+  }
+}
+
+/* Dos columnas también en los teléfonos más angostos; toda la tarjeta ya abre el detalle. */
+@media (max-width: 370px) {
+  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .catalog-card-actions { grid-template-columns: minmax(0, 1fr); }
+
+  .storefront-view .catalog-card .catalog-detail-icon { display: none; }
+}
+
+@media (max-width: 480px) {
+  .catalog-scopes button {
+    font-size: .82rem;
+    padding: 0 .7rem;
+  }
+
+  .catalog-scopes small,
+  .catalog-scopes svg {
+    display: none;
+  }
+
+  .catalog-collection-showcase {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .catalog-collection-art {
+    height: 8rem;
+  }
+
+  .catalog-collection-copy {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .25rem;
+    padding: .6rem .7rem .7rem;
+  }
+
+  .catalog-collection-copy strong {
+    font-size: .88rem;
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-card .item-art img,
+  .catalog-card,
+  .cart-add.cart-add-compact {
+    transition: none;
+  }
+
+  .catalog-card:hover,
+  .catalog-card:hover .item-art img {
+    transform: none;
+  }
+}

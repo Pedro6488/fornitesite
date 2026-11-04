@@ -1,17 +1,46 @@
-import Link from "next/link";
+import { Trophy } from "lucide-react";
+import { CommunityNav } from "@/features/community/components/community-nav";
 import { getPublicCustomerRanking } from "@/features/community/server/get-community";
-import { BackButton } from "@/shared/components/back-button";
+import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 
 export const dynamic = "force-dynamic";
 
+const PODIUM_LABELS = ["1er lugar", "2do lugar", "3er lugar"] as const;
+
+const deliveries = (count: number) => `${count} ${count === 1 ? "entrega" : "entregas"}`;
+
 export default async function CustomersPage() {
   const customers = await getPublicCustomerRanking();
+  const podium = customers.slice(0, 3);
+  const rest = customers.slice(3);
   return <section className="community-page">
-    <header className="community-heading"><p className="eyebrow">COMUNIDAD SIGFRIEDLOOTBOX</p><h1>Clientes recurrentes</h1><p>Ranking público basado únicamente en pedidos entregados.</p></header>
-    <BackButton fallbackHref="/fortnite#catalogo" label="Atrás" />
-    <nav className="community-tabs" aria-label="Comunidad"><Link className="active" href="/clientes">Clientes</Link><Link href="/referencias">Referencias</Link></nav>
-    {customers.length === 0 ? <p className="notice">Aún no hay entregas registradas.</p> : <div className="community-ranking">
-      {customers.map((customer, index) => <article key={`${customer.recipientName}-${index}`}><span>{index === 0 ? "1er lugar" : index === 1 ? "2do lugar" : index === 2 ? "3er lugar" : `#${index + 1}`}</span><strong>{customer.recipientName}</strong><b>{customer.deliveredOrders} {customer.deliveredOrders === 1 ? "entrega" : "entregas"}</b></article>)}
-    </div>}
+    <GamePageHero
+      slim
+      word="CLIENTES"
+      accent="#8b5cf6"
+      eyebrow="Comunidad SigfriedLootBox"
+      title={<>Clientes <span>recurrentes</span></>}
+      lead="Ranking público basado únicamente en pedidos entregados."
+    />
+    <div className="loot-page-body">
+      <CommunityNav active="clientes" summary={customers.length > 0 ? `${customers.length} ${customers.length === 1 ? "cliente" : "clientes"}` : undefined} />
+      {customers.length === 0 ? <div className="loot-empty"><span aria-hidden="true"><Trophy size={26} /></span><h2>Aún no hay entregas registradas</h2><p>El ranking aparecerá cuando se confirmen las primeras entregas.</p></div> : <>
+        <ol className="community-podium">
+          {podium.map((customer, index) => <li data-place={index + 1} key={`${customer.recipientName}-${index}`}>
+            <span className="community-place" aria-hidden="true">{index + 1}</span>
+            <small>{PODIUM_LABELS[index]}</small>
+            <strong>{customer.recipientName}</strong>
+            <b>{deliveries(customer.deliveredOrders)}</b>
+          </li>)}
+        </ol>
+        {rest.length > 0 && <ol className="community-ranking" start={4}>
+          {rest.map((customer, index) => <li key={`${customer.recipientName}-${index}`}>
+            <span>#{index + 4}</span>
+            <strong>{customer.recipientName}</strong>
+            <b>{deliveries(customer.deliveredOrders)}</b>
+          </li>)}
+        </ol>}
+      </>}
+    </div>
   </section>;
 }

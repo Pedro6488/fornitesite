@@ -1,27 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import Image from "next/image";
-import Link from "next/link";
-import {
-  Globe2,
-  MessageCircle,
-  ShieldCheck,
-} from "lucide-react";
-import { CartLink } from "@/features/cart/components/cart-link";
 import { CommerceStateProvider } from "@/features/commerce/components/commerce-state-provider";
 import { IdentitySheet } from "@/features/commerce/components/identity-sheet";
 import { MobileNavigation } from "@/features/commerce/components/mobile-navigation";
-import { AdminHeaderLogout } from "@/features/admin/components/admin-header-logout";
-import { AccountHeaderMenu } from "@/features/auth/components/account-header-menu";
 import { RegionProvider } from "@/features/pricing/components/region-provider";
-import { RegionSelector } from "@/features/pricing/components/region-selector";
+import { StorefrontHeader } from "@/features/storefront/components/storefront-header";
+import { StorefrontFooter } from "@/features/storefront/components/storefront-footer";
+import { RouteScrollTracker } from "@/features/storefront/components/route-scroll";
 import "./globals.css";
 import "./system-action-bar.css";
 import "./order-operations.css";
+import "./storefront-motion.css";
+import "./catalog-experience.css";
+import "./game-theme.css";
+import "./site-system.css";
 
 export const metadata: Metadata = {
   title: "SigfriedLootBox",
   icons: { icon: "/games/logofin.png", apple: "/games/logofin.png" },
-  description: "Elige tu juego en SigfriedLootBox y explora nuestro catálogo de Fortnite.",
+  description: "Objetos de Fortnite, diamantes de Free Fire y códigos de Robux. Elige tu juego y encuentra tu próximo loot en SigfriedLootBox.",
 };
 export const viewport: Viewport = {
   width: "device-width",
@@ -37,105 +33,10 @@ export default function RootLayout({
       <body>
         <RegionProvider>
           <CommerceStateProvider>
-          <div className="utility-bar">
-            <div className="utility-bar-inner">
-              <span className="trust-message">
-                <ShieldCheck aria-hidden="true" size={15} />
-                Compra protegida
-              </span>
-              <div className="utility-links">
-                <a
-                  className="whatsapp-contact"
-                  href={`https://wa.me/${whatsapp}`}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <MessageCircle aria-hidden="true" size={14} />
-                  WhatsApp <strong>56 1985 7749</strong>
-                </a>
-                <a
-                  className="utility-social"
-                  href="https://www.facebook.com/profile.php?id=61584935750211&locale=es_LA"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Globe2 aria-hidden="true" size={13} />
-                  Facebook
-                </a>
-              </div>
-            </div>
-          </div>
-          <header className="site-header">
-            <div className="site-header-inner">
-              <Link
-                className="brand"
-                href="/"
-                aria-label="SigfriedLootBox, inicio"
-              >
-                <Image
-                  className="brand-mark"
-                  src="/games/logofin.png"
-                  alt=""
-                  width={64}
-                  height={64}
-                  priority
-                />
-                <span>
-                  Sigfried<span className="brand-accent">LootBox</span>
-                </span>
-              </Link>
-              <div className="mobile-header-actions">
-                <RegionSelector />
-                <AccountHeaderMenu />
-                <AdminHeaderLogout />
-              </div>
-              <nav
-                className="desktop-navigation"
-                aria-label="Navegación principal"
-              >
-                <RegionSelector />
-                <CartLink />
-                <AccountHeaderMenu />
-                <AdminHeaderLogout />
-              </nav>
-            </div>
-          </header>
-          <main>{children}</main>
-          <footer className="site-footer">
-            <div className="footer-brand">
-              <strong>
-                Sigfried<span>LootBox</span>
-              </strong>
-              <p>
-                Objetos, precio claro y acompañamiento durante toda tu compra.
-              </p>
-            </div>
-            <nav className="footer-links" aria-label="Enlaces del pie">
-              <Link href="/fortnite#catalogo">Tienda</Link>
-              <Link href="/favoritos">Favoritos</Link>
-              <Link href="/clientes">Clientes</Link>
-              <Link href="/referencias">Referencias</Link>
-              <Link href="/carrito">Carrito</Link>
-            </nav>
-            <div className="footer-contact">
-              <a
-                href={`https://wa.me/${whatsapp}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <MessageCircle aria-hidden="true" size={15} />
-                WhatsApp 56 1985 7749
-              </a>
-              <a
-                href="https://www.facebook.com/profile.php?id=61584935750211&locale=es_LA"
-                target="_blank"
-                rel="noreferrer"
-              >
-                <Globe2 aria-hidden="true" size={15} />
-                Facebook
-              </a>
-            </div>
-          </footer>
+          <StorefrontHeader contactUrl={`https://wa.me/${whatsapp}`} />
+          <RouteScrollTracker />
+          <main id="main-content">{children}</main>
+          <StorefrontFooter contactUrl={`https://wa.me/${whatsapp}`} />
           <MobileNavigation />
           <IdentitySheet />
           </CommerceStateProvider>
