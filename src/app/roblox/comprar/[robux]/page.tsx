@@ -1,3 +1,4 @@
+import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ROBLOX_PACKAGES } from "@/features/roblox/packages";
@@ -11,5 +12,5 @@ export default async function RobloxPurchasePage({ params }: { params: Promise<{
   const pack = ROBLOX_PACKAGES.find((item) => String(item.robux) === robux);
   if (!pack) notFound();
   const whatsapp = process.env.WHATSAPP_BUSINESS_NUMBER?.replace(/\D/g, "") || "5215619857749";
-  return <><GamesMenuLink /><RobloxCheckout pack={pack} whatsapp={whatsapp} /></>;
+  return <StorefrontTransition><GamesMenuLink /><RobloxCheckout pack={pack} whatsapp={whatsapp} /></StorefrontTransition>;
 }

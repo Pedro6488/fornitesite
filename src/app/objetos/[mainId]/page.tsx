@@ -1,3 +1,4 @@
+import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -55,7 +56,7 @@ export default async function ItemPage({
     .slice(0, 8);
 
   return (
-    <>
+    <StorefrontTransition>
       <section className="detail-shell">
         <div className="detail-visual">
           <div className="detail-navigation">
@@ -161,6 +162,6 @@ export default async function ItemPage({
           </section>
         )}
       </div>
-    </>
+    </StorefrontTransition>
   );
 }

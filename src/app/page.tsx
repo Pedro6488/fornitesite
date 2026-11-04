@@ -1,75 +1,90 @@
+import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowUpRight, Gamepad2, ShieldCheck } from "lucide-react";
+import { StorefrontLink as Link } from "@/features/storefront/components/storefront-link";
+import { ArrowDown, ArrowRight, ArrowUpRight, Check, ChevronDown, Gamepad2, MessageCircle, MousePointer2, ShieldCheck, Sparkles, Ticket } from "lucide-react";
+import { ContinueGameLink } from "@/features/storefront/components/continue-game-link";
+import { FREE_FIRE_STARTING_PRICE, ROBLOX_STARTING_PRICE, formatStoreMxn } from "@/features/storefront/games";
 import styles from "./home.module.css";
 
-const games = [
-  { name: "Call of Duty", subtitle: "MOBILE", image: "/games/call-of-duty.jpg", href: null },
-  { name: "Free Fire", subtitle: "BATTLE ROYALE", image: "/games/free-fire.jpg", href: "/free-fire" },
-  { name: "Roblox", subtitle: "UN MUNDO DE POSIBILIDADES", image: null, href: "/roblox" },
+const questions = [
+  { question: "¿Cómo recibo mi compra?", answer: "Depende de tu juego. En Fortnite eliges objetos y validamos tu ID y la disponibilidad antes del pago. En Free Fire la recarga se solicita con tu nick y UID. En Roblox recibes un código canjeable; el pago y la entrega se coordinan por WhatsApp." },
+  { question: "¿Necesito compartir mi contraseña?", answer: "No. Para estos productos no necesitas compartir tu contraseña. Fortnite utiliza tu ID de jugador; Free Fire, tu nick y UID. Para los códigos de Roblox solo solicitamos un contacto para coordinar la compra." },
+  { question: "¿Puedo comprar productos de distintos juegos juntos?", answer: "El carrito corresponde a los objetos de Fortnite. Los paquetes de Free Fire y Roblox se solicitan por separado a través de WhatsApp. Antes de continuar verás el producto, el precio y los datos necesarios." },
 ];
 
 export default function HomePage() {
   const whatsapp = process.env.WHATSAPP_BUSINESS_NUMBER?.replace(/\D/g, "") || "5215619857749";
-  const contactUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Hola, tengo una duda sobre SigfriedLootBox. ¿Me puede ayudar un administrador?")}`;
-  return (
-    <section className={styles.home} aria-labelledby="games-title">
-      <div className={styles.content}>
-        <div className={styles.intro}>
-          <div>
-            <p className={styles.eyebrow}><Gamepad2 size={18} aria-hidden="true" /> TU SIGUIENTE PARTIDA EMPIEZA AQUÍ</p>
-            <h1 id="games-title" className={styles.title}>Tu juego.<br /><span>Tu próximo loot.</span></h1>
-            <p className={styles.purchaseTrust}>
-              <ShieldCheck size={22} aria-hidden="true" />
-              <span>Tu compra <strong>100% protegida</strong>, segura y rápida.</span>
-            </p>
-          </div>
-          <div className={styles.introContact}>
-            <p className={styles.description}>Elige tu universo y encuentra algo para hacerlo tuyo.</p>
-            <a className={styles.contactButton} href={contactUrl} target="_blank" rel="noopener noreferrer">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className={styles.whatsappIcon}>
-                <path d="M20.52 3.48A11.9 11.9 0 0 0 12.05 0C5.47 0 .12 5.35.12 11.93c0 2.1.55 4.16 1.6 5.97L.02 24l6.25-1.64a11.9 11.9 0 0 0 5.77 1.47h.01c6.58 0 11.93-5.35 11.93-11.93 0-3.19-1.24-6.18-3.46-8.42ZM12.05 21.82a9.9 9.9 0 0 1-5.04-1.38l-.36-.21-3.71.97.99-3.62-.24-.37a9.9 9.9 0 0 1-1.52-5.28c0-5.46 4.44-9.9 9.9-9.9a9.83 9.83 0 0 1 7 2.9 9.83 9.83 0 0 1 2.9 7c0 5.45-4.44 9.89-9.92 9.89Zm5.43-7.41c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.89-.8-1.49-1.78-1.66-2.08-.17-.3-.02-.46.13-.61.13-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.2-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.87 1.22 3.07c.15.2 2.1 3.21 5.09 4.5.71.3 1.26.48 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35Z" />
-              </svg>
-              <span><strong>¿Tienes dudas?</strong><span>Contacta con un administrador</span></span>
-              <ArrowUpRight size={18} aria-hidden="true" />
-            </a>
-          </div>
+  const contactUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Hola, tengo una duda sobre una compra en SigfriedLootBox.")}`;
+  return <StorefrontTransition><div className={styles.home} data-storefront-home>
+    <nav className={styles.quickGames} aria-label="Acceso rápido a juegos"><Link href="/fortnite#catalogo">Fortnite</Link><Link href="/free-fire">Free Fire</Link><Link href="/roblox">Roblox</Link></nav>
+    <section className={styles.hero} aria-labelledby="home-title">
+      <div className={styles.heroCopy}>
+        <p className={styles.heroBadge}><span className={styles.statusDot} /> PARA LOS QUE VIVEN EL JUEGO <span>/ 001</span></p>
+        <h1 id="home-title">TU PRÓXIMO<br /><span>DROP</span> ESTÁ<br />AQUÍ<span className={styles.titlePeriod}>.</span></h1>
+        <p className={styles.heroDescription}>Tu squad reconoce tu nombre.<br /><strong>Que también reconozca tu estilo.</strong><br /><span>Objetos de Fortnite, diamantes y Robux.</span></p>
+        <div className={styles.heroActions}>
+          <ContinueGameLink className={styles.primary} />
+          <a href="#juegos" className={styles.secondary}>Todos los juegos <ArrowDown size={17} aria-hidden="true" /></a>
         </div>
-        <div className={styles.sectionHeading}><h2>Explora los juegos</h2><span>ELIGE TU UNIVERSO</span></div>
-        <ul className={styles.games}>
-          {games.map((game) => {
-            const Card = game.href ? Link : "div";
-            return (
-            <li key={game.name}>
-              <Card href={game.href ?? "#"} className={[styles.card, game.href ? styles.available : ""].join(" ")}>
-                {game.image ? (
-                  <Image src={game.image} alt="" fill sizes="(max-width: 800px) 50vw, 25vw" className={styles.art} />
-                ) : (
-                  <div className={styles.robloxArt} aria-hidden="true"><span /><b>ROBLOX</b></div>
-                )}
-                <span className={[styles.badge, game.href ? styles.live : ""].join(" ")}>{game.href ? <><i /> {game.name === "Roblox" ? "Robux disponibles" : "Diamantes disponibles"}</> : "Próximamente"}</span>
-                <div className={styles.cardContent}>
-                  <p className={styles.subtitle}>{game.subtitle}</p>
-                  <h3>{game.name}</h3>
-                  {game.href ? <span className={styles.action}>{game.name === "Roblox" ? "Ver Robux" : "Ver diamantes"} <ArrowUpRight size={19} aria-hidden="true" /></span> : <span className={styles.comingSoon}>Un nuevo mundo está por llegar</span>}
-                </div>
-              </Card>
-            </li>
-          );})}
-          <li>
-            <Link href="/fortnite" className={[styles.card, styles.available].join(" ")} aria-label="Fortnite: abrir catálogo">
-              <Image src="/games/fortnite.jpg" alt="" fill sizes="(max-width: 800px) 50vw, 25vw" className={styles.art} priority />
-              <span className={[styles.badge, styles.live].join(" ")}><i /> Catálogo disponible</span>
-              <div className={styles.cardContent}>
-                <p className={styles.subtitle}>HAZ TUYA LA PARTIDA</p>
-                <h3>Fortnite</h3>
-                <span className={styles.action}>Explorar catálogo <ArrowUpRight size={19} aria-hidden="true" /></span>
-              </div>
-            </Link>
-          </li>
-        </ul>
-        <p className={styles.note}><span aria-hidden="true" /> Más juegos, más posibilidades. Esto apenas comienza.</p>
+        <p className={styles.heroReassurance}><ShieldCheck size={15} aria-hidden="true" /> Tu contraseña se queda contigo.</p>
+      </div>
+      <div className={styles.heroVisual}>
+        <span className={styles.visualWord} aria-hidden="true">PLAY</span>
+        <Link href="/fortnite#catalogo" className={styles.featuredGame} aria-label="Explorar el catálogo de Fortnite">
+          <Image src="/games/fortnite.jpg" alt="" fill sizes="(max-width: 650px) 100vw, 50vw" className={styles.featuredArt} preload />
+          <div className={styles.featuredTop}><span><i /> FORTNITE</span><ArrowUpRight size={27} aria-hidden="true" /></div>
+          <div className={styles.featuredBottom}><span>EL SIGUIENTE DROP ES TUYO</span><strong>HAZ TU<br />ENTRADA.</strong><span className={styles.featuredCta}>Explorar objetos <ArrowRight size={19} aria-hidden="true" /></span></div>
+        </Link>
+        <div className={styles.lootSticker} aria-hidden="true"><Sparkles size={20} /><span>NEW LOOK.<br /><strong>SAME PLAYER.</strong></span></div>
+        <div className={styles.visualCaption}><span>01 / FORTNITE</span><span>OBJETOS · ESTILO · TU PARTIDA</span></div>
       </div>
     </section>
-  );
+
+    <section className={styles.arena} id="juegos" aria-labelledby="games-title">
+
+      <div className={styles.launcher}>
+        <div className={styles.launcherBar}>
+          <div><p className={styles.eyebrow}>ELIGE TU UNIVERSO</p><h2 id="games-title">¿DÓNDE JUGAMOS?</h2></div>
+          <span className={styles.available}><i aria-hidden="true" /> 3 juegos disponibles</span>
+        </div>
+        <div className={styles.games}>
+          <Link href="/fortnite#catalogo" className={`${styles.game} ${styles.fortnite}`} aria-label="Fortnite: explorar objetos de la tienda">
+            <Image src="/games/fortnite.jpg" alt="" fill sizes="(max-width: 650px) 100vw, 45vw" className={styles.gameArt} />
+            <div className={styles.gameTop}><span className={styles.gameTag}>OBJETOS DE LA TIENDA</span><span className={styles.gameNumber}>01</span></div>
+            <div className={styles.gameContent}><span className={styles.gameKicker}>TU ESTILO SALTA DEL BUS.</span><h3>FORTNITE</h3><p>Ese objeto que tenías en mente. <br />Encuéntralo. Hazlo tuyo.</p><span className={styles.gameAction}>Explorar objetos <ArrowUpRight size={22} aria-hidden="true" /></span></div>
+          </Link>
+          <Link href="/free-fire" className={`${styles.game} ${styles.freefire}`} aria-label="Free Fire: ver paquetes de diamantes">
+            <Image src="/games/free-fire.jpg" alt="" fill sizes="(max-width: 650px) 50vw, 30vw" className={styles.gameArt} />
+            <div className={styles.gameTop}><span className={styles.gameTag}>DIAMANTES</span><span className={styles.gameNumber}>02</span></div>
+            <div className={styles.gameContent}><span className={styles.gameKicker}>LISTO PARA EL BOOYAH.</span><h3>FREE FIRE</h3><p>Desde <strong>{formatStoreMxn(FREE_FIRE_STARTING_PRICE)} MXN</strong></p><span className={styles.gameAction}>Ver diamantes <ArrowUpRight size={22} aria-hidden="true" /></span></div>
+          </Link>
+          <Link href="/roblox" className={`${styles.game} ${styles.roblox}`} aria-label="Roblox: ver códigos canjeables de Robux">
+            <div className={styles.robloxGrid} aria-hidden="true" />
+            <div className={styles.robloxSymbol} aria-hidden="true"><span /></div>
+            <div className={styles.gameTop}><span className={styles.gameTag}>CÓDIGOS DE ROBUX</span><span className={styles.gameNumber}>03</span></div>
+            <div className={styles.gameContent}><span className={styles.gameKicker}>IMAGINA LO QUE SIGUE.</span><h3>ROBLOX</h3><p>Desde <strong>{formatStoreMxn(ROBLOX_STARTING_PRICE)} MXN</strong></p><span className={styles.gameAction}>Ver Robux <ArrowUpRight size={22} aria-hidden="true" /></span></div>
+          </Link>
+        </div>
+        <div className={styles.launcherFoot}><span><ShieldCheck size={15} aria-hidden="true" /> Fortnite: compra en la web</span><span><MessageCircle size={15} aria-hidden="true" /> Free Fire y Roblox: solicitud por WhatsApp</span><span className={styles.soon}>Call of Duty <small>PRÓXIMAMENTE</small></span></div>
+      </div>
+      <div className={styles.arenaCaption}><span>YOUR GAME</span><span aria-hidden="true">✳</span><strong>YOUR RULES</strong><span aria-hidden="true">✳</span><span>YOUR LOOT</span></div>
+    </section>
+
+    <section className={styles.how} id="como-comprar" aria-labelledby="how-title">
+      <div className={styles.sectionIntro}><p className={styles.eyebrow}>MENOS VUELTAS. MÁS PARTIDAS.</p><h2 id="how-title">EL LOOT ES TUYO.<br /><span>EL PROCESO, CLARO.</span></h2><p>Cada juego tiene su forma de entrega.<br />Te decimos lo que necesitas antes de comprar.</p></div>
+      <div className={styles.steps}>
+        <article><div className={styles.stepIcon}><MousePointer2 size={23} aria-hidden="true" /><span>01</span></div><h3>Encuentra lo tuyo</h3><p>Elige tu juego y explora objetos, diamantes o códigos. El precio, siempre a la vista.</p></article>
+        <article><div className={styles.stepIcon}><ShieldCheck size={23} aria-hidden="true" /><span>02</span></div><h3>Confirma los detalles</h3><p>En Fortnite validamos tu ID. Para recargas y códigos, coordinas la solicitud por WhatsApp.</p></article>
+        <article><div className={styles.stepIcon}><Ticket size={23} aria-hidden="true" /><span>03</span></div><h3>Completa tu compra</h3><p>Confirma el pago y la entrega según tu juego. Si tienes una duda, estamos a un mensaje.</p></article>
+      </div>
+    </section>
+
+    <section className={styles.support} aria-labelledby="support-title">
+      <div className={styles.supportVisual} aria-hidden="true"><div className={styles.chatBubble}><Gamepad2 size={24} /><span>¿Listo para la siguiente?</span><Check size={16} /></div><div className={styles.chatReply}><span>Vamos por ese loot.</span><Sparkles size={18} /></div><span className={styles.supportStamp}>PLAYER<br />SUPPORT ↗</span></div>
+      <div><p className={styles.eyebrow}>DEL OTRO LADO, HAY PERSONAS.</p><h2 id="support-title">NO JUEGAS<br />SOLO.</h2><p>Pregunta por un producto o por cómo comprar.<br />Te ayudamos a encontrar el siguiente paso.</p><a className={styles.primary} href={contactUrl} target="_blank" rel="noopener noreferrer">Hablemos por WhatsApp <ArrowUpRight size={18} aria-hidden="true" /></a></div>
+    </section>
+
+    <section className={styles.faq} aria-labelledby="faq-title"><div><p className={styles.eyebrow}>ANTES DE DARLE PLAY</p><h2 id="faq-title">SIN DUDAS.<br /><span>DALE PLAY.</span></h2><Link href="/referencias">Conoce las referencias <ArrowRight size={17} aria-hidden="true" /></Link></div><div className={styles.questions}>{questions.map(({question, answer}) => <details key={question}><summary>{question}<ChevronDown size={18} aria-hidden="true" /></summary><p>{answer}</p></details>)}</div></section>
+    <div className={styles.signoff} aria-hidden="true">SEE YOU IN GAME<span>↗</span></div>
+  </div></StorefrontTransition>;
 }

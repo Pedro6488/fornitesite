@@ -1,3 +1,4 @@
+import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FREE_FIRE_PACKAGES } from "@/features/free-fire/packages";
@@ -16,5 +17,5 @@ export default async function FreeFirePurchasePage({ params }: { params: Promise
   const profileExampleSrc = existsSync(path.join(process.cwd(), "public/games/free-fire-profile-example.png"))
     ? "/games/free-fire-profile-example.png"
     : undefined;
-  return <><GamesMenuLink /><FreeFireCheckout pack={pack} whatsapp={whatsapp} profileExampleSrc={profileExampleSrc} /></>;
+  return <StorefrontTransition><GamesMenuLink /><FreeFireCheckout pack={pack} whatsapp={whatsapp} profileExampleSrc={profileExampleSrc} /></StorefrontTransition>;
 }

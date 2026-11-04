@@ -1,5 +1,6 @@
+import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { StorefrontLink as Link } from "@/features/storefront/components/storefront-link";
 import Image from "next/image";
 import { ArrowUpRight, ShoppingBag } from "lucide-react";
 import { GamesMenuLink } from "@/shared/components/games-menu-link";
@@ -13,13 +14,13 @@ export const metadata: Metadata = {
 
 export default function FreeFirePage() {
   return (
-    <>
+    <StorefrontTransition>
     <GamesMenuLink />
     <div className={styles.page}>
       <header className={styles.intro}>
         <p className={styles.eyebrow}>FREE FIRE · DIAMANTES</p>
         <h1>Más diamantes.<br /><span>Más posibilidades.</span></h1>
-        <p>Elige tu paquete, completa tu nick y UID, y continúa con tu compra.</p>
+        <p>Elige tus diamantes y solicita la recarga por WhatsApp. Necesitarás tu nick y UID.</p>
       </header>
       <section aria-labelledby="packages-title">
         <div className={styles.heading}><h2 id="packages-title">Elige tu recarga</h2><span>PRECIOS EN MXN</span></div>
@@ -37,7 +38,7 @@ export default function FreeFirePage() {
                   <h3>{quantity} <span>diamantes</span></h3>
                   <p className={styles.price}>${price}<span>MXN</span></p>
                   <Link href={`/free-fire/comprar/${diamonds}`} className={styles.buy} aria-label={`Comprar ${quantity} diamantes por $${price} MXN`}>
-                    <ShoppingBag size={17} aria-hidden="true" /> Comprar <ArrowUpRight size={17} aria-hidden="true" />
+                    <ShoppingBag size={17} aria-hidden="true" /> Solicitar <ArrowUpRight size={17} aria-hidden="true" />
                   </Link>
                 </div>
               </li>
@@ -47,6 +48,6 @@ export default function FreeFirePage() {
         <p className={styles.note}>Necesitarás el nick y UID de tu perfil de Free Fire. Revisa tus datos antes de enviar la solicitud al administrador.</p>
       </section>
     </div>
-    </>
+    </StorefrontTransition>
   );
 }

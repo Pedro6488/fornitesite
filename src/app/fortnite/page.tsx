@@ -1,3 +1,4 @@
+import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
 import { CatalogGrid } from "@/features/catalog/components/catalog-grid";
 import { CatalogHero } from "@/features/catalog/components/catalog-hero";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
@@ -8,7 +9,7 @@ export default async function FortnitePage() {
   const items = await catalog.list();
 
   return (
-    <>
+    <StorefrontTransition>
       <GamesMenuLink />
       <CatalogHero items={items} />
       <section className="shop-section" id="catalogo">
@@ -18,6 +19,6 @@ export default async function FortnitePage() {
         </div>
         <CatalogGrid items={items} />
       </section>
-    </>
+    </StorefrontTransition>
   );
 }

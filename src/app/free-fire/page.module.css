@@ -1,16 +1,16 @@
 .page { max-width: 1520px; margin: 0 auto; padding: 36px clamp(20px, 5vw, 80px) 64px; }
 .back { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
 .back:hover { color: var(--cyan); }
-.intro { padding: 48px 0; }
-.eyebrow { color: var(--accent); font-size: 11px; font-weight: 850; letter-spacing: .17em; margin: 0 0 20px; }
-.intro h1 { max-width: none; font-size: clamp(42px, 5.6vw, 76px); line-height: 1.02; margin: 0 0 24px; }
-.intro h1 span { color: var(--cyan); }
+.intro { padding: 15px 0 30px; }
+.eyebrow { color: #d6ff45; font-size: 11px; font-weight: 850; letter-spacing: .17em; margin: 0 0 20px; }
+.intro h1 { max-width: none; font-family: "Loot Display", Impact, sans-serif; text-transform: uppercase; font-weight: 800; font-size: clamp(42px, 5.6vw, 70px); line-height: 1.02; margin: 0 0 24px; }
+.intro h1 span { color: #d6ff45; }
 .intro > p:last-child { color: var(--muted); line-height: 1.7; max-width: 550px; }
 .heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
 .heading h2 { font-size: 20px; margin: 0; letter-spacing: -.03em; }
 .heading > span { color: var(--muted); font-size: 10px; font-weight: 750; letter-spacing: .13em; }
 .packages { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-.package { border: 1px solid #ffffff12; border-radius: 20px; overflow: hidden; background: linear-gradient(150deg, #1a2440, #101526 75%); min-width: 0; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.package { border: 1px solid #ffffff12; border-radius: 18px; overflow: hidden; background: linear-gradient(150deg, #1a2440, #101526 75%); min-width: 0; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
 .art { position: relative; aspect-ratio: 1.5; background: #101725; overflow: hidden; isolation: isolate; }
 .diamondImage { object-fit: cover; object-position: center; transition: transform .5s ease, filter .5s ease; }
 .art::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, #090c1920, transparent 45%, #172039); }
@@ -25,15 +25,15 @@
 .game { font-size: 9px; color: var(--muted); font-weight: 800; letter-spacing: .17em; margin: 0 0 12px; }
 .details h3 { font-size: 36px; letter-spacing: -.05em; line-height: 1.05; margin: 0; }
 .details h3 span { display: block; font-size: 15px; font-weight: 600; letter-spacing: 0; color: var(--muted); margin-top: 8px; }
-.price { font-size: 30px; font-weight: 850; color: var(--accent); margin: 26px 0 20px; letter-spacing: -.04em; }
+.price { font-size: 30px; font-weight: 850; color: #d6ff45; margin: 26px 0 20px; letter-spacing: -.04em; }
 .price span { font-size: 11px; color: var(--muted); margin-left: 6px; letter-spacing: 0; }
-.buy { display: flex; justify-content: center; align-items: center; gap: 8px; background: var(--accent); color: #101321; font-size: 12px; font-weight: 850; border-radius: 10px; min-height: 46px; padding: 12px 8px; }
-.buy:hover { background: #ffe466; }
+.buy { display: flex; justify-content: center; align-items: center; gap: 8px; background: #d6ff45; color: #101321; font-size: 12px; font-weight: 850; border-radius: 999px; min-height: 46px; padding: 12px 8px; }
+.buy:hover { background: #e6ff97; }
 .buy:focus-visible, .back:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
 .note { color: var(--muted); font-size: 12px; line-height: 1.8; max-width: 650px; text-align: center; margin: 28px auto 0; }
 @media (max-width: 1050px) { .packages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 540px) {
-  .intro { padding: 36px 0; }
+  .intro { padding: 8px 0 25px; }
   .packages { gap: 12px; }
   .details { padding: 16px 12px; }
   .number { left: 10px; top: 10px; padding: 4px 7px; }
@@ -45,3 +45,6 @@
   .package, .diamondImage { transition: none; }
   .package:hover, .package:focus-within .diamondImage, .package:hover .diamondImage { transform: none; }
 }
+
+.buy { transition: background 180ms, transform 180ms; }.buy:active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) { .buy { transition: none; }.buy:active { transform: none; } }
