@@ -1,15 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { GamePageHero } from "@/features/storefront/components/game-page-hero";
-import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { useSearchParams } from "next/navigation";
-import { SupervisorOrders } from "@/features/orders/components/supervisor-orders";
-import { IdentityReviewQueue } from "@/features/admin/components/identity-review-queue";
-import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
+import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { RefreshCw } from "lucide-react";
+import { AdminPageHeader } from "./admin-shell";
+import { useAdminData, useAdminRequest } from "./use-admin-request";
 
-type Tab = "summary" | "orders" | "identities" | "carts" | "favorites" | "prices" | "customers" | "references";
-type Metrics = { pendingOrders: number; receiptsToReview: number; activeCarts: number; abandonedCarts: number; favorites: number };
 type Cart = { id: string; status: string; updated_at: string; abandoned: boolean; estimatedAmountMxnCents: number; shopping_cart_items: { item_main_id: string }[]; validation: null | { display_name: string; platform: string; status: string }; commerce_sessions: null | { whatsapp: string | null; user_id: string | null; merged_into: string | null } };
 type FavoriteDetail = { item_main_id: string; itemName: string; commerce_session_id: string; created_at: string; commerce_sessions: null | { user_id: string | null } };
 type PriceRule = { id: string; min_vbucks: number; max_vbucks: number | null; mxn_per_hundred: number | string; active: boolean; effective_from: string; effective_until: string | null };
@@ -18,68 +14,61 @@ type CatalogOption = { mainId: string; name: string; type: string; imageUrl?: st
 type CustomerRankingEntry = { recipientName: string; customerEmail: string | null; deliveredOrders: number };
 type DeliveryReference = { id: string; recipientName: string; recipientId: string; comment: string | null; createdAt: string; imageUrls: string[]; items: { item_name: string; item_image_url: string | null; quantity: number }[] };
 
-export function CommerceAdminDashboard() {
-  const supabase = useMemo(() => getSupabaseBrowser(), []);
-  const searchParams = useSearchParams();
-  const [tab, setTab] = useState<Tab>("summary");
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-  const [loadedTab, setLoadedTab] = useState<Tab | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [customerFrom, setCustomerFrom] = useState("");
-  const [customerTo, setCustomerTo] = useState("");
-  const loadRequest = useRef(0);
-  const requestedTab = searchParams.get("tab");
-  const selectedCartId = searchParams.get("cart");
-  const selectedOrderId = searchParams.get("order");
+/**
+ * Secciones de «Tienda» de la consola. Cada una carga sus propios datos y vive en su propia ruta.
+ */
+function StoreSection({ title, lead, error, loading, ready, loadingText, reload, children }: {
+  title: string; lead: string; error: string | null; loading: boolean; ready: boolean; loadingText: string; reload: () => Promise<void>; children: ReactNode;
+}) {
+  return <>
+    <AdminPageHeader title={title} lead={lead} actions={<button type="button" className="ac-ghost" disabled={loading} onClick={() => void reload()}><RefreshCw aria-hidden="true" size={15} />{loading ? "Actualizando…" : "Actualizar"}</button>} />
+    {error && <p className="ac-notice is-error" role="alert">{error}</p>}
+    {!ready && !error && <p className="ac-notice">{loadingText}</p>}
+    {ready && <div className="ac-legacy">{children}</div>}
+  </>;
+}
 
-  useEffect(() => {
-    if (!["summary", "orders", "identities", "carts", "favorites", "prices", "customers", "references"].includes(requestedTab ?? "")) return;
-    const frame = window.requestAnimationFrame(() => setTab(requestedTab as Tab));
-    return () => window.cancelAnimationFrame(frame);
-  }, [requestedTab]);
+export function AdminCarts({ focusCartId }: { focusCartId?: string | null }) {
+  const { data, error, loading, reload } = useAdminData<{ carts?: Cart[] }>("/api/admin/dashboard?view=carts");
+  return <StoreSection title="Carritos" lead="Carritos activos y abandonados, con su valor estimado." error={error} loading={loading} ready={Boolean(data)} loadingText="Cargando carritos…" reload={reload}>
+    <Carts carts={data?.carts ?? []} focusCartId={focusCartId ?? null} />
+  </StoreSection>;
+}
 
-  const request = useCallback(async (url: string, init?: RequestInit) => {
-    const session = (await supabase?.auth.getSession())?.data.session;
-    if (!session) throw new Error("La sesión de administrador expiró.");
-    const response = await fetch(url, { ...init, headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${session.access_token}` } });
-    const body = await response.json();
-    if (!response.ok) throw new Error(body.error ?? "No fue posible completar la operación.");
-    return body;
-  }, [supabase]);
+export function AdminFavorites() {
+  const { data, error, loading, reload } = useAdminData<{ ranking?: { itemMainId: string; itemName: string; count: number }[]; favorites?: FavoriteDetail[] }>("/api/admin/dashboard?view=favorites");
+  return <StoreSection title="Favoritos" lead="Los objetos que más guardan los clientes." error={error} loading={loading} ready={Boolean(data)} loadingText="Cargando favoritos…" reload={reload}>
+    <Favorites ranking={data?.ranking ?? []} favorites={data?.favorites ?? []} />
+  </StoreSection>;
+}
 
-  const load = useCallback(async (activeTab: Tab) => {
-    if (activeTab === "orders" || activeTab === "identities") return;
-    const requestId = ++loadRequest.current;
-    setMessage(null); setData(null); setLoadedTab(null);
-    try {
-      const customerParams = new URLSearchParams({ view: "customers" });
-      if (customerFrom) customerParams.set("from", customerFrom);
-      if (customerTo) customerParams.set("to", customerTo);
-      const response = await request(activeTab === "prices" ? "/api/admin/prices" : activeTab === "references" ? "/api/admin/references" : activeTab === "customers" ? `/api/admin/dashboard?${customerParams}` : `/api/admin/dashboard?view=${activeTab}`);
-      if (requestId === loadRequest.current) { setData(response); setLoadedTab(activeTab); }
-    }
-    catch (error) { if (requestId === loadRequest.current) setMessage(error instanceof Error ? error.message : "No fue posible cargar el dashboard."); }
-  }, [customerFrom, customerTo, request]);
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => void load(tab));
-    return () => window.cancelAnimationFrame(frame);
-  }, [load, tab]);
+export function AdminPrices() {
+  const request = useAdminRequest();
+  const { data, error, loading, reload } = useAdminData<{ rules?: PriceRule[]; overrides?: PriceOverride[] }>("/api/admin/prices");
+  return <StoreSection title="Precios" lead="Tarifa por rango de paVos y precios especiales por objeto." error={error} loading={loading} ready={Boolean(data)} loadingText="Cargando precios…" reload={reload}>
+    <Prices data={{ rules: data?.rules ?? [], overrides: data?.overrides ?? [] }} request={request} reload={reload} />
+  </StoreSection>;
+}
 
-  return <section className="admin-dashboard">
-    <GamePageHero slim word="ADMIN" accent="#8b5cf6" eyebrow="Operación segura" title={<>Panel de <span>comercio</span></>} lead="Pedidos, intención de compra y precios desde una sola fuente." aside={<button className="secondary-button admin-refresh" onClick={() => void load(tab)}>Actualizar</button>} />
-    <div className="admin-dashboard-body">
-    <nav className="admin-tabs" aria-label="Secciones del dashboard">{(["summary", "orders", "identities", "carts", "favorites", "prices", "customers", "references"] as Tab[]).map((value) => <button key={value} className={tab === value ? "active" : ""} onClick={() => setTab(value)}>{({ summary: "Resumen", orders: "Pedidos", identities: "Revisión de IDs", carts: "Carritos", favorites: "Favoritos", prices: "Precios", customers: "Clientes", references: "Referencias" } as const)[value]}</button>)}</nav>
-    {message && <p className="notice error">{message}</p>}
-    {tab === "summary" && loadedTab === "summary" && data && <Summary metrics={data.metrics as Metrics} />}
-    {tab === "orders" && <SupervisorOrders focusOrderId={selectedOrderId} />}
-    {tab === "identities" && <IdentityReviewQueue />}
-    {tab === "carts" && loadedTab === "carts" && data && <Carts carts={(data.carts as Cart[] | undefined) ?? []} focusCartId={selectedCartId} />}
-    {tab === "favorites" && loadedTab === "favorites" && data && <Favorites ranking={(data.ranking as { itemMainId: string; itemName: string; count: number }[] | undefined) ?? []} favorites={(data.favorites as FavoriteDetail[] | undefined) ?? []} />}
-    {tab === "prices" && loadedTab === "prices" && data && <Prices data={{ rules: (data.rules as PriceRule[] | undefined) ?? [], overrides: (data.overrides as PriceOverride[] | undefined) ?? [] }} request={request} reload={() => load("prices")} />}
-    {tab === "customers" && <Customers customers={loadedTab === "customers" ? ((data?.customers as CustomerRankingEntry[] | undefined) ?? []) : null} from={customerFrom} to={customerTo} onFromChange={setCustomerFrom} onToChange={setCustomerTo} reload={() => load("customers")} />}
-    {tab === "references" && <References references={loadedTab === "references" ? ((data?.references as DeliveryReference[] | undefined) ?? []) : null} />}
-    </div>
-  </section>;
+export function AdminCustomers() {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [applied, setApplied] = useState({ from: "", to: "" });
+  const parameters = new URLSearchParams({ view: "customers" });
+  if (applied.from) parameters.set("from", applied.from);
+  if (applied.to) parameters.set("to", applied.to);
+  const { data, error, loading, reload } = useAdminData<{ customers?: CustomerRankingEntry[] }>(`/api/admin/dashboard?${parameters}`);
+  return <StoreSection title="Clientes" lead="Destinatarios ordenados por entregas recibidas." error={error} loading={loading} ready loadingText="" reload={reload}>
+    <Customers customers={data && !loading ? data.customers ?? [] : null} from={from} to={to} onFromChange={setFrom} onToChange={setTo}
+      reload={async () => { if (applied.from === from && applied.to === to) await reload(); else setApplied({ from, to }); }} />
+  </StoreSection>;
+}
+
+export function AdminReferences() {
+  const { data, error, loading, reload } = useAdminData<{ references?: DeliveryReference[] }>("/api/admin/references");
+  return <StoreSection title="Referencias" lead="Evidencias que envían los clientes después de recibir su regalo." error={error} loading={loading} ready loadingText="" reload={reload}>
+    <References references={data ? data.references ?? [] : null} />
+  </StoreSection>;
 }
 
 function References({ references }: { references: DeliveryReference[] | null }) {
@@ -116,11 +105,6 @@ function Customers({ customers, from, to, onFromChange, onToChange, reload }: { 
       </article>)}
     </div>}
   </section>;
-}
-
-function Summary({ metrics }: { metrics: Metrics }) {
-  const cards = [["Pedidos activos", metrics.pendingOrders], ["Comprobantes por revisar", metrics.receiptsToReview], ["Carritos con actividad", metrics.activeCarts], ["Carritos sin actividad +24 h", metrics.abandonedCarts], ["Favoritos guardados", metrics.favorites]];
-  return <div className="admin-metrics">{cards.map(([label, value]) => <article key={label}><small>{label}</small><strong>{value}</strong></article>)}</div>;
 }
 
 function Carts({ carts, focusCartId }: { carts: Cart[]; focusCartId: string | null }) {

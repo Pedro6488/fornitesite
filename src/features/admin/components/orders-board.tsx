@@ -1,0 +1,113 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { FileCheck2, FileX2, RefreshCw, Search } from "lucide-react";
+import type { OrderStatus } from "@/features/orders/domain/order";
+import { formatAge, formatMoney, shortOrderId } from "../application/format";
+import { ORDER_QUEUES, ORDER_STATUS_LABELS, primaryActionOf, type OrderQueueId } from "../application/order-queues";
+import { AdminPageHeader } from "./admin-shell";
+import { useOrderActions } from "./order-actions";
+import { useAdminData } from "./use-admin-request";
+
+type OrderRow = {
+  id: string; created_at: string; updated_at: string | null; customer_email: string | null; epic_display_name: string;
+  recipient_platform: string; contact_whatsapp: string | null; amount_mxn_cents: number; status: OrderStatus;
+  order_items: { item_name: string; item_image_url: string | null; quantity: number }[]; hasReceipt: boolean;
+};
+type OrdersResponse = { orders: OrderRow[]; counts: Record<OrderQueueId, number>; hasMore: boolean };
+
+const REFRESH_MS = 60_000;
+const CLOSED_PAGE_SIZE = 50;
+
+function isQueue(value: string | undefined): value is OrderQueueId {
+  return ORDER_QUEUES.some((queue) => queue.id === value);
+}
+
+export function OrdersBoard({ initialQueue }: { initialQueue?: string }) {
+  const [queue, setQueue] = useState<OrderQueueId>(isQueue(initialQueue) ? initialQueue : "payment");
+  const [query, setQuery] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [limit, setLimit] = useState(CLOSED_PAGE_SIZE);
+  const closed = queue === "closed";
+
+  const parameters = new URLSearchParams({ queue });
+  if (closed) {
+    parameters.set("limit", String(limit));
+    if (from) parameters.set("from", from);
+    if (to) parameters.set("to", to);
+  }
+  const { data, error, loading, reload } = useAdminData<OrdersResponse>(`/api/admin/orders?${parameters}`, { refreshMs: closed ? undefined : REFRESH_MS });
+  const actions = useOrderActions({ reload });
+  const current = ORDER_QUEUES.find((entry) => entry.id === queue)!;
+
+  function choose(next: OrderQueueId) {
+    setQueue(next);
+    setQuery("");
+    setLimit(CLOSED_PAGE_SIZE);
+    // La URL refleja la cola para poder compartirla o volver con el botón atrás.
+    window.history.replaceState(null, "", `/admin/pedidos?cola=${next}`);
+  }
+
+  const needle = query.trim().toLowerCase();
+  // Mientras llega otra cola no se muestran los pedidos de la anterior.
+  const loaded = data?.orders.every((order) => current.statuses.includes(order.status)) ? data.orders : [];
+  const visible = loaded.filter((order) => !needle
+    || `${order.id} ${order.epic_display_name} ${order.contact_whatsapp ?? ""} ${order.customer_email ?? ""} ${order.order_items.map((item) => item.item_name).join(" ")}`.toLowerCase().includes(needle));
+
+  return <>
+    <AdminPageHeader title="Pedidos" lead="Cada pedido está en una sola cola, según lo que le falta."
+      actions={<button type="button" className="ac-ghost" disabled={loading} onClick={() => void reload()}><RefreshCw aria-hidden="true" size={15} />{loading ? "Actualizando…" : "Actualizar"}</button>} />
+
+    <div className="ac-queue-tabs" role="tablist" aria-label="Colas de pedidos">
+      {ORDER_QUEUES.map((entry) => <button key={entry.id} type="button" role="tab" aria-selected={queue === entry.id} onClick={() => choose(entry.id)}>
+        {entry.label}{entry.id !== "closed" && data && <b>{data.counts[entry.id]}</b>}
+      </button>)}
+    </div>
+    <p className="ac-queue-hint">{current.hint}</p>
+
+    <div className="ac-toolbar">
+      <label className="ac-search"><Search aria-hidden="true" size={16} /><input type="search" aria-label="Buscar en esta cola" placeholder="Buscar por pedido, ID de Epic, WhatsApp u objeto" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+      {closed && <>
+        <label className="ac-date">Desde<input type="date" value={from} max={to || undefined} onChange={(event) => setFrom(event.target.value)} /></label>
+        <label className="ac-date">Hasta<input type="date" value={to} min={from || undefined} onChange={(event) => setTo(event.target.value)} /></label>
+      </>}
+    </div>
+
+    {actions.notice && <p className={`ac-notice${actions.notice.error ? " is-error" : " is-success"}`} role="status">{actions.notice.text}</p>}
+    {error && <p className="ac-notice is-error" role="alert">{error}</p>}
+    {!data && !error && <p className="ac-notice">Cargando pedidos…</p>}
+    {data && visible.length === 0 && !loading && <p className="ac-empty">{needle ? "Ningún pedido de esta cola coincide con la búsqueda." : closed ? "No hay pedidos cerrados en estas fechas." : "No hay pedidos en esta cola."}</p>}
+
+    <ul className={`ac-orders${loading ? " is-refreshing" : ""}`}>
+      {visible.map((order) => {
+        const primary = primaryActionOf(order.status);
+        const units = order.order_items.reduce((total, item) => total + item.quantity, 0);
+        return <li key={order.id}>
+          <Link className="ac-order-main" href={`/admin/pedidos/${order.id}`}>
+            <span className="ac-order-top"><span className={`ac-pill status-${order.status}`}>{ORDER_STATUS_LABELS[order.status]}</span><b>{shortOrderId(order.id)}</b><time dateTime={order.created_at}>{closed ? new Date(order.created_at).toLocaleDateString("es-MX", { dateStyle: "medium" }) : `Creado ${formatAge(order.created_at)}`}</time></span>
+            <strong>{order.epic_display_name}</strong>
+            <span className="ac-order-items">{order.order_items.map((item) => `${item.quantity}× ${item.item_name}`).join(" · ") || "Sin objetos"}</span>
+            <span className="ac-order-meta">
+              {units} {units === 1 ? "objeto" : "objetos"}
+              {queue === "payment" && (order.hasReceipt
+                ? <span className="ac-flag is-ok"><FileCheck2 aria-hidden="true" size={14} />Con comprobante</span>
+                : <span className="ac-flag"><FileX2 aria-hidden="true" size={14} />Sin comprobante todavía</span>)}
+            </span>
+          </Link>
+          <div className="ac-order-side">
+            <strong>{formatMoney(order.amount_mxn_cents)}</strong>
+            {primary && <button type="button" className={order.hasReceipt || primary.kind === "deliver" || queue !== "payment" ? "ac-primary" : "ac-secondary"} disabled={actions.busyId === order.id} onClick={() => actions.ask(order, primary)}>
+              {actions.busyId === order.id ? "Guardando…" : primary.label}
+            </button>}
+            <Link className="ac-link" href={`/admin/pedidos/${order.id}`}>Abrir pedido</Link>
+          </div>
+        </li>;
+      })}
+    </ul>
+
+    {closed && data?.hasMore && !needle && <button type="button" className="ac-ghost ac-more-button" disabled={loading} onClick={() => setLimit((value) => value + CLOSED_PAGE_SIZE)}>{loading ? "Cargando…" : "Cargar más pedidos"}</button>}
+    {actions.modal}
+  </>;
+}
