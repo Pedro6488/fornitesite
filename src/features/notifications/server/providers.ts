@@ -104,7 +104,7 @@ async function deliverOrderTelegram(database: SupabaseClient, job: OutboxJob, ev
   const orderId = String(job.payload.orderId ?? job.aggregate_id ?? "");
   const order = await getTelegramOrder(database, orderId);
   if (!order) return cancelOutboxJob(database, job.id);
-  const url = new URL("/admin", appUrl()); url.searchParams.set("tab", "orders"); url.searchParams.set("order", order.id);
+  const url = new URL(`/admin/pedidos/${order.id}`, appUrl());
   const heading = event === "created" ? "🛒 Nuevo pedido" : "🧾 Comprobante recibido";
   const messageId = await sendTelegram(`${heading} #${order.id.slice(0, 8).toUpperCase()}\n\nObjetos:\n${orderItemsText(order) || "• Sin objetos"}\n\nID de entrega: ${order.epic_display_name}\nTeléfono: ${order.contact_whatsapp}\nTotal: ${(order.amount_mxn_cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}`, url.toString());
   await markOutboxSent(database, job.id, messageId);
