@@ -61,6 +61,7 @@ export async function POST(request: Request) {
     let provider = "manual";
     let providerReceiverId = known.find((validation) => validation.provider_receiver_id)?.provider_receiver_id ?? null;
     let friendRequestedAt = previousRequest?.friend_requested_at ?? null;
+    let friendRequestRecord: Record<string, unknown> | null = null;
 
     if (status === "manual_review" && automaticDeliveryEnabled()) {
       if (previousRequest) {
@@ -86,11 +87,10 @@ export async function POST(request: Request) {
               friendRequestedAt = new Date().toISOString();
               status = outcome.kind === "pending" ? "pending_friendship" : outcome.kind;
               giftableAt = outcome.kind === "waiting" ? outcome.giftableAt : null;
-              const { error: recordError } = await database.from("friend_request_records").upsert({
+              friendRequestRecord = {
                 epic_account_id: epicAccountId, validation_id: validationId, requested_at: friendRequestedAt,
                 provider_response: { mode: "fnshop", code: response.code, call_id: response.callId },
-              }, { onConflict: "epic_account_id" });
-              if (recordError) console.error("identity.friend-request.record.failed", recordError);
+              };
             }
           } catch (error) {
             // FN Shop caído, sin respuesta o cuota en reserva: el equipo lo revisa a mano.
@@ -120,6 +120,11 @@ export async function POST(request: Request) {
       : database.from("game_id_validations").insert({ id: validationId, ...payload });
     const { data, error } = await operation.select(VALIDATION_FIELDS).single();
     if (error || !data) throw error ?? new Error("No se guardó el ID.");
+    if (friendRequestRecord) {
+      // Después de guardar el ID: el registro apunta a él. Mantiene a la vista de revisión manual al tanto.
+      const { error: recordError } = await database.from("friend_request_records").upsert(friendRequestRecord, { onConflict: "epic_account_id" });
+      if (recordError) console.error("identity.friend-request.record.failed", recordError);
+    }
     const { error: activeError } = await database.from("commerce_sessions")
       .update({ active_game_id_validation_id: data.id, last_seen_at: new Date().toISOString() }).eq("id", session.id);
     if (activeError) throw activeError;
