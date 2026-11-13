@@ -19,8 +19,9 @@ export async function sendOperationsAlert(database: SupabaseClient, text: string
  * Cliente de FN Shop listo para usar, o `null` si en este entorno no se puede
  * (sin modo automático, sin key en producción, o fuera de producción sin simulador).
  */
-export function getFnShopClient(database: SupabaseClient): FnShopClient | null {
-  if (!automaticDeliveryEnabled()) return null;
+export function getFnShopClient(database: SupabaseClient, options: { requireAutomatic?: boolean } = {}): FnShopClient | null {
+  // «Verificar key» se permite antes de encender la entrega automática, para ligar el dominio.
+  if ((options.requireAutomatic ?? true) && !automaticDeliveryEnabled()) return null;
   const config = fnShopConfigFromEnv();
   if (!fnShopAvailable(config)) return null;
   return new FnShopClient(database, config, { alert: (text, dedupeKey) => sendOperationsAlert(database, text, dedupeKey) });

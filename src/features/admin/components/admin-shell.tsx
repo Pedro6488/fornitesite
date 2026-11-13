@@ -62,7 +62,8 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryM
   const counts = data?.counts ?? null;
   const quota = data?.fnshop ?? null;
   const ModeIcon = deliveryMode === "automatic" ? Zap : Hand;
-  const operation = deliveryMode === "automatic" ? [...OPERATION, FNSHOP_ITEM] : OPERATION;
+  // FN Shop se ve también en modo manual: ahí se verifica la key antes de encender la entrega automática.
+  const operation = [...OPERATION, FNSHOP_ITEM];
   const quotaRatio = quota && quota.limit > 0 ? quota.used / quota.limit : 0;
 
   useEffect(() => {
@@ -123,7 +124,8 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryM
       {moreOpen && <div className="ac-more" id="ac-more">
         <button type="button" className="ac-more-backdrop" aria-label="Cerrar menú" onClick={() => setMoreOpen(false)} />
         <nav aria-label="Tienda y sesión">
-          {deliveryMode === "automatic" && <><p>Entrega</p><NavLink item={FNSHOP_ITEM} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} /></>}
+          <p>Entrega</p>
+          <NavLink item={FNSHOP_ITEM} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} />
           <p>Tienda</p>
           {STORE.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} />)}
           <p>Sesión</p>

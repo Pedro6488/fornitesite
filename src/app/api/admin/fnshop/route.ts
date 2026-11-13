@@ -70,8 +70,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const staff = await authorizeStaff(request);
   if (!staff) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  const client = getFnShopClient(staff.database);
-  if (!client) return NextResponse.json({ error: "FN Shop no está disponible en este entorno (falta modo automático, key de producción o simulador)." }, { status: 409 });
+  const client = getFnShopClient(staff.database, { requireAutomatic: false });
+  if (!client) return NextResponse.json({ error: "FN Shop no está disponible en este entorno: en producción falta FNSHOP_API_KEY; fuera de producción falta FNSHOP_SIMULATE=true." }, { status: 409 });
   try {
     const response = await client.call("verify_license", {}, { trigger: "admin", actorId: staff.user.id });
     const ok = response.result !== false;
