@@ -48,7 +48,7 @@ const transitions: Readonly<Record<OrderStatus, readonly OrderStatus[]>> = {
   validating_delivery: ["delivering", "manual_review", "refund_pending"],
   delivering: ["delivered", "reconciling", "manual_review"],
   reconciling: ["delivered", "manual_review"],
-  manual_review: ["awaiting_transfer", "canceled"],
+  manual_review: ["awaiting_transfer", "canceled", "ready_to_send", "delivered", "refund_pending"],
   refund_pending: ["refunded", "manual_review"],
   delivered: [], refunded: [], rejected: [], expired: [], canceled: []
 };
