@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { AdminActionModal } from "@/shared/components/admin-action-modal";
 import type { OrderStatus } from "@/features/orders/domain/order";
-import { formatMoney, shortOrderId } from "../application/format";
+import { formatOrderMoney, shortOrderId, type OrderMoney } from "../application/format";
 import type { OrderAction } from "../application/order-queues";
 import { useAdminCounts } from "./admin-shell";
 import { useAdminRequest } from "./use-admin-request";
 
-export type ActionableOrder = { id: string; status: OrderStatus; amount_mxn_cents: number; epic_display_name: string };
+export type ActionableOrder = OrderMoney & { id: string; status: OrderStatus; epic_display_name: string };
 
 /**
  * Confirmación y ejecución de una acción sobre un pedido.
@@ -58,11 +58,11 @@ export function useOrderActions({ reload }: { reload: () => void | Promise<void>
     confirmLabel: "Sí, ya lo entregué",
   } : action.to === "paid" ? {
     title: "Confirmar pago",
-    description: `Confirma que el depósito de ${formatMoney(order.amount_mxn_cents)} del pedido ${shortOrderId(order.id)} ya aparece en la cuenta del banco. El pedido pasará a «Por entregar».`,
+    description: `Confirma que el depósito de ${formatOrderMoney(order)} del pedido ${shortOrderId(order.id)} ya aparece en la cuenta del banco. El pedido pasará a «Por entregar».`,
     confirmLabel: "Sí, el pago llegó",
   } : {
     title: action.label,
-    description: `Pedido ${shortOrderId(order.id)} · ${formatMoney(order.amount_mxn_cents)} · ${order.epic_display_name}`,
+    description: `Pedido ${shortOrderId(order.id)} · ${formatOrderMoney(order)} ·${order.epic_display_name}`,
     confirmLabel: action.label,
   };
   const requiresNote = action?.kind === "status" && action.requiresNote;

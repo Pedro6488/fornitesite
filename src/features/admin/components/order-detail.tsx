@@ -5,17 +5,17 @@ import Link from "next/link";
 import { ExternalLink, FileCheck2, FileX2 } from "lucide-react";
 import { DeliveryTicketActions } from "@/features/orders/components/delivery-ticket-actions";
 import type { OrderStatus } from "@/features/orders/domain/order";
-import { formatDateTime, formatMoney, shortOrderId } from "../application/format";
+import { formatDateTime, formatItemMoney, formatOrderMoney, shortOrderId } from "../application/format";
 import { ORDER_QUEUES, ORDER_STATUS_LABELS, primaryActionOf, queueOf, secondaryActionsOf } from "../application/order-queues";
 import { AdminPageHeader } from "./admin-shell";
 import { useOrderActions } from "./order-actions";
 import { useAdminData } from "./use-admin-request";
 
-type OrderItem = { item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number };
+type OrderItem = { item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null };
 type OrderDetailData = {
   id: string; created_at: string; paid_at: string | null; delivered_at: string | null; customer_email: string | null;
   epic_display_name: string; epic_account_id: string; recipient_platform: string; contact_whatsapp: string | null;
-  amount_mxn_cents: number; status: OrderStatus; order_items: OrderItem[];
+  amount_mxn_cents: number; currency?: "MXN" | "USD"; amount_usd_cents?: number | null; status: OrderStatus; order_items: OrderItem[];
   receipt: { url: string | null; mimeType: string | null; createdAt: string } | null;
   deliveryFeedback: { comment: string | null; createdAt: string; imageUrl: string | null } | null;
   history: { action: string; created_at: string; after_data: { status?: string; notes?: string } | null }[];
@@ -63,7 +63,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
         </ol>
       </div>
       <div className="ac-next-actions">
-        <strong>{formatMoney(order.amount_mxn_cents)}</strong>
+        <strong>{formatOrderMoney(order)}</strong>
         {primary && <button type="button" className="ac-primary" disabled={busy} onClick={() => actions.ask(order, primary)}>{actions.busyId === order.id ? "Guardando…" : primary.label}</button>}
         {secondary.length > 0 && <details className="ac-other">
           <summary>Otras acciones</summary>
@@ -74,7 +74,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
 
     <div className="ac-grid-2 ac-detail">
       <section className="ac-card" aria-labelledby="ac-receipt-title">
-        <header className="ac-card-head"><div><h2 id="ac-receipt-title">Comprobante de pago</h2><p>El depósito en el banco debe ser de {formatMoney(order.amount_mxn_cents)}.</p></div></header>
+        <header className="ac-card-head"><div><h2 id="ac-receipt-title">Comprobante de pago</h2><p>El depósito en el banco debe ser de {formatOrderMoney(order)}.</p></div></header>
         {order.receipt ? <>
           <p className="ac-flag is-ok"><FileCheck2 aria-hidden="true" size={15} />Enviado por el cliente el {formatDateTime(order.receipt.createdAt)}</p>
           {order.receipt.url
@@ -104,7 +104,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
         {order.order_items.map((item, index) => <li key={`${item.item_main_id}-${index}`}>
           <span className="ac-thumb is-large">{item.item_image_url ? <Image src={item.item_image_url} alt="" width={56} height={56} unoptimized /> : <b aria-hidden="true">{item.item_name.slice(0, 1)}</b>}</span>
           <div><strong>{item.quantity}× {item.item_name}</strong><small>{item.vbucks_price.toLocaleString("es-MX")} paVos</small></div>
-          <span>{formatMoney(item.unit_amount_mxn_cents * item.quantity)}</span>
+          <span>{formatItemMoney(order.currency, item)}</span>
           <Link className="ac-link" href={`/objetos/${encodeURIComponent(item.item_main_id)}?from=${encodeURIComponent("/admin")}`} target="_blank">Ver en la tienda</Link>
         </li>)}
       </ul>

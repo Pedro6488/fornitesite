@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { FileCheck2, FileX2, RefreshCw, Search } from "lucide-react";
 import type { OrderStatus } from "@/features/orders/domain/order";
-import { formatAge, formatMoney, shortOrderId } from "../application/format";
+import { formatAge, formatOrderMoney, shortOrderId } from "../application/format";
 import { ORDER_QUEUES, ORDER_STATUS_LABELS, primaryActionOf, type OrderQueueId } from "../application/order-queues";
 import { AdminPageHeader } from "./admin-shell";
 import { useOrderActions } from "./order-actions";
@@ -12,7 +12,7 @@ import { useAdminData } from "./use-admin-request";
 
 type OrderRow = {
   id: string; created_at: string; updated_at: string | null; customer_email: string | null; epic_display_name: string;
-  recipient_platform: string; contact_whatsapp: string | null; amount_mxn_cents: number; status: OrderStatus;
+  recipient_platform: string; contact_whatsapp: string | null; amount_mxn_cents: number; currency?: "MXN" | "USD"; amount_usd_cents?: number | null; status: OrderStatus;
   order_items: { item_name: string; item_image_url: string | null; quantity: number }[]; hasReceipt: boolean;
 };
 type OrdersResponse = { orders: OrderRow[]; counts: Record<OrderQueueId, number>; hasMore: boolean };
@@ -97,7 +97,7 @@ export function OrdersBoard({ initialQueue }: { initialQueue?: string }) {
             </span>
           </Link>
           <div className="ac-order-side">
-            <strong>{formatMoney(order.amount_mxn_cents)}</strong>
+            <strong>{formatOrderMoney(order)}</strong>
             {primary && <button type="button" className={order.hasReceipt || primary.kind === "deliver" || queue !== "payment" ? "ac-primary" : "ac-secondary"} disabled={actions.busyId === order.id} onClick={() => actions.ask(order, primary)}>
               {actions.busyId === order.id ? "Guardando…" : primary.label}
             </button>}

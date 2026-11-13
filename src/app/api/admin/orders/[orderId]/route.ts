@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ orde
 
   const { data: order, error } = await staff.database
     .from("orders")
-    .select("id,created_at,paid_at,delivered_at,customer_email,epic_display_name,epic_account_id,recipient_platform,contact_whatsapp,amount_mxn_cents,status,order_items(item_main_id,item_name,item_image_url,vbucks_price,quantity,unit_amount_mxn_cents),transfer_receipts(id,storage_path,mime_type,created_at),delivery_feedback(comment,image_storage_path,created_at)")
+    .select("id,created_at,paid_at,delivered_at,customer_email,epic_display_name,epic_account_id,recipient_platform,contact_whatsapp,amount_mxn_cents,currency,amount_usd_cents,status,order_items(item_main_id,item_name,item_image_url,vbucks_price,quantity,unit_amount_mxn_cents,unit_amount_usd_cents),transfer_receipts(id,storage_path,mime_type,created_at),delivery_feedback(comment,image_storage_path,created_at)")
     .eq("id", orderId)
     .maybeSingle();
   if (error) return NextResponse.json({ error: "No fue posible consultar el pedido." }, { status: 503 });

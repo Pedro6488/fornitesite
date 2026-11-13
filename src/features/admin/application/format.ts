@@ -4,6 +4,25 @@ export function formatMoney(cents: number): string {
   return (cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: cents % 100 === 0 ? 0 : 2 });
 }
 
+export type OrderMoney = { currency?: "MXN" | "USD" | null; amount_mxn_cents: number; amount_usd_cents?: number | null };
+
+/**
+ * Importe de un pedido en la moneda en que se cobró: los pedidos en dólares muestran
+ * el monto guardado en USD, nunca una conversión. Sin monto en USD, cae a pesos.
+ */
+export function formatOrderMoney(order: OrderMoney, quantity = 1): string {
+  if (order.currency === "USD" && order.amount_usd_cents && order.amount_usd_cents > 0) {
+    const cents = order.amount_usd_cents * quantity;
+    return `${(cents / 100).toLocaleString("es-MX", { style: "currency", currency: "USD", maximumFractionDigits: cents % 100 === 0 ? 0 : 2 })} USD`;
+  }
+  return formatMoney(order.amount_mxn_cents * quantity);
+}
+
+/** Importe de un objeto del pedido, en la moneda del pedido. */
+export function formatItemMoney(currency: OrderMoney["currency"], item: { unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null; quantity: number }): string {
+  return formatOrderMoney({ currency, amount_mxn_cents: item.unit_amount_mxn_cents, amount_usd_cents: item.unit_amount_usd_cents }, item.quantity);
+}
+
 /** $12.9 K, $1.2 M: para ejes y cifras grandes. */
 export function formatCompactMoney(cents: number): string {
   const pesos = cents / 100;
