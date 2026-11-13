@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
-import { validationStatus } from "@/features/eligibility/application/validation-status";
-import { selectBestAgentForCart } from "@/features/eligibility/domain/delivery-agent";
-import { getAgentProvider } from "@/features/eligibility/server/get-agent-provider";
 import { attachCommerceCookie, requireCommerceSession } from "@/shared/server/commerce-session";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
 import { queueOutboxJob } from "@/features/notifications/server/outbox";
@@ -54,22 +51,6 @@ export async function POST(request: Request) {
     });
     if (!offersRemainAvailable) {
       return attachCommerceCookie(NextResponse.json({ error: "Uno de los objetos dejó de estar disponible. Genera una nueva cotización." }, { status: 409 }), context.session);
-    }
-
-    if (process.env.FULFILLMENT_MODE === "fnshop") {
-      const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
-      const state = validationStatus(agents);
-      const selectedAgent = selectBestAgentForCart(agents, quote.total_vbucks, quoteLines.length);
-      await context.database.from("game_id_validations").update({
-        status: state.status,
-        giftable_at: state.giftableAt,
-        agents_snapshot: agents,
-        last_checked_at: new Date().toISOString()
-      }).eq("id", validation.id);
-      if (!selectedAgent) {
-        return attachCommerceCookie(NextResponse.json({ error: "El ID, saldo o capacidad cambiaron. Vuelve a revisar el pedido." }, { status: 409 }), context.session);
-      }
-      await context.database.from("checkout_quotes").update({ selected_agent_id: selectedAgent.id }).eq("id", quote.id);
     }
 
     const { data, error } = await context.database.rpc("create_order_from_quote", {
