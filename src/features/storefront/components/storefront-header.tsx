@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
 import { AccountHeaderMenu } from "@/features/auth/components/account-header-menu";
-import { AdminHeaderLogout } from "@/features/admin/components/admin-header-logout";
 import { CartLink } from "@/features/cart/components/cart-link";
 import { RegionSelector } from "@/features/pricing/components/region-selector";
 import styles from "./storefront-shell.module.css";
@@ -22,7 +21,7 @@ export function StorefrontHeader({ contactUrl }: { contactUrl: string }) {
         {hasRegion && <div className={styles.region}><RegionSelector /></div>}
         <div className={styles.cart}><CartLink label="Carrito Fortnite" /></div>
         <a className={styles.help} href={contactUrl} target="_blank" rel="noopener noreferrer">Hablemos <ArrowUpRight size={15} aria-hidden="true" /></a>
-        <AccountHeaderMenu /><AdminHeaderLogout />
+        <AccountHeaderMenu />
       </div>
     </div>
   </header>;

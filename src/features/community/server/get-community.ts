@@ -1,13 +1,17 @@
 import { rankCustomersByDeliveredOrders } from "@/features/admin/application/customer-ranking";
+import { getRankingMonth } from "../application/ranking-month";
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
 
-export async function getPublicCustomerRanking() {
+export async function getPublicCustomerRanking(now = new Date()) {
+  const { start, end } = getRankingMonth(now);
   const database = getSupabaseAdmin();
   if (!database) return [];
   const { data, error } = await database
     .from("orders")
     .select("epic_account_id,epic_display_name,customer_email,amount_mxn_cents,delivered_at,created_at")
     .eq("status", "delivered")
+    .gte("delivered_at", start)
+    .lt("delivered_at", end)
     .order("delivered_at", { ascending: false })
     .limit(5000);
   if (error) throw error;

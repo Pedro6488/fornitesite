@@ -1,11 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { CommerceStateProvider } from "@/features/commerce/components/commerce-state-provider";
-import { IdentitySheet } from "@/features/commerce/components/identity-sheet";
-import { MobileNavigation } from "@/features/commerce/components/mobile-navigation";
-import { RegionProvider } from "@/features/pricing/components/region-provider";
-import { StorefrontHeader } from "@/features/storefront/components/storefront-header";
-import { StorefrontFooter } from "@/features/storefront/components/storefront-footer";
-import { RouteScrollTracker } from "@/features/storefront/components/route-scroll";
+import { SiteFrame } from "@/features/storefront/components/site-frame";
 import "./globals.css";
 import "./system-action-bar.css";
 import "./order-operations.css";
@@ -31,16 +25,7 @@ export default function RootLayout({
   return (
     <html lang="es-MX" data-scroll-behavior="smooth">
       <body>
-        <RegionProvider>
-          <CommerceStateProvider>
-          <StorefrontHeader contactUrl={`https://wa.me/${whatsapp}`} />
-          <RouteScrollTracker />
-          <main id="main-content">{children}</main>
-          <StorefrontFooter contactUrl={`https://wa.me/${whatsapp}`} />
-          <MobileNavigation />
-          <IdentitySheet />
-          </CommerceStateProvider>
-        </RegionProvider>
+        <SiteFrame contactUrl={`https://wa.me/${whatsapp}`}>{children}</SiteFrame>
       </body>
     </html>
   );
