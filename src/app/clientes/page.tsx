@@ -1,3 +1,4 @@
+import { getRankingMonth } from "@/features/community/application/ranking-month";
 import { Trophy } from "lucide-react";
 import { CommunityNav } from "@/features/community/components/community-nav";
 import { getPublicCustomerRanking } from "@/features/community/server/get-community";
@@ -10,7 +11,9 @@ const PODIUM_LABELS = ["1er lugar", "2do lugar", "3er lugar"] as const;
 const deliveries = (count: number) => `${count} ${count === 1 ? "entrega" : "entregas"}`;
 
 export default async function CustomersPage() {
-  const customers = await getPublicCustomerRanking();
+  const now = new Date();
+  const customers = await getPublicCustomerRanking(now);
+  const { label } = getRankingMonth(now);
   const podium = customers.slice(0, 3);
   const rest = customers.slice(3);
   return <section className="community-page">
@@ -20,11 +23,11 @@ export default async function CustomersPage() {
       accent="#8b5cf6"
       eyebrow="Comunidad SigfriedLootBox"
       title={<>Clientes <span>recurrentes</span></>}
-      lead="Ranking público basado únicamente en pedidos entregados."
+      lead={`Ranking de ${label}, basado en pedidos entregados durante este mes.`}
     />
     <div className="loot-page-body">
       <CommunityNav active="clientes" summary={customers.length > 0 ? `${customers.length} ${customers.length === 1 ? "cliente" : "clientes"}` : undefined} />
-      {customers.length === 0 ? <div className="loot-empty"><span aria-hidden="true"><Trophy size={26} /></span><h2>Aún no hay entregas registradas</h2><p>El ranking aparecerá cuando se confirmen las primeras entregas.</p></div> : <>
+      {customers.length === 0 ? <div className="loot-empty"><span aria-hidden="true"><Trophy size={26} /></span><h2>Sin entregas este mes</h2><p>El ranking del mes aparece al confirmar las primeras entregas.</p></div> : <>
         <ol className="community-podium">
           {podium.map((customer, index) => <li data-place={index + 1} key={`${customer.recipientName}-${index}`}>
             <span className="community-place" aria-hidden="true">{index + 1}</span>

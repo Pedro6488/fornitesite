@@ -28,7 +28,7 @@ export async function GET(request: Request) {
   const closed = queue.data === "closed";
   let query = staff.database
     .from("orders")
-    .select("id,created_at,updated_at,customer_email,epic_display_name,recipient_platform,contact_whatsapp,amount_mxn_cents,status,order_items(item_name,item_image_url,quantity),transfer_receipts(id)")
+    .select("id,created_at,updated_at,customer_email,epic_display_name,recipient_platform,contact_whatsapp,amount_mxn_cents,currency,amount_usd_cents,status,order_items(item_name,item_image_url,quantity),transfer_receipts(id)")
     .in("status", statusesOf(queue.data))
     // En las colas abiertas va primero lo que lleva más tiempo esperando.
     .order("created_at", { ascending: !closed });
