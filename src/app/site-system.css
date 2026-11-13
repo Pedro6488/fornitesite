@@ -742,6 +742,18 @@ label {
   font-size: .9rem;
 }
 
+.order-item-delivery {
+  color: var(--muted);
+  display: block;
+  font-size: .74rem;
+  font-weight: 700;
+  margin-top: .15rem;
+}
+
+.order-item-delivery.is-sent {
+  color: #9cffcf;
+}
+
 .checkout-fee > span {
   color: var(--loot-body);
   font-size: .85rem;

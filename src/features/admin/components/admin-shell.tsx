@@ -4,11 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, Ellipsis, ExternalLink, Hand, Heart, LayoutDashboard, LogOut, ShoppingCart, Star, Tags, UserRoundCheck, Users, Zap, type LucideIcon } from "lucide-react";
+import { ClipboardList, Ellipsis, ExternalLink, Gift, Hand, Heart, LayoutDashboard, LogOut, ShoppingCart, Star, Tags, UserRoundCheck, Users, Zap, type LucideIcon } from "lucide-react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
+import type { DeliveryMode } from "../application/order-queues";
 import { useAdminData } from "./use-admin-request";
 
 type Counts = { receipts: number; deliver: number; problem: number; recipients: number };
+type Quota = { used: number; limit: number; simulated: boolean } | null;
+
+const DeliveryModeContext = createContext<DeliveryMode>("manual");
+/** Entrega manual o automática (FN Shop). Decide qué botón principal lleva cada pedido. */
+export function useDeliveryMode() { return useContext(DeliveryModeContext); }
 type NavItem = { href: string; label: string; icon: LucideIcon; badge?: (counts: Counts) => number };
 
 const OPERATION: readonly NavItem[] = [
@@ -16,6 +22,8 @@ const OPERATION: readonly NavItem[] = [
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList, badge: (counts) => counts.receipts + counts.deliver + counts.problem },
   { href: "/admin/destinatarios", label: "Destinatarios", icon: UserRoundCheck, badge: (counts) => counts.recipients },
 ];
+
+const FNSHOP_ITEM: NavItem = { href: "/admin/fnshop", label: "FN Shop", icon: Gift };
 
 const STORE: readonly NavItem[] = [
   { href: "/admin/precios", label: "Precios", icon: Tags },
@@ -45,14 +53,18 @@ function NavLink({ item, pathname, counts, onNavigate }: { item: NavItem; pathna
   </Link>;
 }
 
-export function AdminShell({ deliveryMode, children }: { deliveryMode: "manual" | "automatic"; children: ReactNode }) {
+export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryMode; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const { data, reload } = useAdminData<{ counts: Counts }>("/api/admin/overview?view=counts", { refreshMs: REFRESH_MS });
+  const { data, reload } = useAdminData<{ counts: Counts; fnshop?: Quota }>("/api/admin/overview?view=counts", { refreshMs: REFRESH_MS });
   const counts = data?.counts ?? null;
+  const quota = data?.fnshop ?? null;
   const ModeIcon = deliveryMode === "automatic" ? Zap : Hand;
+  // FN Shop se ve también en modo manual: ahí se verifica la key antes de encender la entrega automática.
+  const operation = [...OPERATION, FNSHOP_ITEM];
+  const quotaRatio = quota && quota.limit > 0 ? quota.used / quota.limit : 0;
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => setMoreOpen(false));
@@ -71,14 +83,14 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: "manual" 
     { href: "/admin/pedidos?cola=problem", label: "con problema", short: "con problema", count: counts?.problem ?? 0 },
   ];
 
-  return <AdminCountsContext.Provider value={{ refreshCounts: () => void reload() }}>
+  return <DeliveryModeContext.Provider value={deliveryMode}><AdminCountsContext.Provider value={{ refreshCounts: () => void reload() }}>
     <div className="ac-shell">
       <a className="ac-skip" href="#ac-main">Saltar al contenido</a>
       <aside className="ac-side">
         <Link className="ac-brand" href="/admin"><Image src="/games/logofin.png" width={30} height={30} alt="" /><span>SigfriedLootBox<small>Consola</small></span></Link>
         <nav aria-label="Operación">
           <p>Operación</p>
-          {OPERATION.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} />)}
+          {operation.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} />)}
         </nav>
         <nav aria-label="Tienda">
           <p>Tienda</p>
@@ -98,17 +110,22 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: "manual" 
           {strip.map((entry) => <Link key={entry.href} href={entry.href} className={entry.count > 0 ? "is-busy" : ""} aria-label={`${entry.count} ${entry.label}`}>
             <strong>{counts ? entry.count : "–"}</strong><span>{entry.short}</span>
           </Link>)}
+          {quota && <Link href="/admin/fnshop" className={`ac-quota${quotaRatio >= 0.85 ? " is-alert" : quotaRatio >= 0.7 ? " is-busy" : ""}`} aria-label={`FN Shop: ${quota.used} de ${quota.limit} requests usados${quota.simulated ? " (simulado)" : ""}`}>
+            <strong>{quota.used.toLocaleString("es-MX")}</strong><span>/ {quota.limit.toLocaleString("es-MX")} requests{quota.simulated ? " · simulado" : ""}</span>
+          </Link>}
         </div>
         <main id="ac-main" className="ac-main">{children}</main>
       </div>
 
       <nav className="ac-tabbar" aria-label="Secciones">
         {OPERATION.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} />)}
-        <button type="button" aria-expanded={moreOpen} aria-controls="ac-more" className={STORE.some((item) => isCurrent(pathname, item.href)) ? "is-current" : ""} onClick={() => setMoreOpen((open) => !open)}><Ellipsis aria-hidden="true" size={18} /><span>Más</span></button>
+        <button type="button" aria-expanded={moreOpen} aria-controls="ac-more" className={[...STORE, FNSHOP_ITEM].some((item) => isCurrent(pathname, item.href)) ? "is-current" : ""} onClick={() => setMoreOpen((open) => !open)}><Ellipsis aria-hidden="true" size={18} /><span>Más</span></button>
       </nav>
       {moreOpen && <div className="ac-more" id="ac-more">
         <button type="button" className="ac-more-backdrop" aria-label="Cerrar menú" onClick={() => setMoreOpen(false)} />
         <nav aria-label="Tienda y sesión">
+          <p>Entrega</p>
+          <NavLink item={FNSHOP_ITEM} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} />
           <p>Tienda</p>
           {STORE.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} />)}
           <p>Sesión</p>
@@ -117,7 +134,7 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: "manual" 
         </nav>
       </div>}
     </div>
-  </AdminCountsContext.Provider>;
+  </AdminCountsContext.Provider></DeliveryModeContext.Provider>;
 }
 
 /** Encabezado común de cada pantalla: qué es, para qué sirve y sus controles. */

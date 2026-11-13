@@ -75,7 +75,7 @@ const NEXT_STATUSES: Partial<Record<OrderStatus, readonly OrderStatus[]>> = {
   validating_delivery: ["delivering", "manual_review", "refund_pending"],
   delivering: ["delivered", "reconciling", "manual_review"],
   reconciling: ["delivered", "manual_review"],
-  manual_review: ["awaiting_transfer", "canceled"],
+  manual_review: ["awaiting_transfer", "refund_pending", "canceled"],
   refund_pending: ["refunded", "manual_review"],
 };
 
@@ -98,16 +98,25 @@ export function statusesOf(queue: OrderQueueId): readonly OrderStatus[] {
  * cliente queden igual que si se hubiera avanzado paso por paso.
  */
 export function manualDeliverySteps(from: OrderStatus): readonly OrderStatus[] {
-  if (from === "reconciling") return ["delivered"];
+  if (from === "reconciling" || from === "manual_review") return ["delivered"];
   const index = MANUAL_DELIVERY_PATH.indexOf(from);
   return index === -1 ? [] : MANUAL_DELIVERY_PATH.slice(index + 1);
 }
 
+export type DeliveryMode = "manual" | "automatic";
+
 export type OrderAction =
   | { kind: "status"; to: OrderStatus; label: string; tone: "primary" | "neutral" | "danger"; requiresNote: boolean }
-  | { kind: "deliver"; label: string; tone: "primary" };
+  /** Entrega a mano: el regalo ya se envió en Fortnite y el pedido recorre los estados que faltan. */
+  | { kind: "deliver"; label: string; tone: "primary" | "neutral" }
+  /** Entrega automática con FN Shop: pre-vuelo y envío. Con `confirmPayment`, antes confirma el pago. */
+  | { kind: "send"; label: string; tone: "primary"; confirmPayment: boolean }
+  /** Busca en el historial de FN Shop los envíos con resultado dudoso. */
+  | { kind: "reconcile"; label: string; tone: "primary" | "neutral" };
 
-function statusAction(to: OrderStatus): OrderAction {
+const PAYMENT_CONFIRMABLE: readonly OrderStatus[] = ["awaiting_transfer", "receipt_submitted", "transfer_review", "information_required"];
+
+function statusAction(to: OrderStatus): Extract<OrderAction, { kind: "status" }> {
   return {
     kind: "status",
     to,
@@ -118,8 +127,16 @@ function statusAction(to: OrderStatus): OrderAction {
 }
 
 /** El único botón principal de un pedido: el paso que lo saca de su cola. */
-export function primaryActionOf(status: OrderStatus): OrderAction | null {
-  if (manualDeliverySteps(status).length > 0) return { kind: "deliver", label: "Marcar como entregado", tone: "primary" };
+export function primaryActionOf(status: OrderStatus, mode: DeliveryMode = "manual"): OrderAction | null {
+  if (mode === "automatic") {
+    if (PAYMENT_CONFIRMABLE.includes(status)) return { kind: "send", label: "Confirmar pago y enviar regalo", tone: "primary", confirmPayment: true };
+    if (status === "paid" || status === "ready_to_send") return { kind: "send", label: "Enviar regalo", tone: "primary", confirmPayment: false };
+    if (status === "manual_review") return { kind: "send", label: "Reintentar envío", tone: "primary", confirmPayment: false };
+    if (status === "reconciling") return { kind: "reconcile", label: "Conciliar", tone: "primary" };
+    // validating_delivery y delivering: el sistema está enviando.
+    if (status === "validating_delivery" || status === "delivering") return null;
+  }
+  if (status !== "manual_review" && manualDeliverySteps(status).length > 0) return { kind: "deliver", label: "Marcar como entregado", tone: "primary" };
   const next = NEXT_STATUSES[status] ?? [];
   if (next.includes("paid")) return statusAction("paid");
   if (status === "refund_pending") return statusAction("refunded");
@@ -128,12 +145,23 @@ export function primaryActionOf(status: OrderStatus): OrderAction | null {
 }
 
 /** El resto de cambios permitidos; se muestran bajo «Otras acciones». */
-export function secondaryActionsOf(status: OrderStatus): readonly OrderAction[] {
-  const primary = primaryActionOf(status);
-  return (NEXT_STATUSES[status] ?? [])
+export function secondaryActionsOf(status: OrderStatus, mode: DeliveryMode = "manual"): readonly OrderAction[] {
+  const primary = primaryActionOf(status, mode);
+  const actions: OrderAction[] = [];
+  if (mode === "automatic") {
+    if (status === "delivering") actions.push({ kind: "reconcile", label: "Conciliar (si lleva varios minutos así)", tone: "neutral" });
+    // Entregar a mano sigue disponible: por ejemplo, si el regalo se mandó desde la miniapp.
+    if (["paid", "ready_to_send", "reconciling", "manual_review"].includes(status)) actions.push({ kind: "deliver", label: "Marcar como entregado a mano", tone: "neutral" });
+  } else if (status === "manual_review") {
+    actions.push({ kind: "deliver", label: "Marcar como entregado", tone: "neutral" });
+  }
+  const statuses = (NEXT_STATUSES[status] ?? [])
     .filter((to) => !(primary?.kind === "status" && primary.to === to))
-    .filter((to) => !(primary?.kind === "deliver" && to === "delivered"))
-    .map(statusAction);
+    .filter((to) => to !== "delivered" || !(primary?.kind === "deliver" || actions.some((action) => action.kind === "deliver")))
+    // En automático los pasos intermedios los recorre el envío; no se ofrecen a mano.
+    .filter((to) => mode === "manual" || !["ready_to_send", "validating_delivery", "delivering", "delivered", "reconciling"].includes(to))
+    .map((to) => to === "paid" && mode === "automatic" ? { ...statusAction("paid"), label: "Solo confirmar pago", tone: "neutral" as const } : statusAction(to));
+  return [...actions, ...statuses];
 }
 
 const LEGACY_TAB_PATHS: Record<string, string> = {
