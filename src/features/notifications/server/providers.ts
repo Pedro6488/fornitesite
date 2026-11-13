@@ -163,7 +163,17 @@ async function deliverRecovery(database: SupabaseClient, job: OutboxJob) {
   await markOutboxSent(database, job.id, messageId);
 }
 
+/** Avisos operativos de FN Shop: cuota, saldo o cupo de las cuentas, envíos dudosos. */
+async function deliverOperationsTelegram(database: SupabaseClient, job: OutboxJob) {
+  const text = typeof job.payload.text === "string" ? job.payload.text : "";
+  if (!text) return cancelOutboxJob(database, job.id);
+  const path = typeof job.payload.path === "string" && job.payload.path.startsWith("/admin") ? job.payload.path : "/admin/fnshop";
+  const messageId = await sendTelegram(text, new URL(path, appUrl()).toString());
+  await markOutboxSent(database, job.id, messageId);
+}
+
 export async function deliverOutboxJob(database: SupabaseClient, job: OutboxJob) {
+  if (job.job_type === "telegram.operations.alert") return deliverOperationsTelegram(database, job);
   if (job.job_type === "telegram.cart.started") return cancelOutboxJob(database, job.id);
   if (job.job_type === "telegram.order.created") return deliverOrderTelegram(database, job, "created");
   if (job.job_type === "telegram.order.receipt_submitted") return deliverOrderTelegram(database, job, "receipt");
