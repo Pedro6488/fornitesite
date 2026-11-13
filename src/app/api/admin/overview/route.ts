@@ -5,6 +5,8 @@ import { RECEIPT_REVIEW_STATUSES, statusesOf } from "@/features/admin/applicatio
 import type { IdentityValidationStatus } from "@/features/commerce/application/identity-review-state";
 import type { OrderStatus } from "@/features/orders/domain/order";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
+import { automaticDeliveryEnabled } from "@/features/fnshop/server/get-fnshop-client";
+import { fnShopConfigFromEnv } from "@/shared/infrastructure/fnshop/fnshop-client";
 
 // Todo sale de nuestra base. Abrir o refrescar la consola no llama a ningún proveedor.
 
@@ -69,7 +71,20 @@ async function counts(database: SupabaseClient) {
   ]);
   const count = (statuses: readonly OrderStatus[]) => orders.filter((order) => statuses.includes(order.status)).length;
   const recipients = buildOperationsOverview({ orders: [], validations: validations.map(toValidation), now: new Date(), days: 7 }).queues.recipients.count;
-  return NextResponse.json({ counts: { receipts: count(RECEIPT_REVIEW_STATUSES), deliver: count(statusesOf("deliver")), problem: count(statusesOf("problem")), recipients } });
+  return NextResponse.json({
+    counts: { receipts: count(RECEIPT_REVIEW_STATUSES), deliver: count(statusesOf("deliver")), problem: count(statusesOf("problem")), recipients },
+    fnshop: await fnShopQuota(database),
+  });
+}
+
+/** Cuota de FN Shop para la franja de estado. Se lee de nuestra bitácora: 0 requests. */
+async function fnShopQuota(database: SupabaseClient) {
+  if (!automaticDeliveryEnabled()) return null;
+  const config = fnShopConfigFromEnv();
+  const { data, error } = await database.rpc("fnshop_usage_summary", { p_since: config.termStartsAt.toISOString() });
+  if (error) return null;
+  const row = (Array.isArray(data) ? data[0] : data) as { counted_total?: number | string } | null;
+  return { used: Number(row?.counted_total ?? 0), limit: config.monthlyLimit, simulated: config.simulate };
 }
 
 async function overview(database: SupabaseClient, days: number) {

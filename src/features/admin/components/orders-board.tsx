@@ -6,8 +6,8 @@ import { FileCheck2, FileX2, RefreshCw, Search } from "lucide-react";
 import type { OrderStatus } from "@/features/orders/domain/order";
 import { formatAge, formatOrderMoney, shortOrderId } from "../application/format";
 import { ORDER_QUEUES, ORDER_STATUS_LABELS, primaryActionOf, type OrderQueueId } from "../application/order-queues";
-import { AdminPageHeader } from "./admin-shell";
-import { useOrderActions } from "./order-actions";
+import { AdminPageHeader, useDeliveryMode } from "./admin-shell";
+import { OrderActionNotice, useOrderActions } from "./order-actions";
 import { useAdminData } from "./use-admin-request";
 
 type OrderRow = {
@@ -40,6 +40,7 @@ export function OrdersBoard({ initialQueue }: { initialQueue?: string }) {
   }
   const { data, error, loading, reload } = useAdminData<OrdersResponse>(`/api/admin/orders?${parameters}`, { refreshMs: closed ? undefined : REFRESH_MS });
   const actions = useOrderActions({ reload });
+  const mode = useDeliveryMode();
   const current = ORDER_QUEUES.find((entry) => entry.id === queue)!;
 
   function choose(next: OrderQueueId) {
@@ -75,14 +76,14 @@ export function OrdersBoard({ initialQueue }: { initialQueue?: string }) {
       </>}
     </div>
 
-    {actions.notice && <p className={`ac-notice${actions.notice.error ? " is-error" : " is-success"}`} role="status">{actions.notice.text}</p>}
+    <OrderActionNotice notice={actions.notice} />
     {error && <p className="ac-notice is-error" role="alert">{error}</p>}
     {!data && !error && <p className="ac-notice">Cargando pedidos…</p>}
     {data && visible.length === 0 && !loading && <p className="ac-empty">{needle ? "Ningún pedido de esta cola coincide con la búsqueda." : closed ? "No hay pedidos cerrados en estas fechas." : "No hay pedidos en esta cola."}</p>}
 
     <ul className={`ac-orders${loading ? " is-refreshing" : ""}`}>
       {visible.map((order) => {
-        const primary = primaryActionOf(order.status);
+        const primary = primaryActionOf(order.status, mode);
         const units = order.order_items.reduce((total, item) => total + item.quantity, 0);
         return <li key={order.id}>
           <Link className="ac-order-main" href={`/admin/pedidos/${order.id}`}>
@@ -98,7 +99,7 @@ export function OrdersBoard({ initialQueue }: { initialQueue?: string }) {
           </Link>
           <div className="ac-order-side">
             <strong>{formatOrderMoney(order)}</strong>
-            {primary && <button type="button" className={order.hasReceipt || primary.kind === "deliver" || queue !== "payment" ? "ac-primary" : "ac-secondary"} disabled={actions.busyId === order.id} onClick={() => actions.ask(order, primary)}>
+            {primary && <button type="button" className={order.hasReceipt || primary.kind !== "status" || queue !== "payment" ? "ac-primary" : "ac-secondary"} disabled={actions.busyId === order.id} onClick={() => actions.ask(order, primary)}>
               {actions.busyId === order.id ? "Guardando…" : primary.label}
             </button>}
             <Link className="ac-link" href={`/admin/pedidos/${order.id}`}>Abrir pedido</Link>

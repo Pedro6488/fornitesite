@@ -7,11 +7,24 @@ import { DeliveryTicketActions } from "@/features/orders/components/delivery-tic
 import type { OrderStatus } from "@/features/orders/domain/order";
 import { formatDateTime, formatItemMoney, formatOrderMoney, shortOrderId } from "../application/format";
 import { ORDER_QUEUES, ORDER_STATUS_LABELS, primaryActionOf, queueOf, secondaryActionsOf } from "../application/order-queues";
-import { AdminPageHeader } from "./admin-shell";
-import { useOrderActions } from "./order-actions";
+import { AdminPageHeader, useDeliveryMode } from "./admin-shell";
+import { OrderActionNotice, useOrderActions } from "./order-actions";
 import { useAdminData } from "./use-admin-request";
 
-type OrderItem = { item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null };
+type OrderItem = { id: string; item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null };
+type Fulfillment = {
+  order_item_id: string | null; status: "queued" | "sending" | "sent" | "unknown" | "failed" | "delivered"; result_code: string | null;
+  last_error: string | null; track_id: string | null; sender_name: string | null; final_price_vbucks: number | null; finished_at: string | null;
+};
+
+const FULFILLMENT_LABELS: Record<Fulfillment["status"], { text: string; tone: string }> = {
+  queued: { text: "En cola", tone: "is-idle" },
+  sending: { text: "Enviando", tone: "is-wait" },
+  sent: { text: "Enviado", tone: "is-ok" },
+  delivered: { text: "Enviado", tone: "is-ok" },
+  unknown: { text: "Sin confirmar · conciliar", tone: "is-wait" },
+  failed: { text: "No enviado", tone: "is-bad" },
+};
 type OrderDetailData = {
   id: string; created_at: string; paid_at: string | null; delivered_at: string | null; customer_email: string | null;
   epic_display_name: string; epic_account_id: string; recipient_platform: string; contact_whatsapp: string | null;
@@ -19,6 +32,7 @@ type OrderDetailData = {
   receipt: { url: string | null; mimeType: string | null; createdAt: string } | null;
   deliveryFeedback: { comment: string | null; createdAt: string; imageUrl: string | null } | null;
   history: { action: string; created_at: string; after_data: { status?: string; notes?: string } | null }[];
+  fulfillments?: Fulfillment[];
 };
 
 const PLATFORM_LABELS: Record<string, string> = { epic: "Epic Games", xbl: "Xbox", psn: "PlayStation", nintendo: "Nintendo" };
@@ -33,6 +47,7 @@ const STEPS: readonly { label: string; reached: (order: OrderDetailData) => bool
 export function OrderDetail({ orderId }: { orderId: string }) {
   const { data, error, loading, reload } = useAdminData<{ order: OrderDetailData }>(`/api/admin/orders/${orderId}`);
   const actions = useOrderActions({ reload });
+  const mode = useDeliveryMode();
   const order = data?.order;
 
   if (!order) return <>
@@ -41,8 +56,10 @@ export function OrderDetail({ orderId }: { orderId: string }) {
   </>;
 
   const queue = ORDER_QUEUES.find((entry) => entry.id === queueOf(order.status))!;
-  const primary = primaryActionOf(order.status);
-  const secondary = secondaryActionsOf(order.status);
+  const primary = primaryActionOf(order.status, mode);
+  const secondary = secondaryActionsOf(order.status, mode);
+  const fulfillmentByItem = new Map((order.fulfillments ?? []).filter((entry) => entry.order_item_id).map((entry) => [entry.order_item_id!, entry]));
+  const sending = mode === "automatic" && (order.status === "validating_delivery" || order.status === "delivering");
   const busy = actions.busyId === order.id || loading;
   const whatsapp = order.contact_whatsapp?.replace(/\D/g, "");
   const receiptIsImage = Boolean(order.receipt?.url && order.receipt.mimeType?.startsWith("image/"));
@@ -50,14 +67,14 @@ export function OrderDetail({ orderId }: { orderId: string }) {
   return <>
     <AdminPageHeader title={`Pedido ${shortOrderId(order.id)}`} lead={`Creado el ${formatDateTime(order.created_at)}`} back={{ href: `/admin/pedidos?cola=${queue.id}`, label: `Pedidos · ${queue.label}` }} />
 
-    {actions.notice && <p className={`ac-notice${actions.notice.error ? " is-error" : " is-success"}`} role="status">{actions.notice.text}</p>}
+    <OrderActionNotice notice={actions.notice} />
     {error && <p className="ac-notice is-error" role="alert">{error}</p>}
 
     <section className="ac-card ac-next" aria-labelledby="ac-next-title">
       <div>
         <span className={`ac-pill status-${order.status}`}>{ORDER_STATUS_LABELS[order.status]}</span>
-        <h2 id="ac-next-title">{primary ? "Qué sigue" : "Pedido cerrado"}</h2>
-        <p>{primary ? queue.hint : `Este pedido terminó como «${ORDER_STATUS_LABELS[order.status]}». No hay nada más que hacer.`}</p>
+        <h2 id="ac-next-title">{primary ? "Qué sigue" : sending ? "Enviando" : "Pedido cerrado"}</h2>
+        <p>{primary ? queue.hint : sending ? "FN Shop está enviando los regalos. Actualiza en un momento; si se queda así varios minutos, usa «Conciliar» en Otras acciones." : `Este pedido terminó como «${ORDER_STATUS_LABELS[order.status]}». No hay nada más que hacer.`}</p>
         <ol className="ac-steps" aria-label="Avance del pedido">
           {STEPS.map((step) => <li key={step.label} className={step.reached(order) ? "is-done" : ""}>{step.label}</li>)}
         </ol>
@@ -67,7 +84,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
         {primary && <button type="button" className="ac-primary" disabled={busy} onClick={() => actions.ask(order, primary)}>{actions.busyId === order.id ? "Guardando…" : primary.label}</button>}
         {secondary.length > 0 && <details className="ac-other">
           <summary>Otras acciones</summary>
-          <div>{secondary.map((action) => <button key={action.kind === "status" ? action.to : "deliver"} type="button" className={action.tone === "danger" ? "ac-danger" : "ac-secondary"} disabled={busy} onClick={() => actions.ask(order, action)}>{action.label}</button>)}</div>
+          <div>{secondary.map((action) => <button key={action.kind === "status" ? action.to : action.kind} type="button" className={action.tone === "danger" ? "ac-danger" : "ac-secondary"} disabled={busy} onClick={() => actions.ask(order, action)}>{action.label}</button>)}</div>
         </details>}
       </div>
     </section>
@@ -101,12 +118,24 @@ export function OrderDetail({ orderId }: { orderId: string }) {
     <section className="ac-card" aria-labelledby="ac-items-title">
       <header className="ac-card-head"><div><h2 id="ac-items-title">Objetos a entregar</h2><p>{order.order_items.length} {order.order_items.length === 1 ? "objeto" : "objetos"} en este pedido.</p></div></header>
       <ul className="ac-items">
-        {order.order_items.map((item, index) => <li key={`${item.item_main_id}-${index}`}>
+        {order.order_items.map((item, index) => {
+          const fulfillment = fulfillmentByItem.get(item.id);
+          const state = fulfillment ? FULFILLMENT_LABELS[fulfillment.status] : null;
+          return <li key={`${item.item_main_id}-${index}`}>
           <span className="ac-thumb is-large">{item.item_image_url ? <Image src={item.item_image_url} alt="" width={56} height={56} unoptimized /> : <b aria-hidden="true">{item.item_name.slice(0, 1)}</b>}</span>
-          <div><strong>{item.quantity}× {item.item_name}</strong><small>{item.vbucks_price.toLocaleString("es-MX")} paVos</small></div>
+          <div>
+            <strong>{item.quantity}× {item.item_name}</strong><small>{item.vbucks_price.toLocaleString("es-MX")} paVos</small>
+            {fulfillment && state && <small className="ac-item-state">
+              <span className={`ac-send-state ${state.tone}`}>{state.text}</span>
+              {fulfillment.sender_name ? ` · cuenta ${fulfillment.sender_name}` : ""}
+              {fulfillment.track_id ? ` · seguimiento ${fulfillment.track_id}` : ""}
+              {fulfillment.status === "failed" || fulfillment.status === "unknown" ? ` · ${fulfillment.last_error ?? fulfillment.result_code ?? ""}` : ""}
+            </small>}
+          </div>
           <span>{formatItemMoney(order.currency, item)}</span>
           <Link className="ac-link" href={`/objetos/${encodeURIComponent(item.item_main_id)}?from=${encodeURIComponent("/admin")}`} target="_blank">Ver en la tienda</Link>
-        </li>)}
+        </li>;
+        })}
       </ul>
     </section>
 

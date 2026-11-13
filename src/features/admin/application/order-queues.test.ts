@@ -49,8 +49,45 @@ describe("order actions", () => {
     expect(manualDeliverySteps("paid")).toEqual(["ready_to_send", "validating_delivery", "delivering", "delivered"]);
     expect(manualDeliverySteps("delivering")).toEqual(["delivered"]);
     expect(manualDeliverySteps("reconciling")).toEqual(["delivered"]);
+    expect(manualDeliverySteps("manual_review")).toEqual(["delivered"]);
     expect(manualDeliverySteps("receipt_submitted")).toEqual([]);
     expect(manualDeliverySteps("delivered")).toEqual([]);
+  });
+
+  it("keeps manual review on its own primary action in manual mode, with hand delivery as an option", () => {
+    expect(primaryActionOf("manual_review")).toMatchObject({ kind: "status", to: "awaiting_transfer" });
+    expect(secondaryActionsOf("manual_review").map((action) => action.kind === "status" ? action.to : action.kind)).toEqual(["deliver", "refund_pending", "canceled"]);
+  });
+});
+
+describe("order actions with automatic delivery", () => {
+  it("confirms the payment and sends the gift in one flow, keeping «Solo confirmar pago»", () => {
+    for (const status of ["awaiting_transfer", "receipt_submitted", "transfer_review", "information_required"] as const) {
+      expect(primaryActionOf(status, "automatic")).toEqual({ kind: "send", label: "Confirmar pago y enviar regalo", tone: "primary", confirmPayment: true });
+      expect(secondaryActionsOf(status, "automatic").find((action) => action.kind === "status" && action.to === "paid")?.label).toBe("Solo confirmar pago");
+    }
+  });
+
+  it("sends from paid, retries from manual review and reconciles doubtful sends", () => {
+    expect(primaryActionOf("paid", "automatic")).toMatchObject({ kind: "send", confirmPayment: false, label: "Enviar regalo" });
+    expect(primaryActionOf("manual_review", "automatic")).toMatchObject({ kind: "send", label: "Reintentar envío" });
+    expect(primaryActionOf("reconciling", "automatic")).toMatchObject({ kind: "reconcile" });
+  });
+
+  it("shows no button while the system is sending, except reconciling a stuck send", () => {
+    expect(primaryActionOf("delivering", "automatic")).toBeNull();
+    expect(secondaryActionsOf("delivering", "automatic").map((action) => action.kind)).toEqual(["reconcile", "status"]);
+  });
+
+  it("never offers the intermediate delivery states by hand", () => {
+    for (const status of ["paid", "ready_to_send", "validating_delivery", "delivering", "reconciling", "manual_review"] as const) {
+      const targets = secondaryActionsOf(status, "automatic").flatMap((action) => action.kind === "status" ? [action.to] : []);
+      expect(targets.some((to) => ["ready_to_send", "validating_delivery", "delivering", "reconciling", "delivered"].includes(to)), status).toBe(false);
+    }
+  });
+
+  it("keeps hand delivery available for gifts sent outside the system", () => {
+    expect(secondaryActionsOf("paid", "automatic")[0]).toMatchObject({ kind: "deliver", label: "Marcar como entregado a mano" });
   });
 });
 
