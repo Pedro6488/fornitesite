@@ -1,8 +1,12 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CommerceSheet } from "@/features/commerce/components/commerce-sheet";
+import type { OrderStatus } from "@/features/orders/domain/order";
 import { formatDateTime, formatOrderMoney, shortOrderId, type OrderMoney } from "../application/format";
+import { ORDER_STATUS_LABELS } from "../application/order-queues";
 import { useAdminRequest } from "./use-admin-request";
 
 type PreflightItem = { itemId: string; name: string; vbucksPrice: number; offerRefreshed: boolean } & (
@@ -35,16 +39,18 @@ export function SendGiftDialog({ order, confirmPayment, onClose, onFinished }: {
   onFinished: (report: DeliveryReport | null, error: string | null) => void;
 }) {
   const request = useAdminRequest();
-  const [phase, setPhase] = useState<"checking" | "ready" | "sending">("checking");
+  const pathname = usePathname();
+  const [phase, setPhase] = useState<"checking" | "ready" | "sending" | "done">("checking");
   const [items, setItems] = useState<PreflightItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [outcome, setOutcome] = useState<{ report: DeliveryReport | null; error: string | null } | null>(null);
   const orderId = order?.id ?? null;
 
   useEffect(() => {
     if (!orderId) return;
     let active = true;
     const frame = window.requestAnimationFrame(() => {
-      setPhase("checking"); setItems([]); setError(null);
+      setPhase("checking"); setItems([]); setError(null); setOutcome(null);
       request<{ items: PreflightItem[] }>(`/api/admin/orders/${orderId}/preflight`, { method: "POST" })
         .then((body) => { if (active) { setItems(body.items); setPhase("ready"); } })
         .catch((cause: unknown) => { if (active) { setError(cause instanceof Error ? cause.message : "No fue posible revisar el pedido."); setPhase("ready"); } });
@@ -55,19 +61,46 @@ export function SendGiftDialog({ order, confirmPayment, onClose, onFinished }: {
   async function send() {
     if (!order) return;
     setPhase("sending");
+    let result: { report: DeliveryReport | null; error: string | null };
     try {
       const body = await request<{ report: DeliveryReport }>(`/api/admin/orders/${order.id}/deliver`, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ confirmPayment }),
       });
-      onFinished(body.report, null);
+      result = { report: body.report, error: null };
     } catch (cause) {
-      onFinished(null, cause instanceof Error ? cause.message : "No fue posible enviar el regalo.");
+      result = { report: null, error: cause instanceof Error ? cause.message : "No fue posible enviar el regalo." };
     }
+    // El diálogo se queda abierto con el resultado; la lista se actualiza detrás.
+    setOutcome(result);
+    setPhase("done");
+    onFinished(result.report, result.error);
   }
 
   const blocked = items.filter((item) => !item.eligible);
   const canSend = phase === "ready" && !error && items.length > 0 && blocked.length === 0;
   const requests = items.length;
+  const detailHref = order ? `/admin/pedidos/${order.id}` : "";
+
+  if (phase === "done" && outcome) {
+    const tone = outcome.report?.status === "delivered" ? "is-success" : outcome.report?.status === "reconciling" ? "is-warn" : "is-error";
+    const heading = outcome.report?.status === "delivered" ? "Regalo enviado" : outcome.report?.status === "reconciling" ? "Envío sin confirmar" : "No se completó el envío";
+    return <CommerceSheet open={Boolean(order)} onClose={onClose} titleId="ac-send-title" eyebrow="ENTREGA CON FN SHOP" title={heading}
+      description={order ? `Pedido ${shortOrderId(order.id)} · ${formatOrderMoney(order)} · para ${order.epic_display_name}` : ""}
+      className="admin-action-sheet">
+      <div className="admin-action-form" style={{ display: "grid", gap: ".85rem" }}>
+        <div className={`ac-send-outcome ${tone}`} role="status">
+          <p>{outcome.report?.message ?? outcome.error}</p>
+          {outcome.report && <p className="ac-send-outcome-status">Estado del pedido: <strong>{ORDER_STATUS_LABELS[outcome.report.status as OrderStatus] ?? outcome.report.status}</strong>
+            {outcome.report.status === "delivered" ? " · ya está en «Cerrados»" : outcome.report.status === "reconciling" || outcome.report.status === "manual_review" ? " · ya está en «Con problema»" : ""}</p>}
+        </div>
+        {outcome.report && <DeliveryReportList report={outcome.report} />}
+        <div className="ac-send-actions">
+          {pathname !== detailHref && <Link className="admin-action-cancel" href={detailHref} onClick={onClose}>Ver pedido</Link>}
+          <button type="button" className="admin-action-confirm" onClick={onClose}>Listo</button>
+        </div>
+      </div>
+    </CommerceSheet>;
+  }
 
   return <CommerceSheet open={Boolean(order)} onClose={() => { if (phase !== "sending") onClose(); }} titleId="ac-send-title" eyebrow="ENTREGA CON FN SHOP"
     title={confirmPayment ? "Confirmar pago y enviar regalo" : "Enviar regalo"}

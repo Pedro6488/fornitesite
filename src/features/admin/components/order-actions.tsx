@@ -102,8 +102,8 @@ export function useOrderActions({ reload }: { reload: () => void | Promise<void>
       confirmPayment={sending?.confirmPayment ?? false}
       onClose={() => setSending(null)}
       onFinished={(report, error) => {
+        // El diálogo sigue abierto con el resultado; el aviso queda en la pantalla al cerrarlo.
         const target = sending?.order;
-        setSending(null);
         if (target) setBusyId(target.id);
         setNotice(report ? reportNotice(report) : { error: true, text: error ?? "No fue posible enviar el regalo." });
         void settle();

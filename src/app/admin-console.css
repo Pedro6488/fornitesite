@@ -337,10 +337,63 @@ body:has(.ac-shell) {
 }
 
 .ac-send-actions {
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
   gap: .5rem;
   justify-content: flex-end;
+}
+
+/* Cerrados: un encabezado por día de cierre. */
+.ac-order-group + .ac-order-group {
+  margin-top: 1.25rem;
+}
+
+.ac-shell .ac-day-heading {
+  align-items: baseline;
+  color: var(--ac-ink);
+  display: flex;
+  font-family: inherit;
+  font-size: .85rem;
+  gap: .5rem;
+  letter-spacing: normal;
+  margin-bottom: .6rem;
+  text-transform: none;
+}
+
+.ac-day-heading small {
+  color: var(--ac-muted);
+  font-size: .75rem;
+  font-weight: 500;
+}
+
+.ac-send-actions a {
+  text-decoration: none;
+}
+
+/* Resultado del envío: se queda a la vista hasta que el admin lo cierra. */
+.ac-send-outcome,
+.admin-action-form > .ac-send-outcome {
+  border-left: 3px solid var(--ac-bad);
+  display: grid;
+  gap: .3rem;
+  justify-content: normal;
+  padding: .35rem 0 .35rem .75rem;
+}
+
+.ac-send-outcome.is-success { border-color: var(--ac-good); }
+.ac-send-outcome.is-warn { border-color: var(--ac-warn); }
+
+.ac-send-outcome p {
+  color: var(--ac-ink);
+  font-size: .9rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.ac-send-outcome .ac-send-outcome-status {
+  color: var(--ac-ink-2);
+  font-size: .8rem;
 }
 
 .ac-item-state {
