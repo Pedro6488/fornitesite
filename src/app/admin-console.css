@@ -566,6 +566,8 @@ body:has(.ac-shell) {
   border-radius: .75rem;
   display: grid;
   gap: 1rem;
+  /* La columna no crece con lo que lleva dentro: las gráficas se miden con el ancho de la tarjeta. */
+  grid-template-columns: minmax(0, 1fr);
   min-width: 0;
   padding: 1.1rem;
 }
@@ -780,7 +782,11 @@ body:has(.ac-shell) {
 
 .ac-chart {
   border-radius: .4rem;
+  min-width: 0;
   position: relative;
+  /* En teléfono: deslizar en horizontal recorre los días; en vertical sigue moviendo la página. */
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ac-chart:focus-visible {
@@ -820,10 +826,6 @@ body:has(.ac-shell) {
   fill: var(--ac-ink-2);
   font-size: 11px;
   font-weight: 600;
-}
-
-.ac-chart-hit {
-  fill: transparent;
 }
 
 .ac-chart-empty {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { ArrowDownRight, ArrowUpRight, Minus, Table2, ChartColumn } from "lucide-react";
 
 /**
@@ -33,7 +33,7 @@ function niceScale(max: number, targetTicks = 4): { max: number; step: number } 
 
 export type ChartPoint = { key: string; label: string; shortLabel: string; value: number; detail?: string };
 
-export function ColumnChart({ points, formatValue, formatTick = formatValue, ariaLabel, height = 220, wholeNumbers = false }: {
+export function ColumnChart({ points, formatValue, formatTick = formatValue, ariaLabel, height: preferredHeight = 220, wholeNumbers = false }: {
   points: readonly ChartPoint[];
   formatValue: (value: number) => string;
   formatTick?: (value: number) => string;
@@ -44,6 +44,8 @@ export function ColumnChart({ points, formatValue, formatTick = formatValue, ari
 }) {
   const [ref, width] = useElementWidth<HTMLDivElement>();
   const [active, setActive] = useState<number | null>(null);
+  // En teléfono la gráfica es más baja para que quepa junto a su título sin hacer scroll.
+  const height = width > 0 && width < 480 ? Math.min(preferredHeight, 180) : preferredHeight;
   const margin = { top: 22, right: 8, bottom: 24, left: 46 };
   const innerWidth = Math.max(0, width - margin.left - margin.right);
   const innerHeight = height - margin.top - margin.bottom;
@@ -57,6 +59,13 @@ export function ColumnChart({ points, formatValue, formatTick = formatValue, ari
   const peak = highest > 0 ? points.findIndex((point) => point.value === highest) : -1;
   const focused = active === null ? null : points[active];
 
+  /** Columna bajo el dedo o el cursor. Funciona igual al tocar, deslizar o pasar el mouse. */
+  function onPointer(event: PointerEvent<HTMLDivElement>) {
+    if (!band || !points.length) return;
+    const offset = event.clientX - event.currentTarget.getBoundingClientRect().left - margin.left;
+    setActive(Math.max(0, Math.min(points.length - 1, Math.floor(offset / band))));
+  }
+
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
     event.preventDefault();
@@ -67,7 +76,10 @@ export function ColumnChart({ points, formatValue, formatTick = formatValue, ari
   }
 
   return <div className="ac-chart" ref={ref} tabIndex={0} role="group" aria-label={`${ariaLabel}. Usa las flechas izquierda y derecha para leer cada valor.`}
-    onKeyDown={onKeyDown} onFocus={() => setActive((current) => current ?? points.length - 1)} onBlur={() => setActive(null)} onPointerLeave={() => setActive(null)}>
+    onKeyDown={onKeyDown} onFocus={() => setActive((current) => current ?? points.length - 1)} onBlur={() => setActive(null)}
+    onPointerDown={onPointer} onPointerMove={onPointer}
+    // Al tocar, el valor se queda a la vista hasta tocar fuera de la gráfica.
+    onPointerLeave={(event) => { if (event.pointerType === "mouse") setActive(null); }}>
     {width > 0 && <svg width={width} height={height} role="img" aria-label={ariaLabel}>
       {ticks.map((tick) => <g key={tick}>
         <line className={tick === 0 ? "ac-chart-axis" : "ac-chart-grid"} x1={margin.left} x2={width - margin.right} y1={y(tick)} y2={y(tick)} />
@@ -81,9 +93,8 @@ export function ColumnChart({ points, formatValue, formatTick = formatValue, ari
         return <g key={point.key}>
           {barHeight > 0 && <path className={`ac-chart-bar${active === index ? " is-active" : ""}`}
             d={`M${x},${top + barHeight} V${top + radius} Q${x},${top} ${x + radius},${top} H${x + barWidth - radius} Q${x + barWidth},${top} ${x + barWidth},${top + radius} V${top + barHeight} Z`} />}
-          {(points.length - 1 - index) % labelEvery === 0 && <text className="ac-chart-tick" x={margin.left + band * (index + 0.5)} y={height - 6} textAnchor="middle">{point.shortLabel}</text>}
+          {(points.length - 1 - index) % labelEvery === 0 && <text className="ac-chart-tick" x={Math.max(margin.left + 20, Math.min(width - 20, margin.left + band * (index + 0.5)))} y={height - 6} textAnchor="middle">{point.shortLabel}</text>}
           {index === peak && active === null && <text className="ac-chart-peak" x={Math.max(margin.left + 24, Math.min(width - margin.right - 24, margin.left + band * (index + 0.5)))} y={top - 7} textAnchor="middle">{formatValue(point.value)}</text>}
-          <rect className="ac-chart-hit" x={margin.left + band * index} y={margin.top} width={band} height={innerHeight} onPointerEnter={() => setActive(index)} onPointerMove={() => setActive(index)} />
         </g>;
       })}
     </svg>}
