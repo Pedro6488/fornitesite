@@ -219,7 +219,7 @@ async function settle(store: DeliveryStore, orderId: string, from: OrderStatus, 
   const failed = reports.filter((report) => report.result === "failed" || report.result === "not_attempted");
   if (sent === reports.length) {
     const status = await step(store, { id: orderId }, from, "delivered", actor);
-    return { status, items: reports, message: `Se enviaron los ${sent} ${sent === 1 ? "objeto" : "objetos"}. El pedido quedó entregado.` };
+    return { status, items: reports, message: `${sent === 1 ? "Se envió el objeto" : `Se enviaron los ${sent} objetos`}. El pedido quedó entregado.` };
   }
   if (unknown > 0) {
     const status = from === "reconciling" ? from : await step(store, { id: orderId }, from, "reconciling", { ...actor, reason: "Hay envíos sin confirmar." });
