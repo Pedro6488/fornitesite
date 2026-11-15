@@ -11,14 +11,14 @@ describe("FortniteApiCatalogProvider", () => {
       { offerId: "miku-bundle", finalPrice: 2200, brItems: [outfit, { id: "backpack" }, { id: "pickaxe" }], tracks: [{ id: "track", title: "Song" }], layout: {
         displayType: "billboard",
         textMetadata: [{ key: "title", value: "Capitana Hatsune Miku" }, { key: "subtitle", value: "Lote de 6 objetos" }],
-        textureMetadata: [{ key: "bodyImage", value: "https://example.com/bundle.png" }]
+        textureMetadata: [{ key: "bodyImage", value: "https://cdn2.unrealengine.com/sk-Items.png" }, { key: "foreground", value: "https://cdn2.unrealengine.com/sk-Character.png" }]
       } }
     ] } }))));
 
     const items = await new FortniteApiCatalogProvider("https://fortnite-api.com/v2").getCurrentCatalog();
     expect(items).toEqual([
       expect.objectContaining({ mainId: "Character_PeonyPizza", type: "Atuendo", finalPriceVbucks: 1500 }),
-      expect.objectContaining({ mainId: "miku-bundle", offerId: "miku-bundle", name: "Capitana Hatsune Miku", type: "Lote", imageUrl: "https://example.com/bundle.png", finalPriceVbucks: 2200 })
+      expect.objectContaining({ mainId: "miku-bundle", offerId: "miku-bundle", name: "Capitana Hatsune Miku", type: "Lote", imageUrl: `/api/catalog/bundle-image?${new URLSearchParams({ character: "https://cdn2.unrealengine.com/sk-Character.png", items: "https://cdn2.unrealengine.com/sk-Items.png" })}`, finalPriceVbucks: 2200 })
     ]);
   });
 

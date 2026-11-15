@@ -68,7 +68,13 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
       // No basta contar objetos: un atuendo puede incluir su mochila gratis.
       const layoutBundle = /\b(lote|bundle)\b/i.test(metadata(layout, "textMetadata", "subtitle"));
       const bundleName = text(bundle.name) || (layoutBundle ? metadata(layout, "textMetadata", "title") : "");
-      const bundleImage = text(bundle.image) || (layoutBundle ? metadata(layout, "textureMetadata", "bodyImage") : "");
+      const bodyImage = layoutBundle ? metadata(layout, "textureMetadata", "bodyImage") : "";
+      const characterImage = layoutBundle ? metadata(layout, "textureMetadata", "foreground") : "";
+      // bodyImage sólo contiene los accesorios; foreground contiene el personaje.
+      const layoutImage = bodyImage && characterImage
+        ? `/api/catalog/bundle-image?${new URLSearchParams({ character: characterImage, items: bodyImage })}`
+        : characterImage || bodyImage;
+      const bundleImage = text(bundle.image) || layoutImage;
       const isBundle = Boolean(bundleName || bundleImage || layoutBundle);
       const isIndividualJamTrack = !isBundle && tracks.length === 1 && !brItems.length && !cars.length && !instruments.length;
       const renderImages = Array.isArray(displayAsset.renderImages) ? displayAsset.renderImages : [];
