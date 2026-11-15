@@ -4,6 +4,37 @@ import { FortniteApiCatalogProvider } from "./fortnite-api-catalog-provider";
 afterEach(() => vi.unstubAllGlobals());
 
 describe("FortniteApiCatalogProvider", () => {
+  it("distingue el lote billboard de Miku del atuendo con mochila incluida", async () => {
+    const outfit = { id: "Character_PeonyPizza", name: "Capitana Hatsune Miku", type: { displayValue: "Atuendo" }, images: { icon: "https://example.com/miku.png" } };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { entries: [
+      { offerId: "miku-outfit", finalPrice: 1500, brItems: [outfit, { id: "backpack" }] },
+      { offerId: "miku-bundle", finalPrice: 2200, brItems: [outfit, { id: "backpack" }, { id: "pickaxe" }], tracks: [{ id: "track", title: "Song" }], layout: {
+        displayType: "billboard",
+        textMetadata: [{ key: "title", value: "Capitana Hatsune Miku" }, { key: "subtitle", value: "Lote de 6 objetos" }],
+        textureMetadata: [{ key: "bodyImage", value: "https://example.com/bundle.png" }]
+      } }
+    ] } }))));
+
+    const items = await new FortniteApiCatalogProvider("https://fortnite-api.com/v2").getCurrentCatalog();
+    expect(items).toEqual([
+      expect.objectContaining({ mainId: "Character_PeonyPizza", type: "Atuendo", finalPriceVbucks: 1500 }),
+      expect.objectContaining({ mainId: "miku-bundle", offerId: "miku-bundle", name: "Capitana Hatsune Miku", type: "Lote", imageUrl: "https://example.com/bundle.png", finalPriceVbucks: 2200 })
+    ]);
+  });
+
+  it("incluye ruedas e instrumentos sin brItems usando sus propias imágenes", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { entries: [
+      { offerId: "wheel-offer", finalPrice: 400, cars: [{ id: "Wheel_Sheepbolt01", name: "Rivian R1S", type: { displayValue: "Rueda" }, images: { large: "https://example.com/wheel.png" } }] },
+      { offerId: "mic-offer", finalPrice: 800, instruments: [{ id: "Mic", name: "Micrófono", type: { displayValue: "Micrófono" }, images: { small: "https://example.com/mic.png" } }] }
+    ] } }))));
+
+    const items = await new FortniteApiCatalogProvider("https://fortnite-api.com/v2").getCurrentCatalog();
+    expect(items).toEqual([
+      expect.objectContaining({ mainId: "Wheel_Sheepbolt01", name: "Rivian R1S", type: "Rueda", imageUrl: "https://example.com/wheel.png" }),
+      expect.objectContaining({ mainId: "Mic", type: "Micrófono", imageUrl: "https://example.com/mic.png" })
+    ]);
+  });
+
   it("conserva un lote aunque su bundle.id esté vacío y comparta objeto con una oferta individual", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({
       data: {

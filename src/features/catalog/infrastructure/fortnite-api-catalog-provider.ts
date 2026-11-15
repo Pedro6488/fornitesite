@@ -18,6 +18,11 @@ function optionalInteger(value: unknown): number | null {
   return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : null;
 }
 
+function metadata(layout: UnknownRecord, kind: string, key: string): string {
+  const entries = Array.isArray(layout[kind]) ? layout[kind] : [];
+  return text(record(entries.find((value) => record(value).key === key)).value);
+}
+
 /** La API traduce casi todo con `language`, salvo estos textos fijos. "Bundle" no describe nada: el tipo ya dice "Lote". */
 function bundleDescription(info: string): string {
   return /^bundle$/i.test(info.trim()) ? "" : info;
@@ -47,7 +52,9 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
       const entry = record(rawEntry);
       const brItems = Array.isArray(entry.brItems) ? entry.brItems : [];
       const tracks = Array.isArray(entry.tracks) ? entry.tracks : [];
-      const first = record(brItems[0]);
+      const cars = Array.isArray(entry.cars) ? entry.cars : [];
+      const instruments = Array.isArray(entry.instruments) ? entry.instruments : [];
+      const first = record(brItems[0] ?? cars[0] ?? instruments[0]);
       const track = record(tracks[0]);
       const bundle = record(entry.bundle);
       const layout = record(entry.layout);
@@ -57,10 +64,13 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
       const type = record(first.type);
       const finalPrice = integer(entry.finalPrice || entry.price);
       const offerId = text(entry.offerId);
-      const bundleName = text(bundle.name);
-      const bundleImage = text(bundle.image);
-      const isBundle = Boolean(bundleName || bundleImage);
-      const isIndividualJamTrack = !isBundle && tracks.length === 1;
+      // Las ofertas billboard describen el lote en layout, sin entry.bundle.
+      // No basta contar objetos: un atuendo puede incluir su mochila gratis.
+      const layoutBundle = /\b(lote|bundle)\b/i.test(metadata(layout, "textMetadata", "subtitle"));
+      const bundleName = text(bundle.name) || (layoutBundle ? metadata(layout, "textMetadata", "title") : "");
+      const bundleImage = text(bundle.image) || (layoutBundle ? metadata(layout, "textureMetadata", "bodyImage") : "");
+      const isBundle = Boolean(bundleName || bundleImage || layoutBundle);
+      const isIndividualJamTrack = !isBundle && tracks.length === 1 && !brItems.length && !cars.length && !instruments.length;
       const renderImages = Array.isArray(displayAsset.renderImages) ? displayAsset.renderImages : [];
       const renderImage = record(renderImages[0]);
       const renderImageUrl = text(renderImage.image);
@@ -80,7 +90,7 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
         offerId: offerId || null,
         name: bundleName || (isIndividualJamTrack ? text(track.title, "Objeto sin nombre") : text(first.name, "Objeto sin nombre")),
         description: bundleDescription(text(bundle.info, isIndividualJamTrack ? jamTrackDescription(track) : text(first.description))),
-        imageUrl: bundleImage || (isIndividualJamTrack ? text(track.albumArt) : text(images.featured, text(images.icon))) || renderImageUrl || null,
+        imageUrl: bundleImage || (isIndividualJamTrack ? text(track.albumArt) : text(images.featured) || text(images.icon) || text(images.large) || text(images.small)) || renderImageUrl || null,
         type: isBundle ? "Lote" : isIndividualJamTrack ? "Pista de improvisación" : text(type.displayValue, "Objeto"),
         rarity: rarityLabel(text(rarity.displayValue, "Común")),
         regularPriceVbucks: integer(entry.regularPrice) || finalPrice,

@@ -54,12 +54,12 @@ function normalize(value: string): string {
 
 export function getCatalogCategory(item: CatalogItem): CatalogCategory {
   const type = normalize(item.type);
-  if (/(outfit|atuendo|skin)/.test(type)) return "Atuendos";
+  if (/(outfit|atuendo|personaje|skin)/.test(type)) return "Atuendos";
   if (/(pickaxe|pico|harvesting)/.test(type)) return "Picos";
   if (/(emote|gesto|emoji|emoticono|spray|grafiti)/.test(type)) return "Gestos";
   if (/(bundle|lote)/.test(type)) return "Lotes";
   if (/(backbling|back bling|mochila)/.test(type)) return "Mochilas";
-  if (/(shoe|calzado)/.test(type)) return "Calzado";
+  if (/(shoe|calzado|zapatos)/.test(type)) return "Calzado";
   if (/(sidekick|companero)/.test(type)) return "Compañeros";
   if (/(glider|planeador)/.test(type)) return "Planeadores";
   if (/(wrap|envoltorio|papel)/.test(type)) return "Envoltorios";
