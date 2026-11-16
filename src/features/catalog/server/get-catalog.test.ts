@@ -50,37 +50,19 @@ describe("createCatalogService", () => {
     }));
   });
 
-  it("trata una API key vacía o con espacios como no configurada", async () => {
+  it("no consulta FN Shop aunque la entrega automática esté encendida", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify(fortniteResponse), { status: 200 })
     );
     vi.stubGlobal("fetch", fetchMock);
+    vi.stubEnv("FULFILLMENT_MODE", "fnshop");
+    vi.stubEnv("FNSHOP_API_KEY", "secret");
 
-    const [item] = await createCatalogService({ fnShopApiKey: "   " }).list();
+    const [item] = await createCatalogService({}).list();
 
     expect(fetchMock).toHaveBeenCalledOnce();
+    expect(String(fetchMock.mock.calls[0][0])).not.toContain("fnitem.shop");
     expect(item).toEqual(expect.objectContaining({ offerId: "fortnite-offer", giftable: true }));
-  });
-
-  it("usa FN Shop solamente como catálogo transaccional cuando hay una API key", async () => {
-    const fetchMock = vi.fn()
-      .mockResolvedValueOnce(new Response(JSON.stringify(fortniteResponse), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        items: [{
-          mainId: "CID_REAL",
-          offerId: "fnshop-offer",
-          price: 1_500,
-          giftable: true
-        }]
-      }), { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
-
-    const [item] = await createCatalogService({ fnShopApiKey: "secret", fulfillmentMode: "fnshop" }).list();
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(item).toEqual(expect.objectContaining({
-      offerId: "fnshop-offer",
-      giftable: true
-    }));
+    vi.unstubAllEnvs();
   });
 });

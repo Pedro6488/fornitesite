@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BadgeCheck, CircleAlert, Clock3, RefreshCw, ScanLine } from "lucide-react";
-import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import { AdminActionModal } from "@/shared/components/admin-action-modal";
 import { isIdentityReviewPending } from "@/features/commerce/application/identity-review-state";
+import { useAdminCounts } from "./admin-shell";
+import { useAdminRequest } from "./use-admin-request";
 
 type ReviewStatus = "pending_friendship" | "waiting" | "ready" | "manual_review" | "blocked";
 type ReviewAction = "waiting" | "ready" | "blocked";
@@ -34,27 +35,20 @@ function remainingTime(date: string): string {
 }
 
 export function IdentityReviewQueue() {
-  const supabase = useMemo(() => getSupabaseBrowser(), []);
+  const { refreshCounts } = useAdminCounts();
   const [validations, setValidations] = useState<IdentityReview[]>([]);
   const [message, setMessage] = useState("Cargando IDs…");
   const [updating, setUpdating] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [pendingReview, setPendingReview] = useState<{ validation: IdentityReview; status: ReviewAction } | null>(null);
 
-  const request = useCallback(async (url: string, init?: RequestInit) => {
-    const session = (await supabase?.auth.getSession())?.data.session;
-    if (!session) throw new Error("La sesión de administrador expiró.");
-    const response = await fetch(url, { ...init, headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${session.access_token}` } });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.error ?? "No fue posible completar la revisión.");
-    return body;
-  }, [supabase]);
+  const request = useAdminRequest();
 
   const load = useCallback(async () => {
     setLoading(true);
     setMessage("Cargando IDs…");
     try {
-      const body = await request("/api/admin/validations");
+      const body = await request<{ validations?: IdentityReview[] }>("/api/admin/validations");
       setValidations(body.validations ?? []);
       setMessage(body.validations?.length ? "" : "No hay IDs para revisar todavía.");
     } catch (error) {
@@ -77,6 +71,7 @@ export function IdentityReviewQueue() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, notes: notes || undefined }),
       });
+      refreshCounts();
       await load();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No fue posible guardar la revisión.");
@@ -129,7 +124,7 @@ export function IdentityReviewQueue() {
 
   return <section className="identity-review-queue">
     <header className="identity-review-heading">
-      <div><p className="eyebrow">IDENTIDADES DE ENTREGA</p><h2>Revisión de IDs</h2><p>La espera normal dura 48 horas. Las autorizaciones anticipadas requieren un motivo y quedan auditadas.</p></div>
+      <div><p>La espera normal dura 48 horas. Las autorizaciones anticipadas requieren un motivo y quedan auditadas.</p></div>
       <button type="button" className="identity-review-refresh" disabled={loading || Boolean(updating)} onClick={() => void load()}><RefreshCw aria-hidden="true" size={16} />{loading ? "Actualizando…" : "Actualizar"}</button>
     </header>
     {message && <p className="notice">{message}</p>}

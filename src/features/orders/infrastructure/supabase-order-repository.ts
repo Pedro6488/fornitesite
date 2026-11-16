@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Order, OrderLine, OrderRepository, OrderStatus, SupervisorStatus } from "../domain/order";
+import type { LineDelivery, Order, OrderLine, OrderRepository, OrderStatus, SupervisorStatus } from "../domain/order";
 
 type OrderRow = {
   id: string; public_token: string; status: OrderStatus; customer_email: string | null; epic_account_id: string;
@@ -10,8 +10,18 @@ type OrderRow = {
   contact_whatsapp?: string | null;
   metadata?: { notes?: string | null } | null;
   delivery_feedback?: { created_at: string } | { created_at: string }[] | null;
-  order_items?: { item_name: string; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null; vbucks_price: number }[];
+  order_items?: { id?: string; item_name: string; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null; vbucks_price: number }[];
+  fulfillments?: { order_item_id: string | null; status: string }[] | null;
 };
+
+function lineDelivery(status: string | undefined): LineDelivery | null {
+  if (!status) return null;
+  if (status === "sent" || status === "delivered") return "sent";
+  if (status === "sending" || status === "unknown") return "sending";
+  return "pending";
+}
+
+const ORDER_WITH_ITEMS = "*,order_items(id,item_name,quantity,unit_amount_mxn_cents,unit_amount_usd_cents,vbucks_price),delivery_feedback(created_at),fulfillments(order_item_id,status)";
 
 export class SupabaseOrderRepository implements OrderRepository {
   constructor(private readonly database: SupabaseClient) {}
@@ -28,12 +38,12 @@ export class SupabaseOrderRepository implements OrderRepository {
   }
 
   async findById(id: string): Promise<Order | null> {
-    const { data, error } = await this.database.from("orders").select("*,order_items(item_name,quantity,unit_amount_mxn_cents,unit_amount_usd_cents,vbucks_price),delivery_feedback(created_at)").eq("id", id).maybeSingle<OrderRow>();
+    const { data, error } = await this.database.from("orders").select(ORDER_WITH_ITEMS).eq("id", id).maybeSingle<OrderRow>();
     if (error) throw error; return data ? mapRow(data) : null;
   }
 
   async findByPublicToken(id: string, publicToken: string): Promise<Order | null> {
-    const { data, error } = await this.database.from("orders").select("*,order_items(item_name,quantity,unit_amount_mxn_cents,unit_amount_usd_cents,vbucks_price),delivery_feedback(created_at)").eq("id", id).eq("public_token", publicToken).maybeSingle<OrderRow>();
+    const { data, error } = await this.database.from("orders").select(ORDER_WITH_ITEMS).eq("id", id).eq("public_token", publicToken).maybeSingle<OrderRow>();
     if (error) throw error; return data ? mapRow(data) : null;
   }
 
@@ -45,11 +55,12 @@ export class SupabaseOrderRepository implements OrderRepository {
 
 function mapRow(row: OrderRow): Order {
   const deliveryFeedback = Array.isArray(row.delivery_feedback) ? row.delivery_feedback[0] : row.delivery_feedback;
+  const deliveryByItem = new Map((row.fulfillments ?? []).filter((entry) => entry.order_item_id).map((entry) => [entry.order_item_id!, entry.status]));
   return { id: row.id, publicToken: row.public_token, status: row.status, customerEmail: row.customer_email,
     epicAccountId: row.epic_account_id, epicDisplayName: row.epic_display_name, itemMainId: row.item_main_id,
     offerId: row.offer_id, itemName: row.item_name, itemImageUrl: row.item_image_url, vbucksPrice: row.vbucks_price,
     amountMxnCents: row.amount_mxn_cents, currency: row.currency ?? "MXN", subtotalUsdCents: row.subtotal_usd_cents ?? null, paypalFeeUsdCents: row.paypal_fee_usd_cents ?? null, amountUsdCents: row.amount_usd_cents ?? null, paymentMethod: row.payment_method, recipientPlatform: row.recipient_platform,
     contactWhatsapp: row.contact_whatsapp, supervisorStatus: row.supervisor_status ?? "pending_confirmation",
     statusNote: row.metadata?.notes ?? null, deliveryFeedbackSubmittedAt: deliveryFeedback?.created_at ?? null,
-    items: (row.order_items?.map((item): OrderLine => ({ itemName: item.item_name, quantity: item.quantity, unitAmountMxnCents: item.unit_amount_mxn_cents, unitAmountUsdCents: item.unit_amount_usd_cents ?? null, vbucksPrice: item.vbucks_price })) ?? [{ itemName: row.item_name, quantity: 1, unitAmountMxnCents: row.amount_mxn_cents, vbucksPrice: row.vbucks_price }]), createdAt: row.created_at };
+    items: (row.order_items?.map((item): OrderLine => ({ itemName: item.item_name, quantity: item.quantity, unitAmountMxnCents: item.unit_amount_mxn_cents, unitAmountUsdCents: item.unit_amount_usd_cents ?? null, vbucksPrice: item.vbucks_price, delivery: item.id ? lineDelivery(deliveryByItem.get(item.id)) : null })) ?? [{ itemName: row.item_name, quantity: 1, unitAmountMxnCents: row.amount_mxn_cents, vbucksPrice: row.vbucks_price }]), createdAt: row.created_at };
 }

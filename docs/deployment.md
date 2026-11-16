@@ -45,12 +45,25 @@ RESEND_API_KEY
 EMAIL_FROM
 ```
 
-`FORTNITE_API_BASE_URL` alimenta el catálogo visual y, si se omite, usa
-`https://fortnite-api.com/v2`. En la primera fase, `FULFILLMENT_MODE=manual`
-mantiene FN Shop fuera del catálogo y de la salud del servicio. Los objetos
-regalables de Fortnite pueden agregarse al carrito con precios calculados en
-servidor. Una fase posterior podrá usar `FULFILLMENT_MODE=fnshop` junto con
-`FNSHOP_API_KEY` para habilitar validación y entrega automáticas.
+`FORTNITE_API_BASE_URL` alimenta el catálogo y, si se omite, usa
+`https://fortnite-api.com/v2`. El catálogo nunca consulta FN Shop.
+
+`FULFILLMENT_MODE=manual` deja la entrega a mano. `FULFILLMENT_MODE=fnshop`
+valida IDs nuevos con `friend_add` y entrega desde la consola con FN Shop
+(guía completa en `docs/fnshop-integracion.md`). Variables de FN Shop:
+
+| Variable | Producción | Preview / QA |
+|---|---|---|
+| `FNSHOP_API_KEY` | La key real | **No se define** |
+| `FNSHOP_SIMULATE` | No se define (se ignora) | `true` |
+| `FNSHOP_TERM_STARTS_AT` | Fecha de inicio del periodo pagado | Cualquiera |
+| `FNSHOP_MONTHLY_LIMIT` / `FNSHOP_DAILY_LIMIT` | `5000` / `300` | Igual |
+| `FNSHOP_CATEGORY` | Vacío (todas las cuentas) | Vacío |
+| `FNSHOP_LEARNING_SNAPSHOTS` | `true` solo si se aprueba el presupuesto de aprendizaje | `false` |
+
+La key se liga al dominio en su primer uso: el código solo llama a FN Shop
+cuando `VERCEL_ENV=production`. En cualquier otro entorno responde el
+simulador o, sin él, los IDs quedan en revisión manual.
 `COMMERCE_SESSION_SECRET` debe ser un valor aleatorio exclusivo
 de cada ambiente. `ALLOW_DEMO_PROVIDERS` debe permanecer en `false` en producción.
 
@@ -82,3 +95,13 @@ WhatsApp para coordinar el pago y la entrega con el administrador.
 8. Verificar `/health`, limpieza programada, RLS, URLs firmadas y logs.
 
 La autorización comercial de Epic/FN Shop sigue siendo un gate externo obligatorio.
+
+### Activar la entrega con FN Shop
+
+1. Aplicar las migraciones `20261113000100` a `20261113000400` en QA y probar
+   con `FULFILLMENT_MODE=fnshop` y `FNSHOP_SIMULATE=true` (0 requests).
+2. Aplicarlas en producción con `FULFILLMENT_MODE=manual` todavía.
+3. Definir en Vercel → Production `FNSHOP_API_KEY` y `FNSHOP_TERM_STARTS_AT`.
+4. En la consola, `/admin/fnshop` → «Verificar key» (no gasta cuota; liga el dominio).
+5. Cambiar a `FULFILLMENT_MODE=fnshop` y hacer las pruebas de salida de
+   `docs/fnshop-integracion.md` (tope de 20 requests).

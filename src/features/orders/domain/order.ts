@@ -7,7 +7,9 @@ export const ORDER_STATUSES = [
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export type PaymentMethod = "mercado_pago" | "bank_transfer";
 export type SupervisorStatus = "pending_confirmation" | "submitted_to_administrator" | "payment_received" | "sent";
-export type OrderLine = Readonly<{ itemName: string; quantity: number; unitAmountMxnCents: number; unitAmountUsdCents?: number | null; vbucksPrice?: number }>;
+/** Avance de entrega de un objeto que ve el cliente. Un rechazo se muestra como pendiente: lo resuelve el equipo. */
+export type LineDelivery = "sent" | "sending" | "pending";
+export type OrderLine = Readonly<{ itemName: string; quantity: number; unitAmountMxnCents: number; unitAmountUsdCents?: number | null; vbucksPrice?: number; delivery?: LineDelivery | null }>;
 
 export type Order = Readonly<{
   id: string;
@@ -48,7 +50,7 @@ const transitions: Readonly<Record<OrderStatus, readonly OrderStatus[]>> = {
   validating_delivery: ["delivering", "manual_review", "refund_pending"],
   delivering: ["delivered", "reconciling", "manual_review"],
   reconciling: ["delivered", "manual_review"],
-  manual_review: ["awaiting_transfer", "canceled"],
+  manual_review: ["awaiting_transfer", "canceled", "ready_to_send", "delivered", "refund_pending"],
   refund_pending: ["refunded", "manual_review"],
   delivered: [], refunded: [], rejected: [], expired: [], canceled: []
 };

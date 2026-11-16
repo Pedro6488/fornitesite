@@ -6,6 +6,8 @@ import {
   ensureActiveCart,
   requireCommerceSession,
 } from "@/shared/server/commerce-session";
+import { CUSTOMER_VALIDATION_FIELDS } from "@/features/commerce/application/identity-review-state";
+import { automaticDeliveryEnabled } from "@/features/fnshop/server/get-fnshop-client";
 
 const schema = z.object({
   cartItemIds: z.array(z.string().min(1).max(180)).max(30).default([]),
@@ -101,9 +103,7 @@ async function sessionResponse(request: Request, migrateLegacyState: boolean) {
         .order("created_at"),
       database
         .from("game_id_validations")
-        .select(
-          "id,platform,submitted_id,epic_account_id,display_name,status,giftable_at,last_checked_at",
-        )
+        .select(CUSTOMER_VALIDATION_FIELDS)
         .eq("commerce_session_id", session.id)
         .order("last_checked_at", { ascending: false }),
       database
@@ -123,6 +123,7 @@ async function sessionResponse(request: Request, migrateLegacyState: boolean) {
         validations: validations ?? [],
         activeValidationId,
         authenticated: Boolean(session.user),
+        automaticDelivery: automaticDeliveryEnabled(),
       }),
       session,
     );

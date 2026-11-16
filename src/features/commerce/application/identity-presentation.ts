@@ -30,7 +30,7 @@ export function getIdentityPresentation(validation: PresentableValidation | null
   };
   if (validation.status === "pending_friendship") return {
     label: "Solicitud de amistad pendiente",
-    description: "Acepta la solicitud de amistad en Fortnite.",
+    description: "Te enviamos solicitudes de amistad desde nuestras cuentas. Acéptalas en Fortnite (Amigos → Solicitudes) y pulsa «Ya acepté». Las 48 horas empiezan cuando aceptas.",
     actionLabel: "Ver estado",
     canQuote: false,
     tone: "warning",

@@ -161,7 +161,7 @@ export function OrderStatus({
       <div className="order-items-summary">
         {(order.items ?? []).map((item, index) => (
           <p key={`${item.itemName}-${index}`}>
-            <span>{item.itemName}</span>
+            <span>{item.itemName}{item.delivery && order.status !== "delivered" && <small className={`order-item-delivery is-${item.delivery}`}>{item.delivery === "sent" ? "✓ Enviado" : item.delivery === "sending" ? "Enviando…" : "Pendiente"}</small>}</span>
             <strong>{isUsdOrder ? `${formatUsdCents(item.unitAmountUsdCents ?? 0)} USD` : formatMxn(item.unitAmountMxnCents / 100)}</strong>
           </p>
         ))}

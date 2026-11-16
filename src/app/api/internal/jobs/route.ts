@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
 import { queueOutboxJob, retryOutboxJob, type OutboxJob } from "@/features/notifications/server/outbox";
 import { deliverOutboxJob } from "@/features/notifications/server/providers";
+import { captureLearningSnapshots } from "@/features/fnshop/server/learning-snapshots";
 
 type Campaign = { cart_id: string; contact_id: string; last_activity_at: string; first_sent_at: string | null; second_sent_at: string | null; canceled_at: string | null };
 type Cart = { id: string; status: string; updated_at: string };
@@ -65,7 +66,11 @@ export async function GET(request: Request) {
         await retryOutboxJob(database, job, deliveryError);
       }
     }
-    return NextResponse.json({ processed: (claimed ?? []).length, sent, failed, recoveryQueued, removedSessions: Number(removedSessions ?? 0) });
+    const learningSnapshots = await captureLearningSnapshots(database).catch((snapshotError: unknown) => {
+      console.error("internal.jobs.learning.failed", snapshotError);
+      return [];
+    });
+    return NextResponse.json({ processed: (claimed ?? []).length, sent, failed, recoveryQueued, removedSessions: Number(removedSessions ?? 0), learningSnapshots });
   } catch (error) {
     console.error("internal.jobs.failed", error);
     return NextResponse.json({ error: "No fue posible procesar los trabajos." }, { status: 503 });

@@ -58,6 +58,22 @@
   width: 100%;
 }
 
+.identity-friendship {
+  display: grid;
+  gap: .45rem;
+}
+
+.identity-friendship .primary-button {
+  margin: 0;
+  width: 100%;
+}
+
+.identity-friendship small {
+  color: var(--muted, #9aa9c9);
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
 .purchase-confetti {
   inset: 0;
   overflow: hidden;

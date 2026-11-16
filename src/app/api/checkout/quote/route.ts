@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { canPurchase } from "@/features/catalog/domain/catalog-item";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
-import { validationStatus } from "@/features/eligibility/application/validation-status";
-import { getAgentProvider } from "@/features/eligibility/server/get-agent-provider";
-import { selectBestAgentForCart } from "@/features/eligibility/domain/delivery-agent";
 import { attachCommerceCookie, requireCommerceSession } from "@/shared/server/commerce-session";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
 import { calculateUsdPrice, PAYPAL_FEE_USD_CENTS } from "@/features/pricing/domain/price-calculator";
@@ -55,27 +52,9 @@ export async function POST(request: Request) {
     }
     const resolved = items.map((item) => item!);
     const totalVbucks = resolved.reduce((sum, item) => sum + item.finalPriceVbucks, 0);
-    let selectedAgentId: string | null = null;
-    if (process.env.FULFILLMENT_MODE === "fnshop") {
-      const agents = await getAgentProvider().listForReceiver(validation.epic_account_id);
-      const state = validationStatus(agents);
-      await database.from("game_id_validations").update({
-        status: state.status,
-        giftable_at: state.giftableAt,
-        agents_snapshot: agents,
-        last_checked_at: new Date().toISOString()
-      }).eq("id", validation.id);
-      const selectedAgent = selectBestAgentForCart(agents, totalVbucks, resolved.length);
-      if (!selectedAgent) {
-        const message = state.status === "waiting"
-          ? "El ID es válido, pero todavía debe cumplirse la espera de 48 horas."
-          : state.status === "pending_friendship"
-            ? "El ID es válido, pero aún debes aceptar la solicitud de amistad en Fortnite."
-            : "No existe un agente con amistad, saldo y cupo suficientes para este carrito.";
-        return attachCommerceCookie(NextResponse.json({ error: message, code: "recipient_not_ready", validationStatus: state.status }), session);
-      }
-      selectedAgentId = selectedAgent.id;
-    }
+    // Cotizar no consulta a FN Shop: el estado del ID ya está guardado y la cuenta
+    // remitente la elige FN Shop al entregar (gift_check confirma saldo y cupo).
+    const selectedAgentId: string | null = null;
 
     const amountMxnCents = resolved.reduce((sum, item) => sum + Math.round(item.priceMxn! * 100), 0);
     const currency = parsed.data.region === "us" ? "USD" : "MXN";

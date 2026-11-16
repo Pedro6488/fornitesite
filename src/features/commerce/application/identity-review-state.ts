@@ -1,5 +1,8 @@
 export type IdentityValidationStatus = "pending_friendship" | "manual_review" | "waiting" | "ready" | "blocked";
 
+/** Columnas de un ID que ve el cliente. */
+export const CUSTOMER_VALIDATION_FIELDS = "id,platform,submitted_id,epic_account_id,display_name,status,giftable_at,last_checked_at,friendship_checks,friendship_checked_at";
+
 export function isIdentityReviewPending(status: IdentityValidationStatus): boolean {
   return status === "manual_review" || status === "pending_friendship" || status === "waiting";
 }

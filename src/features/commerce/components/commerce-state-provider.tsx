@@ -18,6 +18,8 @@ export type IdentityValidation = Readonly<{
   status: "pending_friendship" | "waiting" | "ready" | "manual_review" | "blocked";
   giftable_at: string | null;
   last_checked_at: string;
+  friendship_checks?: number;
+  friendship_checked_at?: string | null;
 }>;
 
 type CommerceApiResponse = {
@@ -29,12 +31,15 @@ type CommerceApiResponse = {
   validations?: IdentityValidation[];
   validation?: IdentityValidation;
   activeValidationId?: string | null;
+  automaticDelivery?: boolean;
   [key: string]: unknown;
 };
 
 type CommerceState = Readonly<{
   ready: boolean;
   authenticated: boolean;
+  /** La tienda valida IDs y entrega con FN Shop (`FULFILLMENT_MODE=fnshop`). */
+  automaticDelivery: boolean;
   syncing: boolean;
   cartItemIds: readonly string[];
   favoriteItemIds: ReadonlySet<string>;
@@ -46,7 +51,8 @@ type CommerceState = Readonly<{
   closeIdentity: () => void;
   validateIdentity: (displayName: string, platform: IdentityPlatform) => Promise<string | null>;
   selectValidation: (validationId: string) => Promise<string | null>;
-  requestFriendship: () => Promise<string | null>;
+  /** «Ya acepté la solicitud»: confirma la amistad con FN Shop y arranca la espera de 48 h. */
+  confirmFriendship: () => Promise<string | null>;
   addCartItem: (itemId: string) => Promise<string | null>;
   removeCartItem: (itemId: string) => Promise<string | null>;
   toggleFavorite: (itemId: string) => Promise<string | null>;
@@ -86,6 +92,7 @@ async function responseBody(response: Response): Promise<CommerceApiResponse> {
 export function CommerceStateProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [automaticDelivery, setAutomaticDelivery] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [cartItemIds, setCartItemIds] = useState<string[]>([]);
   const [favoriteItemIds, setFavoriteItemIds] = useState<Set<string>>(new Set());
@@ -127,6 +134,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         setValidations(body.validations ?? (body.validation ? [body.validation] : []));
         setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
         setAuthenticated(body.authenticated === true);
+        setAutomaticDelivery(body.automaticDelivery === true);
         window.localStorage.removeItem(LEGACY_CART_KEY);
         window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
       } catch {
@@ -269,30 +277,31 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
     finally { setSyncing(false); }
   }, [activeValidationId]);
 
-  const requestFriendship = useCallback(async () => {
+  const confirmFriendship = useCallback(async () => {
     if (!validation) return "Primero valida tu ID.";
     setSyncing(true);
     try {
-      const response = await fetch("/api/identity/friend-request", {
+      const response = await fetch("/api/identity/confirm-friendship", {
         method: "POST",
         headers: { "Content-Type": "application/json", ...(await authHeaders()) },
         body: JSON.stringify({ validationId: validation.id })
       });
       const body = await responseBody(response);
       if (!response.ok) throw new Error(body.error);
-      setValidations((current) => current.map((entry) => entry.id === validation.id ? { ...entry, status: "pending_friendship" } : entry));
+      const updated = body.validation;
+      if (updated) setValidations((current) => current.map((entry) => entry.id === updated.id ? updated : entry));
       return null;
-    } catch (error) { return error instanceof Error ? error.message : "No fue posible enviar la solicitud."; }
+    } catch (error) { return error instanceof Error ? error.message : "No fue posible revisar la solicitud."; }
     finally { setSyncing(false); }
   }, [validation]);
 
   const value = useMemo<CommerceState>(() => ({
-    ready, authenticated, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
+    ready, authenticated, automaticDelivery, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
     openIdentity,
     closeIdentity,
-    validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite,
+    validateIdentity, selectValidation, confirmFriendship, addCartItem, removeCartItem, toggleFavorite,
     clearCart
-  }), [ready, authenticated, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, requestFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
+  }), [ready, authenticated, automaticDelivery, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, confirmFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }

@@ -40,6 +40,10 @@ export function IdentitySheet() {
     const interval = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => { window.clearTimeout(initialUpdate); window.clearInterval(interval); };
   }, [commerce, commerce.identityOpen, commerce.validation?.status]);
+  async function confirmFriendship() {
+    setMessage(await commerce.confirmFriendship());
+  }
+  const checksLeft = Math.max(0, 3 - (commerce.validation?.friendship_checks ?? 0));
   async function submit(event: FormEvent) {
     event.preventDefault();
     const nextMessage = await commerce.validateIdentity(displayName, platform);
@@ -65,10 +69,16 @@ export function IdentitySheet() {
       {commerce.validation ? <div className={`identity-result identity-${commerce.validation.status}`} aria-live="polite">
         <span>{commerce.validation.status === "ready" ? <BadgeCheck aria-hidden="true" size={19} /> : commerce.validation.status === "waiting" ? <Clock3 aria-hidden="true" size={19} /> : commerce.validation.status === "blocked" ? <CircleAlert aria-hidden="true" size={19} /> : <ScanLine aria-hidden="true" size={19} />}</span>
         <div><strong>{commerce.validation.display_name}</strong><small>{presentation.label}. {presentation.description}</small>{commerce.validation.status === "waiting" && commerce.validation.giftable_at && <small className="identity-countdown">{timeRemaining(commerce.validation.giftable_at, now)}</small>}</div>
-      </div> : <p className="sheet-description">No pedimos acceso ni contraseña de Epic Games: usa sólo tu gamertag. Nuestro equipo lo revisará manualmente antes de solicitar tu pago.</p>}
+      </div> : <p className="sheet-description">{commerce.automaticDelivery
+        ? "No pedimos acceso ni contraseña de Epic Games: usa sólo tu gamertag. Al guardarlo te enviaremos solicitudes de amistad desde nuestras cuentas; Fortnite pide 48 horas de amistad antes de poder regalar."
+        : "No pedimos acceso ni contraseña de Epic Games: usa sólo tu gamertag. Nuestro equipo lo revisará manualmente antes de solicitar tu pago."}</p>}
+      {commerce.validation?.status === "pending_friendship" && !editingIdentity && <div className="identity-friendship">
+        <button type="button" className="primary-button" disabled={commerce.syncing || checksLeft === 0} onClick={() => void confirmFriendship()}>{commerce.syncing ? "Revisando…" : "Ya acepté la solicitud"}</button>
+        <small>{checksLeft > 0 ? `Púlsalo después de aceptar en Fortnite. Te quedan ${checksLeft} ${checksLeft === 1 ? "intento" : "intentos"}.` : "El equipo confirmará tu solicitud y te avisará por WhatsApp."}</small>
+      </div>}
       {commerce.validations.length === 0 && !commerce.authenticated && <p className="identity-session-note">¿Ya tienes una cuenta? <Link href={`/cuenta?next=${encodeURIComponent(pathname)}`} onClick={commerce.closeIdentity}>Inicia sesión para recuperar tus IDs guardados</Link>.</p>}
       {(!commerce.validation || editingIdentity) && <form className="identity-form" onSubmit={submit}>
-        <div className="identity-form-title"><span><Plus aria-hidden="true" size={15} />Agregar o actualizar</span><small>Lo guardamos para que el equipo confirme la entrega.</small></div>
+        <div className="identity-form-title"><span><Plus aria-hidden="true" size={15} />Agregar o actualizar</span><small>{commerce.automaticDelivery ? "Lo validamos al guardarlo." : "Lo guardamos para que el equipo confirme la entrega."}</small></div>
         <label>Gamertag o ID de Epic<input required minLength={3} maxLength={32} autoComplete="off" value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Tu usuario en Fortnite" /></label>
         <label>Plataforma<span className="select-control"><select value={platform} onChange={(event) => setPlatform(event.target.value as IdentityPlatform)}><option value="epic">Epic Games</option><option value="xbl">Xbox</option><option value="psn">PlayStation</option><option value="nintendo">Nintendo Switch</option></select><ChevronDown aria-hidden="true" size={17} /></span></label>
         <button className="primary-button" disabled={commerce.syncing}>{commerce.syncing ? "Guardando…" : "Guardar nuevo ID"}</button>

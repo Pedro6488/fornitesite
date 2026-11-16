@@ -104,7 +104,7 @@ async function deliverOrderTelegram(database: SupabaseClient, job: OutboxJob, ev
   const orderId = String(job.payload.orderId ?? job.aggregate_id ?? "");
   const order = await getTelegramOrder(database, orderId);
   if (!order) return cancelOutboxJob(database, job.id);
-  const url = new URL("/admin", appUrl()); url.searchParams.set("tab", "orders"); url.searchParams.set("order", order.id);
+  const url = new URL(`/admin/pedidos/${order.id}`, appUrl());
   const heading = event === "created" ? "🛒 Nuevo pedido" : "🧾 Comprobante recibido";
   const messageId = await sendTelegram(`${heading} #${order.id.slice(0, 8).toUpperCase()}\n\nObjetos:\n${orderItemsText(order) || "• Sin objetos"}\n\nID de entrega: ${order.epic_display_name}\nTeléfono: ${order.contact_whatsapp}\nTotal: ${(order.amount_mxn_cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}`, url.toString());
   await markOutboxSent(database, job.id, messageId);
@@ -163,7 +163,17 @@ async function deliverRecovery(database: SupabaseClient, job: OutboxJob) {
   await markOutboxSent(database, job.id, messageId);
 }
 
+/** Avisos operativos de FN Shop: cuota, saldo o cupo de las cuentas, envíos dudosos. */
+async function deliverOperationsTelegram(database: SupabaseClient, job: OutboxJob) {
+  const text = typeof job.payload.text === "string" ? job.payload.text : "";
+  if (!text) return cancelOutboxJob(database, job.id);
+  const path = typeof job.payload.path === "string" && job.payload.path.startsWith("/admin") ? job.payload.path : "/admin/fnshop";
+  const messageId = await sendTelegram(text, new URL(path, appUrl()).toString());
+  await markOutboxSent(database, job.id, messageId);
+}
+
 export async function deliverOutboxJob(database: SupabaseClient, job: OutboxJob) {
+  if (job.job_type === "telegram.operations.alert") return deliverOperationsTelegram(database, job);
   if (job.job_type === "telegram.cart.started") return cancelOutboxJob(database, job.id);
   if (job.job_type === "telegram.order.created") return deliverOrderTelegram(database, job, "created");
   if (job.job_type === "telegram.order.receipt_submitted") return deliverOrderTelegram(database, job, "receipt");
