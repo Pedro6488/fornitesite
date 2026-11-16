@@ -42,6 +42,8 @@ export type FnShopConfig = Readonly<{
   termStartsAt: Date;
   category: string | null;
   timeoutMs: number;
+  /** Dominio de la tienda. FN Shop liga la key a él; sin él responde `domain_required`. */
+  domain: string;
 }>;
 
 /** No se pudo llamar: falta configuración, la cuota no lo permite o el entorno no es producción. */
@@ -70,6 +72,19 @@ export interface FnShopCaller {
 const DEFAULT_BASE_URL = "https://fnitem.shop/api/v3/service";
 const SLOW_ACTIONS: readonly FnShopAction[] = ["gift_send", "gift_check", "friend_add"];
 
+const DEFAULT_DOMAIN = "www.sigfriedlootbox.com";
+
+/** Solo el host («www.sigfriedlootbox.com»), venga como dominio suelto o como URL completa. */
+function hostOf(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  try {
+    return new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`).host.toLowerCase() || null;
+  } catch {
+    return null;
+  }
+}
+
 function positiveInteger(value: string | undefined, fallback: number) {
   const parsed = Number.parseInt(value ?? "", 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -90,6 +105,7 @@ export function fnShopConfigFromEnv(env: Record<string, string | undefined> = pr
     termStartsAt: Number.isNaN(termStartsAt.getTime()) ? new Date(Date.now() - 30 * 86400_000) : termStartsAt,
     category: env.FNSHOP_CATEGORY?.trim() || null,
     timeoutMs: positiveInteger(env.FNSHOP_TIMEOUT_MS, 25_000),
+    domain: hostOf(env.FNSHOP_DOMAIN) ?? hostOf(env.NEXT_PUBLIC_APP_URL) ?? DEFAULT_DOMAIN,
   };
 }
 
@@ -136,7 +152,9 @@ export class FnShopClient implements FnShopCaller {
       throw new FnShopUnavailableError("budget", decision.reason ?? "La cuota de FN Shop no permite esta llamada.");
     }
 
-    const requestParams = { ...params };
+    // FN Shop identifica la tienda por su dominio: se manda como `svr` (igual que FN SHOP Connect)
+    // y en Origin/Referer, porque una llamada de servidor no los lleva por sí sola.
+    const requestParams = { svr: this.config.domain, ...params };
     const started = Date.now();
     let httpStatus = 0;
     let body: Record<string, unknown> | null = null;
@@ -152,8 +170,12 @@ export class FnShopClient implements FnShopCaller {
       try {
         const response = await (this.options.fetch ?? fetch)(`${this.config.baseUrl}/${action}`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", "X-Api-Key": this.config.apiKey! },
-          body: new URLSearchParams(params).toString(),
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json", "X-Api-Key": this.config.apiKey!,
+            Origin: `https://${this.config.domain}`, Referer: `https://${this.config.domain}/`,
+            "User-Agent": `SigfriedLootBox/1.0; https://${this.config.domain}`,
+          },
+          body: new URLSearchParams(requestParams).toString(),
           cache: "no-store",
           signal: controller.signal,
         });
