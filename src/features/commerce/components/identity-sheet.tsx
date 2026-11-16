@@ -29,17 +29,22 @@ export function IdentitySheet() {
   const presentation = getIdentityPresentation(commerce.validation);
   const canContinue = presentation.canQuote;
 
-  useEffect(() => {
-    if (!commerce.identityOpen) return;
-    void commerce.refresh({ advanceIdentity: true });
-  }, [commerce, commerce.identityOpen, commerce.refresh]);
+  // Se toman las piezas sueltas: el objeto `commerce` cambia con cada respuesta del servidor,
+  // y depender de él volvía a pedir el estado sin parar mientras la hoja estaba abierta.
+  const { identityOpen, refresh } = commerce;
+  const validationStatus = commerce.validation?.status;
 
   useEffect(() => {
-    if (!commerce.identityOpen || commerce.validation?.status !== "waiting") return;
+    if (!identityOpen) return;
+    void refresh({ advanceIdentity: true });
+  }, [identityOpen, refresh]);
+
+  useEffect(() => {
+    if (!identityOpen || validationStatus !== "waiting") return;
     const initialUpdate = window.setTimeout(() => setNow(Date.now()), 0);
     const interval = window.setInterval(() => setNow(Date.now()), 60_000);
     return () => { window.clearTimeout(initialUpdate); window.clearInterval(interval); };
-  }, [commerce, commerce.identityOpen, commerce.validation?.status]);
+  }, [identityOpen, validationStatus]);
   async function confirmFriendship() {
     setMessage(await commerce.confirmFriendship());
   }
