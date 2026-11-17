@@ -10,7 +10,7 @@ import { deliverOutboxJob } from "@/features/notifications/server/providers";
 const schema = z.object({
   quoteId: z.uuid(),
   validationId: z.uuid(),
-  whatsapp: z.string().trim().min(8).max(24).regex(/^[0-9+ ()-]+$/),
+  whatsapp: z.string().trim().regex(/^[0-9]{8,12}$/),
   customerEmail: z.union([z.email(), z.literal("")]).optional().default(""),
   idempotencyKey: z.uuid()
 });

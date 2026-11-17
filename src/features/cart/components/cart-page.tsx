@@ -18,6 +18,7 @@ import { suggestForCart } from "../application/cart-suggestions";
 import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import { PurchaseSteps } from "./purchase-steps";
 import { resolveCartAvailability } from "../application/cart-availability";
+import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 
 export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   const router = useRouter();
@@ -25,7 +26,8 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   const { region } = useStoreRegion();
   const [message, setMessage] = useState<string | null>(null);
   const [openingCheckout, setOpeningCheckout] = useState(false);
-  const [email, setEmail] = useState("");
+  const [emailDraft, setEmailDraft] = useState<{ sessionId: string | null; value: string } | null>(null);
+  const email = emailDraft && emailDraft.sessionId === commerce.sessionId ? emailDraft.value : commerce.email ?? "";
   const [emailConsent, setEmailConsent] = useState(false);
   const [emailMessage, setEmailMessage] = useState<string | null>(null);
   const [savingEmail, setSavingEmail] = useState(false);
@@ -68,20 +70,22 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   async function continueToCheckout() {
     if (!canContinue || openingCheckout) return;
     setOpeningCheckout(true);
-    if (email && emailConsent && !await saveEmail()) {
+    if (email && (email !== commerce.email || emailConsent) && !await saveEmail()) {
       setOpeningCheckout(false);
       return;
     }
     router.push("/checkout");
   }
   async function saveEmail() {
-    if (!email || !emailConsent || savingEmail) return true;
+    if (!email || savingEmail) return true;
     setSavingEmail(true); setEmailMessage(null);
     try {
-      const response = await fetch("/api/customer-email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, consent: emailConsent }) });
+      const token = (await getSupabaseBrowser()?.auth.getSession())?.data.session?.access_token;
+      const response = await fetch("/api/customer-email", { method: "POST", headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) }, body: JSON.stringify({ email, consent: emailConsent }) });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error ?? "No fue posible guardar el correo.");
       setEmailMessage(body.message ?? "Correo guardado.");
+      await commerce.refresh();
       return true;
     } catch (error) { setEmailMessage(error instanceof Error ? error.message : "No fue posible guardar el correo."); return false; }
     finally { setSavingEmail(false); }
@@ -111,7 +115,7 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
       <section className="cart-email-capture" aria-label="Guardar correo para el carrito">
         <div><strong>Guarda tu carrito <span>(opcional)</span></strong><p>Recibe un recordatorio si no terminas tu compra.</p></div>
         <div className="cart-email-fields">
-          <label>Correo electrónico<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="tu@correo.com" /></label>
+          <label>Correo electrónico<input type="email" autoComplete="email" value={email} onChange={(event) => setEmailDraft({ sessionId: commerce.sessionId, value: event.target.value })} placeholder="tu@correo.com" /></label>
           <label className="cart-email-consent"><input type="checkbox" checked={emailConsent} onChange={(event) => setEmailConsent(event.target.checked)} />Acepto recibir bienvenida y recordatorios de este carrito.</label>
           {emailMessage && <small className="notice">{emailMessage}</small>}
         </div>

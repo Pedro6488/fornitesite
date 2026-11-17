@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ReferenceUpload } from "./reference-upload";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
 import { AdminPageHeader } from "./admin-shell";
@@ -66,7 +67,8 @@ export function AdminCustomers() {
 
 export function AdminReferences() {
   const { data, error, loading, reload } = useAdminData<{ references?: DeliveryReference[] }>("/api/admin/references");
-  return <StoreSection title="Referencias" lead="Evidencias que envían los clientes después de recibir su regalo." error={error} loading={loading} ready loadingText="" reload={reload}>
+  return <StoreSection title="Referencias" lead="Publica capturas de confirmación en el inicio y en Referencias." error={error} loading={loading} ready loadingText="" reload={reload}>
+    <ReferenceUpload onPublished={reload} />
     <References references={data ? data.references ?? [] : null} />
   </StoreSection>;
 }

@@ -13,11 +13,11 @@ export function GamesMenuLink() {
   const pathname = usePathname();
   const currentGame = gameForPath(pathname);
   useEffect(() => { if (currentGame) rememberGame(currentGame.id); }, [currentGame]);
-  return <nav className={styles.navigation} aria-label="Cambiar de juego">
+  return <nav className={styles.navigation} aria-label="Navegación de Fortnite">
     <div className={styles.inner}>
-      <Link href="/#juegos" transitionTypes={["loot-back"]} className={styles.back}><ArrowLeft size={16} aria-hidden="true" /><span>Todos los juegos</span></Link>
+      <Link href="/" transitionTypes={["loot-back"]} className={styles.back}><ArrowLeft size={16} aria-hidden="true" /><span>Inicio</span></Link>
       <div className={styles.games}>
-        {STOREFRONT_GAMES.map((game) => (
+        {STOREFRONT_GAMES.filter((game) => game.id === "fortnite").map((game) => (
           <Link key={game.id} href={game.href} transitionTypes={["loot-switch"]} className={styles.game} aria-current={currentGame?.id === game.id ? "page" : undefined}>
             <span className={styles.thumb} aria-hidden="true"><Image src={game.image} alt="" fill sizes="44px" /></span>
             {game.name}

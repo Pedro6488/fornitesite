@@ -23,6 +23,9 @@ export type IdentityValidation = Readonly<{
 }>;
 
 type CommerceApiResponse = {
+  sessionId?: string;
+  whatsapp?: string | null;
+  email?: string | null;
   error?: string;
   authenticated?: boolean;
   cartItemIds?: string[];
@@ -36,6 +39,9 @@ type CommerceApiResponse = {
 };
 
 type CommerceState = Readonly<{
+  sessionId: string | null;
+  whatsapp: string | null;
+  email: string | null;
   ready: boolean;
   authenticated: boolean;
   /** La tienda valida IDs y entrega con FN Shop (`FULFILLMENT_MODE=fnshop`). */
@@ -90,6 +96,9 @@ async function responseBody(response: Response): Promise<CommerceApiResponse> {
 }
 
 export function CommerceStateProvider({ children }: { children: ReactNode }) {
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [whatsapp, setWhatsapp] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [automaticDelivery, setAutomaticDelivery] = useState(false);
@@ -134,6 +143,9 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
         setValidations(body.validations ?? (body.validation ? [body.validation] : []));
         setActiveValidationId(body.activeValidationId ?? body.validation?.id ?? null);
         setAuthenticated(body.authenticated === true);
+        setSessionId(body.sessionId ?? null);
+        setWhatsapp(body.whatsapp ?? null);
+        setEmail(body.email ?? null);
         setAutomaticDelivery(body.automaticDelivery === true);
         window.localStorage.removeItem(LEGACY_CART_KEY);
         window.localStorage.removeItem(LEGACY_FAVORITES_KEY);
@@ -296,12 +308,12 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
   }, [validation]);
 
   const value = useMemo<CommerceState>(() => ({
-    ready, authenticated, automaticDelivery, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
+    sessionId, whatsapp, email, ready, authenticated, automaticDelivery, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh,
     openIdentity,
     closeIdentity,
     validateIdentity, selectValidation, confirmFriendship, addCartItem, removeCartItem, toggleFavorite,
     clearCart
-  }), [ready, authenticated, automaticDelivery, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, confirmFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
+  }), [sessionId, whatsapp, email, ready, authenticated, automaticDelivery, syncing, cartItemIds, favoriteItemIds, validations, validation, identityOpen, refresh, openIdentity, closeIdentity, validateIdentity, selectValidation, confirmFriendship, addCartItem, removeCartItem, toggleFavorite, clearCart]);
 
   return <CommerceContext.Provider value={value}>{children}</CommerceContext.Provider>;
 }

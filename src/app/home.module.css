@@ -9,7 +9,7 @@
 .launcherBar h2 { font-family: var(--display); font-weight: 800; font-size: 42px; line-height: 1; letter-spacing: -.01em; margin: 0; }
 .available { display: flex; align-items: center; gap: 7px; color: #adb1bb; font-size: 10px; padding-bottom: 4px; }
 .available i { width: 5px; height: 5px; background: var(--electric); }
-.games { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.games { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .game { position: relative; display: flex; flex-direction: column; justify-content: space-between; min-height: 290px; overflow: hidden; background: #292238; isolation: isolate; border: 1px solid #ffffff15; }
 .game::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #11121c22, #11121c22 25%, #11121ce6 80%); }
 .gameArt { object-fit: cover; object-position: center 28%; z-index: -2; transition: transform .5s; }

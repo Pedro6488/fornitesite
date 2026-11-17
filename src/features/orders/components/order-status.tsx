@@ -184,7 +184,8 @@ export function OrderStatus({
       <div className="order-status-side">
       <div className={`canonical-order-status status-${order.status}`}>
         <span>ESTADO DEL PEDIDO</span>
-        <strong>{statusCopy[order.status]}</strong>
+        <strong>{isUsdOrder && order.status === "awaiting_transfer" ? "Pendiente de pago por PayPal" : statusCopy[order.status]}</strong>
+        {(order.status === "receipt_submitted" || order.status === "transfer_review") && <p>Tu pago está en revisión. Una vez que se vea reflejado, enviaremos tu pedido en un plazo de 1 a 10 minutos. Gracias por tu paciencia.</p>}
       </div>
       {order.status === "canceled" && (
         <div className="order-cancellation-note" role="status">
@@ -216,10 +217,10 @@ export function OrderStatus({
                 <strong>{bank.concept}</strong>
               </p>
             </>}
-            <p>
+            {isUsdOrder && <p>
               <span>PayPal</span>
               <strong>{bank.paypal}</strong>
-            </p>
+            </p>}
             <small>
               Usa el folio PEDIDO-{order.id.slice(0, 8).toUpperCase()} en la
               nota o comprobante.

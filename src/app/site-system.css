@@ -1643,6 +1643,7 @@ main#main-content .identity-heading h2,
 }
 
 .recipient-id-notice p,
+.canonical-order-status p,
 .delivery-feedback-submitted p {
   color: var(--loot-body);
   font-size: .82rem;

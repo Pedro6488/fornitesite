@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { BadgeCheck, Clock3, ShieldCheck, ShoppingBag } from "lucide-react";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
@@ -50,8 +50,12 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const router = useRouter();
   const commerce = useCommerceState();
   const { region } = useStoreRegion();
-  const [email, setEmail] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [emailDraft, setEmailDraft] = useState<{ sessionId: string | null; value: string } | null>(null);
+  const email = emailDraft && emailDraft.sessionId === commerce.sessionId ? emailDraft.value : commerce.email ?? "";
+  const [phoneDraft, setPhoneDraft] = useState<{ sessionId: string | null; value: string } | null>(null);
+  const whatsapp = phoneDraft && phoneDraft.sessionId === commerce.sessionId
+    ? phoneDraft.value
+    : (commerce.whatsapp ?? "").replace(/\D/g, "").slice(0, 12);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [quoteSheetOpen, setQuoteSheetOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -90,6 +94,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const itemSignature = commerce.cartItemIds.join("|");
   const activeQuote =
     quote &&
+    quote.currency === (region === "us" ? "USD" : "MXN") &&
     quote.validationId === commerce.validation?.id &&
     quote.itemSignature === itemSignature
       ? quote
@@ -101,14 +106,6 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const formatActiveQuoteTotal = region === "us"
     ? `${formatUsdCents(activeQuote?.amountUsdCents ?? displayTotalWithFeeCents)} USD`
     : formatMxn(activeQuoteTotal);
-
-  useEffect(() => {
-    let canceled = false;
-    void fetch("/api/customer-email").then((response) => response.ok ? response.json() : null).then((body) => {
-      if (!canceled && body?.contact?.verified_at) setEmail(body.contact.email ?? "");
-    }).catch(() => undefined);
-    return () => { canceled = true; };
-  }, []);
 
   const createQuote = useCallback(async () => {
     if (!commerce.validation || !lines.length) return;
@@ -185,6 +182,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
       const body = await response.json();
       if (!response.ok) throw new Error(body.error);
       commerce.clearCart();
+      await commerce.refresh();
       router.push(`/pedidos/${body.order.id}?access=${body.order.publicToken}`);
     } catch (failure) {
       setError(
@@ -365,11 +363,14 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                   WhatsApp de contacto
                   <input
                     required
-                    inputMode="tel"
+                    type="tel"
+                    inputMode="numeric"
                     autoComplete="tel"
-                    pattern="[0-9+ ()-]{8,24}"
+                    pattern="[0-9]{8,12}"
+                    minLength={8}
+                    maxLength={12}
                     value={whatsapp}
-                    onChange={(event) => setWhatsapp(event.target.value)}
+                    onChange={(event) => setPhoneDraft({ sessionId: commerce.sessionId, value: event.target.value.replace(/\D/g, "").slice(0, 12) })}
                     placeholder="55 5555 5555"
                   />
                 </label>
@@ -379,7 +380,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                     type="email"
                     autoComplete="email"
                     value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                    onChange={(event) => setEmailDraft({ sessionId: commerce.sessionId, value: event.target.value })}
                     placeholder="tu@correo.com"
                   />
                 </label>

@@ -1,4 +1,5 @@
 /* Lo propio de la portada principal; el escenario está en game-stage.module.css. */
+.catalogArt { object-fit: contain; object-position: center; padding: 1rem 7%; background: radial-gradient(ellipse, #7133b488, #13132d); }
 .title {
   /* Las tildes de "ESTÁ" y "AQUÍ" necesitan aire respecto a la línea de arriba. */
   line-height: .92;
