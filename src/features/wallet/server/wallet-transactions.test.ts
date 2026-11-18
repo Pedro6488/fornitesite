@@ -231,6 +231,21 @@ describe("transacciones reales de pavos en PostgreSQL", () => {
     const s = (await db.query<Record<string,string|number|null>>("select * from wallet_admin_summary()")).rows[0];
     expect({ liability:Number(s.liability), spent:Number(s.spent_today), credited:Number(s.credited_today), paused:s.paused_until }).toEqual({ liability:2200, spent:800, credited:3000, paused:null });
   });
+  it("un precio especial marcado sin pavos bloquea la compra con saldo; vencido o activo con pavos, no", async () => {
+    await credit(); const q = await quote();
+    await db.query("insert into catalog_items(main_id,name,item_type,rarity) values('main-a','Objeto','Atuendo','Raro')");
+    const override = (await db.query<{ id:string }>("insert into offer_price_overrides(main_id,amount_mxn_cents,wallet_allowed) values('main-a',15000,false) returning id")).rows[0].id;
+    expect((await db.query<{ m:string }>("select wallet_blocked_items(array['main-a','main-b']) as m")).rows.map((r) => r.m)).toEqual(["main-a"]);
+    await db.exec("savepoint blocked_wallet");
+    await expect(buy(q)).rejects.toThrow("wallet_not_allowed");
+    await db.exec("rollback to blocked_wallet");
+    expect(await balance()).toBe(1000);
+    await db.query("update offer_price_overrides set effective_from=now()-interval '2 hours',effective_until=now()-interval '1 minute' where id=$1",[override]);
+    expect((await db.query("select * from wallet_blocked_items(array['main-a'])")).rows).toHaveLength(0);
+    await db.query("update offer_price_overrides set effective_until=null,wallet_allowed=true where id=$1",[override]);
+    await buy(q);
+    expect(await balance()).toBe(200);
+  });
   it("impide a una sesión autenticada modificar saldos directamente", async () => {
     await credit(); await db.exec("set local role authenticated");
     await expect(db.exec("update public.wallet_accounts set balance=999999")).rejects.toThrow("permission denied");
