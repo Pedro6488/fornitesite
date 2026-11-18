@@ -4771,6 +4771,10 @@ body:has(.admin-dashboard) .site-footer {
   padding: .4rem .55rem;
 }
 
+.price-wallet-warning {
+  color: #ffb84d;
+}
+
 .price-rule-actions button:first-child {
   border-color: rgba(214, 255, 69, .4);
   color: var(--cyan);

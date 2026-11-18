@@ -30,3 +30,4 @@
 .whatsNotice { display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:#0f2a1c; border:1px solid #3ccf7f; padding:14px 18px; margin-bottom:18px; }
 .whatsNotice p { margin:0; flex:1 1 260px; }
 .list article > a.secondary-button, .list article > small { display:inline-block; margin-top:12px; }
+.netNote { margin:0; padding:10px 12px; background:#090d1d; border-left:3px solid #f0a356; font-size:.92rem; }
