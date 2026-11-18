@@ -246,6 +246,65 @@ describe("transacciones reales de pavos en PostgreSQL", () => {
     await buy(q);
     expect(await balance()).toBe(200);
   });
+  describe("tarifa por volumen y bonos", () => {
+    // Ejemplo: base $7.50 por 100, costo $5.00 por 100, margen mínimo 15 % → nada puede quedar bajo $5.75 efectivos.
+    async function setupOffers() {
+      await db.exec("update wallet_rates set cents_per_100=750,cost_cents_per_100=500,min_margin_bp=1500 where region='mx'");
+      const tier = (await db.query<{ id:string }>("select save_wallet_tier($1,null,'mx',5000,700,true) as id",[admin])).rows[0].id;
+      const bonus = (await db.query<{ id:string }>("select save_wallet_bonus($1,null,'mx','Noviembre +5%',5000,500,null,false,now()-interval '1 hour',now()+interval '10 days',true) as id",[admin])).rows[0].id;
+      return { tier, bonus };
+    }
+    const quoteOf = async (vbucks:number) => (await db.query<{ amount_cents:number; cents_per_100:number; bonus_vbucks:number; tier_id:string|null }>("select * from wallet_topup_quote($1,'mx',$2)",[customer,vbucks])).rows[0];
+
+    it("aplica el tramo y el bono desde 5,000 y acredita el bono una sola vez al aprobar", async () => {
+      const { tier } = await setupOffers();
+      expect(await quoteOf(4500)).toMatchObject({ amount_cents:33750, cents_per_100:750, bonus_vbucks:0, tier_id:null });
+      expect(await quoteOf(5000)).toMatchObject({ amount_cents:35000, cents_per_100:700, bonus_vbucks:250, tier_id:tier });
+      const t = (await db.query<{ id:string; bonus_vbucks:number }>("select id,bonus_vbucks from create_wallet_topup($1,'mx',5000,35000,$2,250)",[customer,randomUUID()])).rows[0];
+      expect(t.bonus_vbucks).toBe(250);
+      await db.query("update wallet_topups set status='submitted',receipt_path='proof' where id=$1",[t.id]);
+      await db.query("select review_wallet_topup($1,$2,true,'')",[t.id,admin]);
+      await db.query("select review_wallet_topup($1,$2,true,'')",[t.id,admin]);
+      expect(await balance()).toBe(5250);
+      expect((await db.query<{ kind:string; delta:number }>("select kind,delta from wallet_ledger order by kind")).rows).toEqual([{ kind:"bonus",delta:250 },{ kind:"topup",delta:5000 }]);
+      expect(Number((await db.query<{ bonus:string }>("select bonus from wallet_customer_totals where user_id=$1",[customer])).rows[0].bonus)).toBe(250);
+    });
+
+    it("rechaza la recarga si la promoción cambió entre lo que vio el cliente y el cobro", async () => {
+      await setupOffers();
+      await db.exec("savepoint promo");
+      await expect(db.query("select * from create_wallet_topup($1,'mx',5000,35000,$2,0)",[customer,randomUUID()])).rejects.toThrow("promo_changed");
+      await db.exec("rollback to promo");
+    });
+
+    it("no deja guardar tramos ni bonos que vendan bajo el margen, ni activarlos sin costo", async () => {
+      await setupOffers();
+      await db.exec("savepoint low_tier");
+      await expect(db.query("select save_wallet_tier($1,null,'mx',10000,550,true)",[admin])).rejects.toThrow("below_margin");
+      await db.exec("rollback to low_tier; savepoint big_bonus");
+      // +40 % con $7.00 por 100 deja $5.00 efectivos: debajo de $5.75.
+      await expect(db.query("select save_wallet_bonus($1,null,'mx','Demasiado',5000,4000,null,false,now(),now()+interval '1 day',true)",[admin])).rejects.toThrow("below_margin");
+      await db.exec("rollback to big_bonus; savepoint no_cost");
+      await db.exec("update wallet_rates set cost_cents_per_100=null where region='mx'");
+      await expect(db.query("select save_wallet_tier($1,null,'mx',20000,650,true)",[admin])).rejects.toThrow("cost_required");
+      await db.exec("rollback to no_cost");
+      // Sin costo capturado, ningún tramo ni bono vigente se aplica al cobrar.
+      await db.exec("update wallet_rates set cost_cents_per_100=null where region='mx'");
+      expect(await quoteOf(5000)).toMatchObject({ cents_per_100:750, bonus_vbucks:0 });
+      expect((await db.query<{ o:{ tiers:unknown[]; bonuses:unknown[] } }>("select wallet_offers($1) as o",[customer])).rows[0].o).toEqual({ tiers:[], bonuses:[] });
+    });
+
+    it("el bono de primera recarga desaparece después de la primera recarga aprobada", async () => {
+      await setupOffers();
+      await db.exec("update wallet_bonus_rules set first_topup_only=true");
+      expect((await db.query<{ o:{ bonuses:unknown[] } }>("select wallet_offers($1) as o",[customer])).rows[0].o.bonuses).toHaveLength(1);
+      const t = (await db.query<{ id:string }>("select id from create_wallet_topup($1,'mx',1000,7500,$2,0)",[customer,randomUUID()])).rows[0];
+      await db.query("update wallet_topups set status='submitted',receipt_path='p1' where id=$1",[t.id]);
+      await db.query("select review_wallet_topup($1,$2,true,'')",[t.id,admin]);
+      expect((await db.query<{ o:{ bonuses:unknown[] } }>("select wallet_offers($1) as o",[customer])).rows[0].o.bonuses).toHaveLength(0);
+      expect((await quoteOf(5000)).bonus_vbucks).toBe(0);
+    });
+  });
   it("impide a una sesión autenticada modificar saldos directamente", async () => {
     await credit(); await db.exec("set local role authenticated");
     await expect(db.exec("update public.wallet_accounts set balance=999999")).rejects.toThrow("permission denied");
