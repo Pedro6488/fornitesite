@@ -1663,6 +1663,17 @@ main#main-content .identity-heading h2,
   accent-color: var(--loot-lime);
 }
 
+.wallet-comparison {
+  margin: 0;
+  padding: .6rem .8rem;
+  border-left: 3px solid var(--loot-line);
+  line-height: 1.45;
+}
+
+.wallet-comparison.is-savings {
+  border-left-color: var(--loot-lime);
+}
+
 .canonical-order-status.status-delivered,
 .canonical-order-status.status-paid,
 .delivery-feedback-submitted {

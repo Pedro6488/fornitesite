@@ -15,6 +15,22 @@ export function topupPrice(vbucks: number, rate: WalletRate | undefined): number
   if (!rate?.active || !rate.cents_per_100 || !Number.isInteger(vbucks) || vbucks < 100 || vbucks > 50000 || vbucks % 100) return null;
   return vbucks / 100 * rate.cents_per_100;
 }
+/** Comisión de PayPal por cobro recibido (tarifa estándar internacional). Ajustar si cambia el contrato. */
+export const PAYPAL_PERCENT_BP = 540;
+export const PAYPAL_FIXED_CENTS = 30;
+export function paypalNetCents(grossCents: number) {
+  return Math.max(0, grossCents - Math.round(grossCents * PAYPAL_PERCENT_BP / 10_000) - PAYPAL_FIXED_CENTS);
+}
+
+/**
+ * Compara el pago habitual de un pedido con lo que cuestan sus pavos a la tarifa de recarga actual.
+ * `savingsCents` > 0: conviene pagar con pavos; < 0: el pago habitual sale más barato.
+ */
+export function compareWalletPrice(regularCents: number | null | undefined, vbucks: number, rate: WalletRate | undefined) {
+  if (!regularCents || regularCents <= 0 || !rate?.cents_per_100 || vbucks <= 0) return null;
+  const equivalentCents = Math.round(vbucks / 100 * rate.cents_per_100);
+  return { regularCents, equivalentCents, savingsCents: regularCents - equivalentCents };
+}
 export function walletMoney(cents: number, region: "mx" | "us") {
   return new Intl.NumberFormat("es-MX", { style: "currency", currency: region === "mx" ? "MXN" : "USD" }).format(cents / 100) + (region === "mx" ? " MXN" : " USD");
 }

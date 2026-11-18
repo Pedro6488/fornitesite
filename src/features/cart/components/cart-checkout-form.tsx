@@ -18,6 +18,7 @@ import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import { PurchaseSteps } from "./purchase-steps";
 import { resolveCartAvailability } from "../application/cart-availability";
 import { useWallet } from "@/features/wallet/components/use-wallet";
+import { compareWalletPrice, walletMoney } from "@/features/wallet/domain/wallet";
 
 type Quote = Readonly<{
   id: string;
@@ -28,7 +29,9 @@ type Quote = Readonly<{
   paypalFeeUsdCents: number | null;
   amountUsdCents: number | null;
   totalVbucks: number;
+  walletAllowed?: boolean;
   lines: readonly {
+    walletAllowed?: boolean;
     itemMainId: string;
     name: string;
     imageUrl: string | null;
@@ -108,7 +111,9 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     0,
   ) ?? displayTotal;
   const walletCost = activeQuote?.totalVbucks ?? lines.reduce((sum,item) => sum+item.finalPriceVbucks,0);
-  const insufficientWallet = !wallet.data || wallet.data.frozen || wallet.data.paused || wallet.data.balance < walletCost || !wallet.data.automaticDelivery;
+  const walletBlockedItems = activeQuote?.lines.filter((line) => line.walletAllowed === false).map((line) => line.name) ?? [];
+  const walletComparison = activeQuote && wallet.data ? compareWalletPrice(region === "us" ? activeQuote.amountUsdCents : activeQuote.amountMxnCents, walletCost, wallet.data.rates?.find((rate) => rate.region === region)) : null;
+  const insufficientWallet = !wallet.data || walletBlockedItems.length > 0 || wallet.data.frozen || wallet.data.paused || wallet.data.balance < walletCost || !wallet.data.automaticDelivery;
   const formatActiveQuoteTotal = useWalletPayment ? `${walletCost.toLocaleString("es-MX")} pavos` : region === "us"
     ? `${formatUsdCents(activeQuote?.amountUsdCents ?? displayTotalWithFeeCents)} USD`
     : formatMxn(activeQuoteTotal);
@@ -397,6 +402,9 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                   <label><span><input type="radio" name="payment-source" checked={useWalletPayment} onChange={() => setPaymentSource("wallet")} /> Mis pavos de la tienda</span></label>
                   <p>Saldo: {wallet.data ? `${wallet.data.balance.toLocaleString("es-MX")} pavos` : "No disponible"}. Costo: {walletCost.toLocaleString("es-MX")} pavos.</p>
                   <small>Los pavos de la tienda son tu saldo en SigfriedLootBox, no paVos de tu cuenta de Epic.</small>
+                  {walletComparison && walletComparison.savingsCents > 0 && <p className="wallet-comparison is-savings">Con pavos ahorras <strong>{walletMoney(walletComparison.savingsCents, region)}</strong>: pago habitual {walletMoney(walletComparison.regularCents, region)}, con pavos {walletCost.toLocaleString("es-MX")} pavos ≈ {walletMoney(walletComparison.equivalentCents, region)} a la tarifa de recarga actual.</p>}
+                  {walletComparison && walletComparison.savingsCents < 0 && <p className="wallet-comparison">Para este pedido el pago habitual sale más barato: {walletMoney(walletComparison.regularCents, region)}, contra ≈ {walletMoney(walletComparison.equivalentCents, region)} en pavos a la tarifa de recarga actual.</p>}
+                  {walletBlockedItems.length > 0 && <p role="alert">{walletBlockedItems.join(", ")} {walletBlockedItems.length === 1 ? "tiene" : "tienen"} precio especial y no se {walletBlockedItems.length === 1 ? "puede" : "pueden"} pagar con pavos. Usa el pago habitual o {walletBlockedItems.length === 1 ? "quítalo" : "quítalos"} del carrito.</p>}
                   {wallet.error && <p role="alert">{wallet.error}</p>}
                   {useWalletPayment && <>{wallet.data && wallet.data.balance >= walletCost ? <p>Después de pagar: {(wallet.data.balance-walletCost).toLocaleString("es-MX")} pavos. El envío se inicia automáticamente, sin aprobar otro pago.</p> : <p>No alcanza el saldo para todo el pedido. Recarga tus pavos o elige el pago habitual.</p>}
                     {wallet.data && !wallet.data.automaticDelivery && <p>La entrega automática está temporalmente deshabilitada. No se descontará saldo.</p>}

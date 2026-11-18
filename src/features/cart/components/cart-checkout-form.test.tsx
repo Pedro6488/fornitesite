@@ -26,8 +26,9 @@ const commerce = vi.hoisted(() => ({
   clearCart: vi.fn(),
   refresh: vi.fn().mockResolvedValue(undefined),
 }));
-const wallet = vi.hoisted(() => ({ balance:1000, frozen:false, paused:false }));
-vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,frozen:wallet.frozen,paused:wallet.paused,automaticDelivery:true },error:null }) }));
+const wallet = vi.hoisted(() => ({ balance:1000, frozen:false, paused:false, rate:null as number | null }));
+const quoteExtras = vi.hoisted(() => ({ walletAllowed: true }));
+vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,frozen:wallet.frozen,paused:wallet.paused,automaticDelivery:true,rates:[{ region:"mx",active:true,cents_per_100:wallet.rate }] },error:null }) }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/features/commerce/components/commerce-state-provider", () => ({ useCommerceState: () => commerce }));
@@ -41,12 +42,12 @@ const item: CatalogItem = {
 describe("CartCheckoutForm", () => {
   beforeEach(() => {
     commerce.authenticated = true;
-    wallet.balance=1000; wallet.frozen=false; wallet.paused=false;
+    wallet.balance=1000; wallet.frozen=false; wallet.paused=false; wallet.rate=null; quoteExtras.walletAllowed=true;
     commerce.sessionId = "session-a";
     commerce.whatsapp = "525512345678";
     commerce.email = "cliente@example.com";
     vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => url === "/api/cart-orders" ? { order:{ id:"order-a",publicToken:"public-token" } } : url === "/api/customer-email" ? {} : { quote: {
-      id: "quote-a", currency: "MXN", amountMxnCents: 4000, expiresAt: "2099-01-01T00:00:00Z", lines: [{ itemMainId: "item-a", name: "Objeto vigente", vbucksPrice: 500, amountMxnCents: 4000 }],
+      id: "quote-a", currency: "MXN", amountMxnCents: 4000, expiresAt: "2099-01-01T00:00:00Z", lines: [{ itemMainId: "item-a", name: "Objeto vigente", vbucksPrice: 500, amountMxnCents: 4000, walletAllowed: quoteExtras.walletAllowed }],
     } } })));
   });
 
@@ -77,6 +78,27 @@ describe("CartCheckoutForm", () => {
     fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
     expect(screen.getByText(/está pausado unos minutos/)).toBeInTheDocument();
+  });
+
+  it("muestra cuánto ahorra con pavos solo cuando de verdad conviene", async () => {
+    wallet.rate=500;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByText(/Con pavos ahorras/)).toHaveTextContent("$15.00 MXN");
+  });
+
+  it("avisa cuando el pago habitual sale más barato que los pavos", async () => {
+    wallet.rate=1000;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByText(/el pago habitual sale más barato/)).toBeInTheDocument();
+    expect(screen.queryByText(/Con pavos ahorras/)).not.toBeInTheDocument();
+  });
+
+  it("bloquea pavos si un objeto tiene precio especial sin pavos", async () => {
+    quoteExtras.walletAllowed=false;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
+    expect(screen.getByText(/tiene precio especial y no se puede pagar con pavos/)).toBeInTheDocument();
   });
 
   it("envía únicamente el método pavos y permite volver al pago habitual",async () => {
