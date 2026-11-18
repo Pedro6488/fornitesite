@@ -9,20 +9,24 @@ export async function GET(request: Request) {
   if (userId) {
     const [ledger, orders, topups] = await Promise.all([
       staff.database.from("wallet_ledger").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(200),
-      staff.database.from("orders").select("id,status,epic_display_name,wallet_vbucks,created_at,order_items(item_name,vbucks_price,wallet_refunded),fulfillments(order_item_id,status,last_error)").eq("user_id", userId).eq("payment_source","wallet").order("created_at", { ascending: false }).limit(200),
+      staff.database.from("orders").select("id,status,public_token,epic_display_name,wallet_vbucks,created_at,contact_whatsapp,currency,order_items(item_name,vbucks_price,quantity,wallet_refunded),fulfillments(order_item_id,status,last_error)").eq("user_id", userId).eq("payment_source","wallet").order("created_at", { ascending: false }).limit(200),
       staff.database.from("wallet_topups").select("id,user_id,vbucks,region,amount_cents,status,created_at,expires_at,review_note,reference_code").eq("user_id", userId).order("created_at", { ascending: false }).limit(200),
     ]);
     if (ledger.error || orders.error || topups.error) return NextResponse.json({ error: "No fue posible consultar el historial." }, { status: 503 });
     return NextResponse.json({ movements: ledger.data, orders: orders.data, topups: topups.data });
   }
-  const [accounts, pending, rates] = await Promise.all([
+  const [accounts, pending, rates, summary, attention] = await Promise.all([
     staff.database.from("wallet_customer_totals").select("*").order("updated_at", { ascending: false }).limit(500),
     staff.database.from("wallet_topups").select("*").eq("status","submitted").order("created_at").limit(100),
     staff.database.from("wallet_rates").select("region,cents_per_100,active"),
+    staff.database.rpc("wallet_admin_summary"),
+    staff.database.from("outbox_jobs").select("id,aggregate_id,status,attempts,last_error,updated_at").eq("job_type","wallet.deliver")
+      .in("status",["pending","processing","failed"]).or("status.eq.failed,attempts.gt.3").order("updated_at", { ascending: false }).limit(50),
   ]);
-  if (accounts.error || pending.error || rates.error) return NextResponse.json({ error: "No fue posible consultar los saldos. Verifica que la migración esté aplicada." }, { status: 503 });
+  if (accounts.error || pending.error || rates.error || summary.error || attention.error) return NextResponse.json({ error: "No fue posible consultar los saldos. Verifica que la migración esté aplicada." }, { status: 503 });
   const topups = await Promise.all((pending.data ?? []).map(async (t) => ({ ...t, receiptUrl: t.receipt_path ? (await staff.database.storage.from("wallet-receipts").createSignedUrl(t.receipt_path,600)).data?.signedUrl ?? null : null })));
-  return NextResponse.json({ accounts: accounts.data, pending: topups, rates: rates.data });
+  const totals = (Array.isArray(summary.data) ? summary.data[0] : summary.data) ?? null;
+  return NextResponse.json({ accounts: accounts.data, pending: topups, rates: rates.data, summary: totals, attention: attention.data });
 }
 const reason = z.string().trim().max(500);
 const schema = z.discriminatedUnion("action", [
@@ -30,6 +34,7 @@ const schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("review"), id: z.uuid(), approve: z.boolean(), note: z.string().trim().max(1000).default("") }),
   z.object({ action: z.literal("adjust"), userId: z.uuid(), delta: z.number().int().min(-1000000).max(1000000).refine((n) => n !== 0), reason: reason.min(5), orderId: z.uuid().optional() }),
   z.object({ action: z.literal("freeze"), userId: z.uuid(), frozen: z.boolean(), reason: reason.default("") }),
+  z.object({ action: z.literal("resume") }),
 ]);
 const adjustErrors: Record<string,string> = {
   adjustment_exceeds_balance: "El ajuste dejaría el saldo en negativo. Si el cliente ya gastó los pavos, congela la cuenta.",
@@ -51,6 +56,9 @@ export async function POST(request: Request) {
     if (!data.approve && data.note.length < 5) return NextResponse.json({ error: "Escribe el motivo del rechazo." }, { status: 400 });
     const { error } = await staff.database.rpc("review_wallet_topup", { p_id: data.id, p_actor: staff.user.id, p_approve: data.approve, p_note: data.note });
     if (error) return NextResponse.json({ error: "La recarga ya fue revisada o no tiene un comprobante válido." }, { status: 409 });
+  } else if (data.action === "resume") {
+    const { error } = await staff.database.rpc("resume_wallet_payments", { p_actor: staff.user.id });
+    if (error) return NextResponse.json({ error: "No fue posible reanudar el pago con pavos." }, { status: 503 });
   } else if (data.action === "adjust") {
     const { data: balance, error } = await staff.database.rpc("adjust_wallet", { p_user: data.userId, p_actor: staff.user.id, p_delta: data.delta, p_reason: data.reason, p_order: data.orderId ?? null });
     if (error) {
