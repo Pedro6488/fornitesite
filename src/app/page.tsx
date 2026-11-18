@@ -1,4 +1,5 @@
 import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
+import { randomInt } from "node:crypto";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { getPublicDeliveryReferences } from "@/features/community/server/get-community";
 import { HomeReferences } from "@/features/storefront/components/home-references";
@@ -26,7 +27,7 @@ export default async function HomePage() {
   if (referencesResult.status === "rejected") console.error("Home references unavailable", referencesResult.reason);
   const candidates = items.filter((item) => item.imageUrl);
   for (let index = candidates.length - 1; index > 0; index--) {
-    const other = Math.floor(Math.random() * (index + 1));
+    const other = randomInt(index + 1);
     [candidates[index], candidates[other]] = [candidates[other], candidates[index]];
   }
   const showcase = candidates.slice(0, 8).map((item) => ({ id: item.mainId, name: item.name, image: item.imageUrl! }));

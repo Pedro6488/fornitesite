@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { CartCheckoutForm } from "./cart-checkout-form";
@@ -24,7 +24,10 @@ const commerce = vi.hoisted(() => ({
   openIdentity: vi.fn(),
   removeCartItem: vi.fn().mockResolvedValue(null),
   clearCart: vi.fn(),
+  refresh: vi.fn().mockResolvedValue(undefined),
 }));
+const wallet = vi.hoisted(() => ({ balance:1000 }));
+vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,automaticDelivery:true },error:null }) }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/features/commerce/components/commerce-state-provider", () => ({ useCommerceState: () => commerce }));
@@ -38,10 +41,11 @@ const item: CatalogItem = {
 describe("CartCheckoutForm", () => {
   beforeEach(() => {
     commerce.authenticated = true;
+    wallet.balance=1000;
     commerce.sessionId = "session-a";
     commerce.whatsapp = "525512345678";
     commerce.email = "cliente@example.com";
-    vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => url === "/api/customer-email" ? {} : { quote: {
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => url === "/api/cart-orders" ? { order:{ id:"order-a",publicToken:"public-token" } } : url === "/api/customer-email" ? {} : { quote: {
       id: "quote-a", currency: "MXN", amountMxnCents: 4000, expiresAt: "2099-01-01T00:00:00Z", lines: [{ itemMainId: "item-a", name: "Objeto vigente", vbucksPrice: 500, amountMxnCents: 4000 }],
     } } })));
   });
@@ -50,6 +54,27 @@ describe("CartCheckoutForm", () => {
     fireEvent.click(screen.getByRole("button", { name: "Confirmar precio y continuar" }));
     return screen.findByLabelText("WhatsApp de contacto");
   }
+
+  it("no permite pagar ni enviar si los pavos no cubren todo el pedido", async () => {
+    wallet.balance=100;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
+    expect(screen.getByText(/No alcanza el saldo para todo el pedido/)).toBeInTheDocument();
+  });
+
+  it("envía únicamente el método pavos y permite volver al pago habitual",async () => {
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    const external=screen.getByRole("radio",{ name:"Transferencia bancaria" });
+    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    expect(external).not.toBeChecked();
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeEnabled();
+    fireEvent.click(external);
+    expect(screen.getByRole("radio",{ name:"Mis pavos de la tienda" })).not.toBeChecked();
+    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    fireEvent.click(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/cart-orders",expect.objectContaining({ body:expect.stringContaining('"paymentSource":"wallet"') })));
+  });
 
   it("autocompleta el correo y permite editarlo sin trasladarlo a otra sesión", async () => {
     const { rerender } = render(<CartCheckoutForm items={[item]} />);

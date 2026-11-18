@@ -9,9 +9,10 @@ import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import { GameStageBackdrop } from "@/features/storefront/components/game-stage";
 import stage from "@/features/storefront/components/game-stage.module.css";
+import { WalletPanel } from "@/features/wallet/components/wallet-panel";
 
 type CustomerOrder = { id: string; status: string; item_name: string; amount_mxn_cents: number; public_token: string; created_at: string };
-type AccountTab = "identities" | "orders" | "favorites";
+type AccountTab = "identities" | "orders" | "favorites" | "wallet";
 
 function orderLabel(status: string) {
   if (status === "delivered") return "Recibido";
@@ -58,11 +59,11 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
   }
 
   function moveAccountTab(event: ReactKeyboardEvent<HTMLButtonElement>, currentTab: AccountTab) {
-    const tabs: AccountTab[] = ["identities", "orders", "favorites"];
+    const tabs: AccountTab[] = ["wallet", "identities", "orders", "favorites"];
     if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
     event.preventDefault();
     const nextIndex = (tabs.indexOf(currentTab) + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length;
-    const nextTab: AccountTab = event.key === "Home" ? "identities"
+    const nextTab: AccountTab = event.key === "Home" ? "wallet"
       : event.key === "End" ? "favorites"
         : tabs[nextIndex] ?? "identities";
     setActiveTab(nextTab);
@@ -116,10 +117,12 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
     <GamePageHero slim word="MI CUENTA" accent="#8b5cf6" eyebrow="Mi cuenta" title={<>Administra <span>tu cuenta</span></>} lead="Cambia de sección sin perder el ID seleccionado para tu próxima entrega." />
     <div className="loot-page-body">
     <div className="account-tabs" role="tablist" aria-label="Secciones de mi cuenta">
+      <button id="account-tab-wallet" type="button" role="tab" aria-selected={activeTab === "wallet"} aria-controls="account-panel-wallet" tabIndex={activeTab === "wallet" ? 0 : -1} onKeyDown={(event) => moveAccountTab(event, "wallet")} onClick={() => setActiveTab("wallet")}><PackageCheck aria-hidden="true" size={17} /><span>Mis pavos</span></button>
       <button id="account-tab-identities" type="button" role="tab" aria-selected={activeTab === "identities"} aria-controls="account-panel-identities" tabIndex={activeTab === "identities" ? 0 : -1} onKeyDown={(event) => moveAccountTab(event, "identities")} onClick={() => setActiveTab("identities")}><Gamepad2 aria-hidden="true" size={17} /><span>Destinatarios</span><b>{commerce.validations.length}</b></button>
       <button id="account-tab-orders" type="button" role="tab" aria-selected={activeTab === "orders"} aria-controls="account-panel-orders" tabIndex={activeTab === "orders" ? 0 : -1} onKeyDown={(event) => moveAccountTab(event, "orders")} onClick={() => setActiveTab("orders")}><PackageCheck aria-hidden="true" size={17} /><span>Mis compras</span><b>{orders.length}</b></button>
       <button id="account-tab-favorites" type="button" role="tab" aria-selected={activeTab === "favorites"} aria-controls="account-panel-favorites" tabIndex={activeTab === "favorites" ? 0 : -1} onKeyDown={(event) => moveAccountTab(event, "favorites")} onClick={() => setActiveTab("favorites")}><Heart aria-hidden="true" size={17} /><span>Favoritos</span><b>{commerce.favoriteItemIds.size}</b></button>
     </div>
+    <section id="account-panel-wallet" className="account-tab-panel" role="tabpanel" aria-labelledby="account-tab-wallet" hidden={activeTab !== "wallet"}>{activeTab === "wallet" && <WalletPanel />}</section>
     <section id="account-panel-identities" className={`account-identity-panel account-tab-panel ${identity.tone}`} role="tabpanel" aria-labelledby="account-tab-identities" hidden={activeTab !== "identities"}>
       <header><div className="account-identity-heading"><span><Gamepad2 aria-hidden="true" size={21} /></span><div><p className="eyebrow">DESTINATARIOS</p><h3>¿Quién recibirá tu próxima compra?</h3><p>Elige un ID guardado o agrega otro destinatario.</p></div></div></header>
       <div className="account-identity-list">

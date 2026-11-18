@@ -21,6 +21,7 @@ export type DeliveryItem = Readonly<{
 }>;
 
 export type DeliveryOrder = Readonly<{
+  walletPaid?: boolean;
   id: string; status: OrderStatus; displayName: string; platform: string;
   epicAccountId: string; providerReceiverId: string | null; items: readonly DeliveryItem[];
 }>;
@@ -129,7 +130,7 @@ async function step(store: DeliveryStore, order: { id: string }, from: OrderStat
  * Termina el pedido como «Entregado», «Conciliando» o «Revisión manual».
  */
 export async function deliverOrder(
-  input: { orderId: string; actorId: string; confirmPayment: boolean; timeBudgetMs?: number },
+  input: { orderId: string; actorId: string; confirmPayment: boolean; timeBudgetMs?: number; trigger?: "admin" | "system" },
   deps: { store: DeliveryStore; fnshop: FnShopCaller; now?: () => number },
 ): Promise<DeliveryReport> {
   const now = deps.now ?? Date.now;
@@ -175,7 +176,7 @@ export async function deliverOrder(
     }
     try {
       const response = await fnshop.call("gift_send", giftParams(order, item, fnshop.config.category, { order_id: item.id }), {
-        trigger: "admin", actorId: input.actorId, orderId: order.id, orderItemId: item.id,
+        trigger: input.trigger ?? "admin", actorId: input.actorId, orderId: order.id, orderItemId: item.id,
       });
       const result = interpretGiftSend(response.body);
       await fnshop.decide(response.callId, result.outcome);

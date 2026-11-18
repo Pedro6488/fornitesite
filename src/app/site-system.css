@@ -1651,6 +1651,18 @@ main#main-content .identity-heading h2,
   margin: 0;
 }
 
+.wallet-payment-options {
+  border: 1px solid var(--loot-line);
+  padding: 1rem;
+  display: grid;
+  gap: .75rem;
+}
+
+.wallet-payment-options input[type="radio"] {
+  width: auto;
+  accent-color: var(--loot-lime);
+}
+
 .canonical-order-status.status-delivered,
 .canonical-order-status.status-paid,
 .delivery-feedback-submitted {

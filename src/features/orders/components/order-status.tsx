@@ -51,13 +51,14 @@ export function OrderStatus({
   const [deliveryFeedbackMessage, setDeliveryFeedbackMessage] = useState<string | null>(null);
   const [submittingDeliveryFeedback, setSubmittingDeliveryFeedback] = useState(false);
   const [deliveryFeedbackSubmitted, setDeliveryFeedbackSubmitted] = useState(Boolean(initialOrder.deliveryFeedbackSubmittedAt));
-  const isUsdOrder = order.currency === "USD";
-  const totalLabel = isUsdOrder
+  const isWalletOrder = order.paymentSource === "wallet";
+  const isUsdOrder = order.currency === "USD" && !isWalletOrder;
+  const totalLabel = isWalletOrder ? `${order.walletVbucks?.toLocaleString("es-MX")} pavos` : isUsdOrder
     ? `${formatUsdCents(order.amountUsdCents ?? 0)} USD`
     : formatMxn(order.amountMxnCents / 100);
   const canUpload =
-    order.status === "awaiting_transfer" ||
-    order.status === "information_required";
+    !isWalletOrder && (order.status === "awaiting_transfer" ||
+    order.status === "information_required");
   const whatsappHref = useMemo(() => {
     if (!whatsappNumber) return null;
     const tracking = `${appUrl}/pedidos/${order.id}?access=${order.publicToken}`;
@@ -161,8 +162,8 @@ export function OrderStatus({
       <div className="order-items-summary">
         {(order.items ?? []).map((item, index) => (
           <p key={`${item.itemName}-${index}`}>
-            <span>{item.itemName}{item.delivery && order.status !== "delivered" && <small className={`order-item-delivery is-${item.delivery}`}>{item.delivery === "sent" ? "✓ Enviado" : item.delivery === "sending" ? "Enviando…" : "Pendiente"}</small>}</span>
-            <strong>{isUsdOrder ? `${formatUsdCents(item.unitAmountUsdCents ?? 0)} USD` : formatMxn(item.unitAmountMxnCents / 100)}</strong>
+            <span>{item.itemName}{item.delivery && (order.status !== "delivered" || item.delivery === "refunded") && <small className={`order-item-delivery is-${item.delivery}`}>{item.delivery === "refunded" ? "Pavos devueltos" : item.delivery === "sent" ? "✓ Enviado" : item.delivery === "sending" ? "Enviando…" : "Pendiente"}</small>}</span>
+            <strong>{isWalletOrder ? `${item.vbucksPrice} pavos` : isUsdOrder ? `${formatUsdCents(item.unitAmountUsdCents ?? 0)} USD` : formatMxn(item.unitAmountMxnCents / 100)}</strong>
           </p>
         ))}
         {isUsdOrder && <p><span>Comisión PayPal</span><strong>{formatUsdCents(order.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
@@ -185,6 +186,8 @@ export function OrderStatus({
       <div className={`canonical-order-status status-${order.status}`}>
         <span>ESTADO DEL PEDIDO</span>
         <strong>{isUsdOrder && order.status === "awaiting_transfer" ? "Pendiente de pago por PayPal" : statusCopy[order.status]}</strong>
+        {isWalletOrder && <p>Pagado con tus pavos de la tienda. El envío se procesa automáticamente, sin revisión de transferencia.</p>}
+        {isWalletOrder && order.statusNote && <p>{order.statusNote}</p>}
         {(order.status === "receipt_submitted" || order.status === "transfer_review") && <p>Tu pago está en revisión. Una vez que se vea reflejado, enviaremos tu pedido en un plazo de 1 a 10 minutos. Gracias por tu paciencia.</p>}
       </div>
       {order.status === "canceled" && (

@@ -11,6 +11,7 @@ import { OrderActionNotice, useOrderActions } from "./order-actions";
 import { useAdminData } from "./use-admin-request";
 
 type OrderRow = {
+  payment_source?: string; wallet_vbucks?: number | null;
   id: string; created_at: string; updated_at: string | null; customer_email: string | null; epic_display_name: string;
   recipient_platform: string; contact_whatsapp: string | null; amount_mxn_cents: number; currency?: "MXN" | "USD"; amount_usd_cents?: number | null; status: OrderStatus;
   order_items: { item_name: string; item_image_url: string | null; quantity: number }[]; hasReceipt: boolean;

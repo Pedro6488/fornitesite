@@ -11,7 +11,7 @@ import styles from "./storefront-shell.module.css";
 
 export function StorefrontHeader({ contactUrl }: { contactUrl: string }) {
   const pathname = usePathname();
-  const hasRegion = ["/fortnite", "/objetos", "/carrito", "/checkout", "/favoritos"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  const hasRegion = ["/fortnite", "/objetos", "/carrito", "/checkout", "/favoritos", "/pavos", "/cuenta"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
   return <header className={styles.header}>
     <a className={styles.skip} href="#main-content">Saltar al contenido</a>
     <div className={styles.headerInner}>

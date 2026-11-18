@@ -26,6 +26,7 @@ const OPERATION: readonly NavItem[] = [
 const FNSHOP_ITEM: NavItem = { href: "/admin/fnshop", label: "FN Shop", icon: Gift };
 
 const STORE: readonly NavItem[] = [
+  { href: "/admin/pavos", label: "Clientes con pavos", icon: Tags },
   { href: "/admin/precios", label: "Precios", icon: Tags },
   { href: "/admin/carritos", label: "Carritos", icon: ShoppingCart },
   { href: "/admin/favoritos", label: "Favoritos", icon: Heart },
