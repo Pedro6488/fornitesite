@@ -73,6 +73,7 @@ export async function POST(request: Request) {
       p_idempotency_key: parsed.data.idempotencyKey
     });
     if (error) {
+      if (error.message.includes("wallet_paused")) return NextResponse.json({ error: "El pago con pavos está pausado unos minutos mientras revisamos las entregas. No se descontó nada; usa el pago habitual o intenta más tarde." }, { status: 503 });
       if (error.message.includes("account_frozen")) return NextResponse.json({ error: "Tu saldo de pavos está en revisión. No se descontó nada; usa el pago habitual o escríbenos." }, { status: 423 });
       if (error.message.includes("insufficient_balance")) return NextResponse.json({ error: "No tienes pavos suficientes para este pedido. No se descontó saldo ni se inició el envío." }, { status: 409 });
       const conflict = /quote_expired|validation_mismatch|recipient_not_ready|empty_quote|idempotency_mismatch/.test(error.message);
