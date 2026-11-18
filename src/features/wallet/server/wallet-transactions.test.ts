@@ -156,6 +156,38 @@ describe("transacciones reales de pavos en PostgreSQL", () => {
     expect((await db.query<{ status:string }>("select status from wallet_topups where id=$1",[fresh.id])).rows[0].status).toBe("expired");
     expect(await balance()).toBe(0);
   });
+  it("una cuenta congelada no puede comprar con pavos y vuelve a comprar al descongelarla", async () => {
+    await credit(); const q = await quote();
+    await db.exec("savepoint short_reason");
+    await expect(db.query("select set_wallet_frozen($1,$2,true,'')",[customer,admin])).rejects.toThrow("reason_required");
+    await db.exec("rollback to short_reason");
+    await db.query("select set_wallet_frozen($1,$2,true,'Contracargo de PayPal')",[customer,admin]);
+    await db.exec("savepoint frozen_buy");
+    await expect(buy(q)).rejects.toThrow("account_frozen");
+    await db.exec("rollback to frozen_buy");
+    expect(await balance()).toBe(1000);
+    await db.query("select set_wallet_frozen($1,$2,false,'')",[customer,admin]);
+    await buy(q);
+    expect(await balance()).toBe(200);
+  });
+  it("un ajuste exige admin y motivo, nunca deja saldo negativo y queda en los totales", async () => {
+    await credit(1000);
+    await db.exec("savepoint not_admin_adjust");
+    await expect(db.query("select adjust_wallet($1,$2,500,'Compensación')",[customer,customer])).rejects.toThrow("not_admin");
+    await db.exec("rollback to not_admin_adjust; savepoint no_reason");
+    await expect(db.query("select adjust_wallet($1,$2,500,'')",[customer,admin])).rejects.toThrow("reason_required");
+    await db.exec("rollback to no_reason; savepoint negative");
+    await expect(db.query("select adjust_wallet($1,$2,-1500,'Contracargo parcial')",[customer,admin])).rejects.toThrow("adjustment_exceeds_balance");
+    await db.exec("rollback to negative");
+    expect((await db.query<{ b:number }>("select adjust_wallet($1,$2,-400,'Recarga aprobada de más') as b",[customer,admin])).rows[0].b).toBe(600);
+    const totals = (await db.query<{ adjusted:string; balance:number; frozen:boolean }>("select adjusted,balance,frozen from wallet_customer_totals where user_id=$1",[customer])).rows[0];
+    expect({ ...totals, adjusted: Number(totals.adjusted) }).toEqual({ adjusted:-400, balance:600, frozen:false });
+    expect((await db.query("select * from audit_log where action='wallet.adjust'")).rows).toHaveLength(1);
+  });
+  it("cada recarga tiene la referencia de pago que ve el cliente", async () => {
+    const t = (await db.query<{ id:string; reference_code:string }>("select id,reference_code from create_wallet_topup($1,'mx',1000,5000,$2)",[customer,randomUUID()])).rows[0];
+    expect(t.reference_code).toBe(`RECARGA-${t.id.slice(0,8).toUpperCase()}`);
+  });
   it("impide a una sesión autenticada modificar saldos directamente", async () => {
     await credit(); await db.exec("set local role authenticated");
     await expect(db.exec("update public.wallet_accounts set balance=999999")).rejects.toThrow("permission denied");
