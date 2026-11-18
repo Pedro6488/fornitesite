@@ -3,7 +3,8 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { useStoreRegion } from "@/features/pricing/components/region-provider";
-import { movementLabels, topupLabels, topupPrice, topupReference, topupStatus, walletMoney, type WalletTopup } from "../domain/wallet";
+import { movementLabels, topupLabels, topupReference, topupStatus, walletMoney, type WalletTopup } from "../domain/wallet";
+import { nextOffer, topupQuote } from "../domain/wallet-offers";
 import { toStore, whatsappLink } from "../domain/wallet-whatsapp";
 import { useWallet, walletRequest } from "./use-wallet";
 import styles from "./wallet.module.css";
@@ -16,13 +17,19 @@ export function WalletPanel() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [key, setKey] = useState<string | null>(null);
-  const cents = topupPrice(amount, data?.rates.find((rate) => rate.region === region));
+  const rate = data?.rates.find((item) => item.region === region);
+  const regionTiers = (data?.tiers ?? []).filter((tier) => tier.region === region);
+  const regionBonuses = (data?.bonuses ?? []).filter((bonus) => bonus.region === region);
+  const quote = topupQuote(amount, rate, regionTiers, regionBonuses);
+  const cents = quote?.cents ?? null;
+  const next = nextOffer(amount, rate, regionTiers, regionBonuses);
+  const pickAmount = (value: number) => { setAmount(value); setKey(null); };
   async function createTopup() {
     if (cents === null || busy) return;
     setBusy(true); setMessage("");
     const attemptKey = key ?? crypto.randomUUID(); setKey(attemptKey);
     try {
-      await walletRequest("/api/wallet/topups", { method: "POST", headers: { "Content-Type":"application/json" }, body: JSON.stringify({ region, vbucks: amount, expectedCents: cents, key: attemptKey }) });
+      await walletRequest("/api/wallet/topups", { method: "POST", headers: { "Content-Type":"application/json" }, body: JSON.stringify({ region, vbucks: amount, expectedCents: cents, expectedBonus: quote?.bonus ?? 0, key: attemptKey }) });
       setKey(null); setMessage("Recarga creada. Revisa los datos de pago y adjunta tu comprobante abajo."); await reload();
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : "No fue posible crear la recarga."); }
     finally { setBusy(false); }
@@ -45,15 +52,21 @@ export function WalletPanel() {
     {data?.frozen && <p className="notice error" role="alert">Tu saldo está en revisión y por ahora no puedes pagar con pavos. Escríbenos para resolverlo; mientras tanto puedes usar el pago habitual.</p>}
     {data?.frozen && support(toStore.frozen()) && <a className="secondary-button" href={support(toStore.frozen())!} target="_blank" rel="noreferrer">Escribir por WhatsApp</a>}
     <section className={styles.recharge} aria-labelledby="recharge-title"><div><p className="eyebrow">RECARGA TU SALDO</p><h3 id="recharge-title">¿Cuántos pavos quieres comprar?</h3><p>Elige de 100 a 50,000 pavos, en incrementos de 100.</p></div>
+      {regionBonuses.length > 0 && <div className={styles.campaign} role="note">{regionBonuses.map((bonus) => <p key={bonus.id}><strong>{bonus.label}</strong>: +{(bonus.bonus_bp/100).toLocaleString("es-MX")}% de pavos de regalo desde {bonus.min_vbucks.toLocaleString("es-MX")}{bonus.bonus_cap ? ` (hasta ${bonus.bonus_cap.toLocaleString("es-MX")})` : ""}{bonus.first_topup_only ? " en tu primera recarga" : ""}. Válido hasta el {new Date(bonus.ends_at).toLocaleDateString("es-MX", { day:"numeric", month:"long" })}.</p>)}</div>}
+      {regionTiers.length > 0 && rate?.cents_per_100 && <ul className={styles.tiers} aria-label="Precio por volumen"><li><span>Menos de {regionTiers[0].min_vbucks.toLocaleString("es-MX")}</span><strong>{walletMoney(rate.cents_per_100,region)} por 100</strong></li>{regionTiers.map((tier) => <li key={tier.id} aria-current={quote?.tier?.id === tier.id || undefined}><span>Desde {tier.min_vbucks.toLocaleString("es-MX")}</span><strong>{walletMoney(tier.cents_per_100,region)} por 100</strong></li>)}</ul>}
       <fieldset disabled={busy}><label htmlFor="wallet-range">Cantidad de pavos <strong>{amount.toLocaleString("es-MX")}</strong></label><input id="wallet-range" type="range" min={100} max={50000} step={100} value={amount} onChange={(e) => { setAmount(Number(e.target.value)); setKey(null); }} />
       <div className={styles.amountButtons}>{[1000,3500,5000,13500].map((n) => <button type="button" key={n} aria-pressed={amount===n} onClick={() => { setAmount(n); setKey(null); }}>{n.toLocaleString("es-MX")}</button>)}</div>
-      <div className={styles.summary}><span>Total ({region === "mx" ? "México · transferencia" : "USA · PayPal"})</span><strong>{cents === null ? "Precio por definir" : walletMoney(cents,region)}</strong><span>Saldo después de acreditarse</span><strong>{((data?.balance ?? 0)+amount).toLocaleString("es-MX")} pavos</strong></div>
+      <div className={styles.summary}><span>Total ({region === "mx" ? "México · transferencia" : "USA · PayPal"})</span><strong>{cents === null ? "Precio por definir" : walletMoney(cents,region)}</strong>
+        <span>Recibes</span><strong>{amount.toLocaleString("es-MX")} pavos{quote && quote.bonus > 0 && <> + <em className={styles.gift}>{quote.bonus.toLocaleString("es-MX")} de regalo</em></>}</strong>
+        {quote && (quote.tier || quote.bonus > 0) && <><span>Te sale en</span><strong>{walletMoney(Math.round(quote.effectivePer100),region)} por cada 100</strong></>}
+        <span>Saldo después de acreditarse</span><strong>{((data?.balance ?? 0)+(quote?.credited ?? amount)).toLocaleString("es-MX")} pavos</strong></div>
+      {next && <p className={styles.nextOffer}>Agrega <strong>{next.add.toLocaleString("es-MX")} pavos</strong> y {next.quote.bonus > (quote?.bonus ?? 0) ? <>recibes <strong>+{next.quote.bonus.toLocaleString("es-MX")} de regalo</strong></> : <>baja a <strong>{walletMoney(next.quote.centsPer100,region)} por 100</strong></>}. <button type="button" className={styles.linkButton} onClick={() => pickAmount(next.target)}>Subir a {next.target.toLocaleString("es-MX")}</button></p>}
       {cents === null && <p>Las recargas estarán disponibles cuando se publique la tarifa de tu región.</p>}
       <button type="button" className="primary-button" disabled={cents===null || !data} onClick={() => void createTopup()}>{busy ? "Procesando…" : "Comprar pavos"}</button></fieldset>
       <small>Tu saldo aumenta después de verificar el pago de la recarga. Al comprar objetos con saldo suficiente, el envío se inicia automáticamente.</small>
     </section>
     {message && <p className="notice" role="status">{message}</p>}
-    <section><h3>Mis recargas</h3><p>Se muestran las últimas 100 recargas.</p><div className={styles.list}>{data?.topups.length===0 && <p>Aún no has comprado pavos.</p>}{data?.topups.map((t) => { const status = topupStatus(t); return <article key={t.id}><header><strong>{t.vbucks.toLocaleString("es-MX")} pavos</strong><span>{walletMoney(t.amount_cents,t.region)}</span><b>{topupLabels[status]}</b></header><small>Recarga #{t.id.slice(0,8).toUpperCase()} · {new Date(t.created_at).toLocaleDateString("es-MX")}{status==="awaiting_payment" && t.expires_at && ` · Paga y sube tu comprobante antes del ${new Date(t.expires_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}`}</small>{t.review_note && <p>{t.review_note}</p>}
+    <section><h3>Mis recargas</h3><p>Se muestran las últimas 100 recargas.</p><div className={styles.list}>{data?.topups.length===0 && <p>Aún no has comprado pavos.</p>}{data?.topups.map((t) => { const status = topupStatus(t); return <article key={t.id}><header><strong>{t.vbucks.toLocaleString("es-MX")} pavos{t.bonus_vbucks ? ` + ${t.bonus_vbucks.toLocaleString("es-MX")} de regalo` : ""}</strong><span>{walletMoney(t.amount_cents,t.region)}</span><b>{topupLabels[status]}</b></header><small>Recarga #{t.id.slice(0,8).toUpperCase()} · {new Date(t.created_at).toLocaleDateString("es-MX")}{status==="awaiting_payment" && t.expires_at && ` · Paga y sube tu comprobante antes del ${new Date(t.expires_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}`}</small>{t.review_note && <p>{t.review_note}</p>}
       {status==="expired" && <p>Esta recarga venció sin comprobante. Crea una nueva; si ya pagaste, escríbenos con tu comprobante.</p>}
       {(status==="expired" || status==="rejected") && (() => { const href = support(status==="expired" ? toStore.topupExpired({ reference: topupReference(t), vbucks: t.vbucks }) : toStore.topupRejected({ reference: topupReference(t), vbucks: t.vbucks })); return href && <a className="secondary-button" href={href} target="_blank" rel="noreferrer">{status==="expired" ? "Ya pagué: enviar comprobante por WhatsApp" : "Revisar mi recarga por WhatsApp"}</a>; })()}
       {status==="awaiting_payment" && <><div className={styles.payment}>{t.region==="mx" ? <><p>Banco: <strong>{data.paymentDetails.name}</strong></p><p>Beneficiario: <strong>{data.paymentDetails.beneficiary}</strong></p><p>CLABE: <strong>{data.paymentDetails.clabe}</strong></p></> : <p>PayPal: <strong>{data.paymentDetails.paypal}</strong></p>}<p>Escribe en el concepto o la nota del pago: <strong>{topupReference(t)}</strong></p></div><form onSubmit={(e) => void receipt(e,t)}><label>Comprobante de la recarga<input type="file" name="receipt" accept="image/jpeg,image/png,application/pdf" required disabled={busy} /></label><small>JPG, PNG o PDF de máximo 5 MB.</small><button className="secondary-button" disabled={busy}>Enviar comprobante</button></form></>}

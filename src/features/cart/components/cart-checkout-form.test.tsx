@@ -26,9 +26,9 @@ const commerce = vi.hoisted(() => ({
   clearCart: vi.fn(),
   refresh: vi.fn().mockResolvedValue(undefined),
 }));
-const wallet = vi.hoisted(() => ({ balance:1000, frozen:false, paused:false, rate:null as number | null }));
+const wallet = vi.hoisted(() => ({ balance:1000, frozen:false, paused:false, rate:null as number | null, bonuses:[] as unknown[] }));
 const quoteExtras = vi.hoisted(() => ({ walletAllowed: true }));
-vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,frozen:wallet.frozen,paused:wallet.paused,automaticDelivery:true,rates:[{ region:"mx",active:true,cents_per_100:wallet.rate }] },error:null }) }));
+vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,frozen:wallet.frozen,paused:wallet.paused,automaticDelivery:true,bonuses:wallet.bonuses,rates:[{ region:"mx",active:true,cents_per_100:wallet.rate }] },error:null }) }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/features/commerce/components/commerce-state-provider", () => ({ useCommerceState: () => commerce }));
@@ -42,7 +42,7 @@ const item: CatalogItem = {
 describe("CartCheckoutForm", () => {
   beforeEach(() => {
     commerce.authenticated = true;
-    wallet.balance=1000; wallet.frozen=false; wallet.paused=false; wallet.rate=null; quoteExtras.walletAllowed=true;
+    wallet.balance=1000; wallet.frozen=false; wallet.paused=false; wallet.rate=null; wallet.bonuses=[]; quoteExtras.walletAllowed=true;
     commerce.sessionId = "session-a";
     commerce.whatsapp = "525512345678";
     commerce.email = "cliente@example.com";
@@ -78,6 +78,12 @@ describe("CartCheckoutForm", () => {
     fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
     expect(screen.getByText(/está pausado unos minutos/)).toBeInTheDocument();
+  });
+
+  it("anuncia la promoción vigente de pavos en el checkout", async () => {
+    wallet.bonuses=[{ id:"b1",region:"mx",label:"Noviembre",min_vbucks:5000,bonus_bp:500,bonus_cap:null,first_topup_only:false,ends_at:"2099-11-30T23:00:00Z" }];
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByText(/recarga desde 5,000 pavos y recibe \+5% de regalo/)).toBeInTheDocument();
   });
 
   it("muestra cuánto ahorra con pavos solo cuando de verdad conviene", async () => {
