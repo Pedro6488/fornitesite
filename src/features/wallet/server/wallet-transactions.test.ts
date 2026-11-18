@@ -138,6 +138,24 @@ describe("transacciones reales de pavos en PostgreSQL", () => {
     await db.exec("rollback to disabled_rate; update wallet_rates set active=true");
     await expect(db.query("select * from create_wallet_topup($1,'mx',1000,1,$2)",[customer,randomUUID()])).rejects.toThrow("rate_changed");
   });
+  it("el worker general ya no toma entregas con pavos; solo claim_wallet_job", async () => {
+    await credit(); const id=(await buy(await quote())).rows[0].order_id;
+    await db.query("insert into outbox_jobs(job_type,payload,dedupe_key) values('email.welcome','{}','test:welcome')");
+    const general = (await db.query<{ job_type:string }>("select job_type from claim_outbox_jobs(100)")).rows.map((row) => row.job_type);
+    expect(general).toEqual(["email.welcome"]);
+    expect((await db.query("select * from claim_wallet_job($1)",[id])).rows).toHaveLength(1);
+  });
+  it("una recarga vencida no acepta comprobante y el barrido la marca como vencida", async () => {
+    const fresh = (await db.query<{id:string;expires_at:string}>("select id,expires_at from create_wallet_topup($1,'mx',1000,5000,$2)",[customer,randomUUID()])).rows[0];
+    expect(new Date(fresh.expires_at).getTime() - Date.now()).toBeGreaterThan(47 * 3600_000);
+    await db.query("update wallet_topups set expires_at=now()-interval '1 minute' where id=$1",[fresh.id]);
+    await db.exec("savepoint expired_receipt");
+    await expect(db.query("update wallet_topups set status='submitted',receipt_path='late-proof' where id=$1",[fresh.id])).rejects.toThrow("topup_expired");
+    await db.exec("rollback to expired_receipt");
+    expect((await db.query<{ n:number }>("select expire_wallet_topups() as n")).rows[0].n).toBe(1);
+    expect((await db.query<{ status:string }>("select status from wallet_topups where id=$1",[fresh.id])).rows[0].status).toBe("expired");
+    expect(await balance()).toBe(0);
+  });
   it("impide a una sesión autenticada modificar saldos directamente", async () => {
     await credit(); await db.exec("set local role authenticated");
     await expect(db.exec("update public.wallet_accounts set balance=999999")).rejects.toThrow("permission denied");
