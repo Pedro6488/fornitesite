@@ -31,6 +31,37 @@ La compra con saldo bloquea la cuenta, valida la propiedad de la sesión, cotiza
 
 El envío empieza inmediatamente sin aprobación de admin. Se conserva el identificador de cada objeto para evitar regalos repetidos. Si se interrumpe una ejecución, el trabajo se puede recuperar después de cinco minutos. Solo `claim_wallet_job` toma estos trabajos; el worker general los ignora. Tras 8 intentos el trabajo queda `failed` y se avisa al admin por Telegram.
 
+### Falla de la cuenta emisora: devolución al instante y pausa
+
+Los rechazos definitivos, del cliente o de la tienda, devuelven los pavos del objeto al instante. Cuando la falla es de la cuenta emisora o de FN Shop (sin paVos, sin cupo de regalos, sin requests del plan, FN Shop no disponible), además:
+
+1. El pago con pavos se **pausa 30 minutos** (`wallet_settings.paused_until`). La base rechaza compras nuevas (`wallet_paused`), y el checkout y `/pavos` explican que se use el pago habitual.
+2. Los objetos de ese pedido que nunca se intentaron se devuelven en ese momento (`refund_wallet_failures(order, true)`), sin esperar una pasada del cron por objeto.
+3. Sale un aviso a Telegram. En `/admin/pavos` aparece la pausa con el botón **Reanudar ahora** (`resume_wallet_payments`, solo admin).
+
+Los envíos dudosos (timeout, resultado desconocido) nunca se devuelven solos: se concilian.
+
+### Avisos al cliente por WhatsApp
+
+La tienda no tiene correo configurado, así que no se envían correos. Los avisos se muestran en el sitio: el estado de la recarga y los movimientos en `/pavos`, y los objetos devueltos en la página del pedido. Desde ahí el cliente puede escribirle a la tienda por WhatsApp con la referencia ya escrita.
+
+El admin avisa al cliente con botones que abren WhatsApp con el mensaje redactado (`src/features/wallet/domain/wallet-whatsapp.ts`):
+
+- Al aprobar o rechazar una recarga, con la referencia, el saldo o el motivo.
+- En el detalle del cliente: entregas, devoluciones y recargas revisadas.
+- En una cuenta congelada.
+
+El teléfono sale del último pedido del cliente o, si no tiene, de su sesión (`wallet_customer_totals.whatsapp`). A un número de 10 dígitos se le agrega la lada del país: 52 para México, 1 para USA.
+
+### Resumen del admin
+
+En `/admin/pavos` (`wallet_admin_summary`) se ven:
+
+- El **pasivo**: la suma de saldos, que son pavos ya cobrados por entregar.
+- Lo gastado, acreditado y devuelto hoy (hora de Ciudad de México).
+- Las recargas por revisar y las cuentas congeladas.
+- Las entregas fallidas o con más de 3 intentos, con enlace a cada pedido.
+
 Una recarga sin comprobante vence a las 48 horas (`expires_at`, estado `expired`). La base rechaza adjuntar un comprobante a una recarga vencida, y el cron de pavos marca las vencidas en cada llamada. Los objetos nunca intentados se reanudan; los resultados inciertos se concilian antes de cualquier nueva acción.
 
 Los rechazos definitivos conocidos se devuelven por objeto una sola vez. Un objeto devuelto queda excluido de los siguientes envíos. Un timeout o la ausencia en el historial no prueban por sí solos que el regalo no se envió: esos casos conservan el saldo debitado y generan aviso operativo para su comprobación. No se marca un reembolso manual desde la ruta genérica de estados.

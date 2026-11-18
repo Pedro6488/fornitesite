@@ -7,7 +7,7 @@ Este documento reúne los cambios realizados durante esta conversación, su func
 ## 1. Estado de la entrega
 
 - Los cambios anteriores de referencias, contacto, pagos por región y navegación se publicaron en `qa_release`, en el commit `a5d2ee8`.
-- La implementación de pavos y sus ajustes de integración están en el repositorio local. Todavía no se han publicado.
+- La implementación de pavos está en la rama `pavos` (commit `e303c7a`, publicada en `origin/pavos`, sin fusionar). Las correcciones posteriores van en ramas por fase: `feat/pavos-fase-1-bloqueantes`, `-fase-2-fraude`, `-fase-3-avisos`, etc.
 - La migración nueva del sistema de pavos se preparó y probó localmente. No se ha aplicado a Supabase.
 - No se han definido precios comerciales para las recargas. Las tarifas comienzan sin precio y deshabilitadas.
 - No se realizaron cobros, recargas ni envíos reales para validar esta implementación.
@@ -202,7 +202,7 @@ Se reutiliza la integración de FN Shop y se conserva el identificador de cada o
 
 Si el proveedor automático está deshabilitado o no está disponible al intentar crear la compra, el servidor no descuenta saldo. El cliente puede elegir el pago habitual.
 
-Si el pedido ya se pagó y después aparece un problema de entrega, se conserva su seguimiento mediante la cola y los registros por objeto.
+Si el pedido ya se pagó y un regalo se rechaza de forma definitiva (por el cliente o por la tienda), los pavos de ese objeto se devuelven al instante. Si la falla es de la cuenta emisora o de FN Shop, además se pausa el pago con pavos 30 minutos y se devuelven los objetos que no se alcanzaron a intentar. Solo los envíos dudosos (timeout o resultado desconocido) quedan en la cola para conciliarse. Ver `docs/store-wallet.md`.
 
 ### Recuperación de trabajos
 
