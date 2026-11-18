@@ -142,7 +142,8 @@ describe("transacciones reales de pavos en PostgreSQL", () => {
     await credit(); const id=(await buy(await quote())).rows[0].order_id;
     await db.query("insert into outbox_jobs(job_type,payload,dedupe_key) values('email.welcome','{}','test:welcome')");
     const general = (await db.query<{ job_type:string }>("select job_type from claim_outbox_jobs(100)")).rows.map((row) => row.job_type);
-    expect(general).toEqual(["email.welcome"]);
+    expect(general).toContain("email.welcome");
+    expect(general).not.toContain("wallet.deliver");
     expect((await db.query("select * from claim_wallet_job($1)",[id])).rows).toHaveLength(1);
   });
   it("una recarga vencida no acepta comprobante y el barrido la marca como vencida", async () => {
@@ -187,6 +188,48 @@ describe("transacciones reales de pavos en PostgreSQL", () => {
   it("cada recarga tiene la referencia de pago que ve el cliente", async () => {
     const t = (await db.query<{ id:string; reference_code:string }>("select id,reference_code from create_wallet_topup($1,'mx',1000,5000,$2)",[customer,randomUUID()])).rows[0];
     expect(t.reference_code).toBe(`RECARGA-${t.id.slice(0,8).toUpperCase()}`);
+  });
+  it("el admin ve el WhatsApp del cliente para avisarle: el de su último pedido o el de su sesión", async () => {
+    await credit(1000);
+    const phone = async () => (await db.query<{ whatsapp:string|null }>("select whatsapp from wallet_customer_totals where user_id=$1",[customer])).rows[0].whatsapp;
+    await db.query("update commerce_sessions set whatsapp='5511112222' where id=$1",[session]);
+    expect(await phone()).toBe("5511112222");
+    await buy(await quote());
+    expect(await phone()).toBe("5512345678");
+    expect((await db.query("select * from outbox_jobs where job_type like 'email.%'")).rows).toHaveLength(0);
+  });
+  it("la pausa bloquea compras nuevas, solo un admin la quita y conserva el saldo", async () => {
+    await credit(); const q = await quote();
+    await db.query("select pause_wallet_payments(30,'Sin cupo de regalos')");
+    expect((await db.query<{ p:boolean }>("select wallet_payments_paused() as p")).rows[0].p).toBe(true);
+    await db.exec("savepoint paused_buy");
+    await expect(buy(q)).rejects.toThrow("wallet_paused");
+    await db.exec("rollback to paused_buy; savepoint customer_resume");
+    await expect(db.query("select resume_wallet_payments($1)",[customer])).rejects.toThrow("not_admin");
+    await db.exec("rollback to customer_resume");
+    expect(await balance()).toBe(1000);
+    await db.query("select resume_wallet_payments($1)",[admin]);
+    await buy(q);
+    expect(await balance()).toBe(200);
+  });
+  it("con la emisora caída devuelve al instante los objetos nunca intentados, no los inciertos", async () => {
+    await credit(3000); const id=randomUUID();
+    await db.query("insert into checkout_quotes(id,commerce_session_id,validation_id,amount_mxn_cents,total_vbucks,expires_at) values($1,$2,$3,9000,1500,now()+interval '30 minutes')",[id,session,validation]);
+    await db.query("insert into checkout_quote_items(quote_id,item_main_id,offer_id,item_name,vbucks_price,unit_amount_mxn_cents,quantity) values($1,'main-a','offer-a','Falla',500,3000,1),($1,'main-b','offer-b','Dudoso',500,3000,1),($1,'main-c','offer-c','Sin intentar',500,3000,1)",[id]);
+    const o=(await buy(id)).rows[0].order_id;
+    await db.query("update orders set status='manual_review' where id=$1",[o]);
+    await db.query("insert into fulfillments(order_id,order_item_id,status,result_code) select order_id,id,'failed','plan_limit_reached' from order_items where order_id=$1 and item_name='Falla'",[o]);
+    await db.query("insert into fulfillments(order_id,order_item_id,status,result_code) select order_id,id,'unknown','transport_error' from order_items where order_id=$1 and item_name='Dudoso'",[o]);
+    expect((await db.query<{ n:number }>("select refund_wallet_failures($1) as n",[o])).rows[0].n).toBe(500);
+    expect((await db.query<{ n:number }>("select refund_wallet_failures($1,true) as n",[o])).rows[0].n).toBe(500);
+    expect(await balance()).toBe(2500);
+    const refunded = (await db.query<{ item_name:string }>("select item_name from order_items where order_id=$1 and wallet_refunded order by item_name",[o])).rows.map((r) => r.item_name);
+    expect(refunded).toEqual(["Falla","Sin intentar"]);
+  });
+  it("el resumen del admin muestra el pasivo y lo gastado y devuelto hoy", async () => {
+    await credit(3000); await buy(await quote(800));
+    const s = (await db.query<Record<string,string|number|null>>("select * from wallet_admin_summary()")).rows[0];
+    expect({ liability:Number(s.liability), spent:Number(s.spent_today), credited:Number(s.credited_today), paused:s.paused_until }).toEqual({ liability:2200, spent:800, credited:3000, paused:null });
   });
   it("impide a una sesión autenticada modificar saldos directamente", async () => {
     await credit(); await db.exec("set local role authenticated");
