@@ -108,7 +108,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     0,
   ) ?? displayTotal;
   const walletCost = activeQuote?.totalVbucks ?? lines.reduce((sum,item) => sum+item.finalPriceVbucks,0);
-  const insufficientWallet = !wallet.data || wallet.data.balance < walletCost || !wallet.data.automaticDelivery;
+  const insufficientWallet = !wallet.data || wallet.data.frozen || wallet.data.balance < walletCost || !wallet.data.automaticDelivery;
   const formatActiveQuoteTotal = useWalletPayment ? `${walletCost.toLocaleString("es-MX")} pavos` : region === "us"
     ? `${formatUsdCents(activeQuote?.amountUsdCents ?? displayTotalWithFeeCents)} USD`
     : formatMxn(activeQuoteTotal);
@@ -398,7 +398,8 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                   <p>Saldo: {wallet.data ? `${wallet.data.balance.toLocaleString("es-MX")} pavos` : "No disponible"}. Costo: {walletCost.toLocaleString("es-MX")} pavos.</p>
                   {wallet.error && <p role="alert">{wallet.error}</p>}
                   {useWalletPayment && <>{wallet.data && wallet.data.balance >= walletCost ? <p>Después de pagar: {(wallet.data.balance-walletCost).toLocaleString("es-MX")} pavos. El envío se inicia automáticamente, sin aprobar otro pago.</p> : <p>No alcanza el saldo para todo el pedido. Recarga tus pavos o elige el pago habitual.</p>}
-                    {wallet.data && !wallet.data.automaticDelivery && <p>La entrega automática está temporalmente deshabilitada. No se descontará saldo.</p>}<Link href="/pavos">Comprar pavos</Link></>}
+                    {wallet.data && !wallet.data.automaticDelivery && <p>La entrega automática está temporalmente deshabilitada. No se descontará saldo.</p>}
+                    {wallet.data?.frozen && <p>Tu saldo está en revisión y no se puede usar por ahora. Elige el pago habitual o escríbenos.</p>}<Link href="/pavos">Comprar pavos</Link></>}
                   <small>Se paga el pedido completo con un solo método.</small>
                 </fieldset>}
                 {!useWalletPayment && <div className="transfer-only">

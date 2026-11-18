@@ -14,6 +14,17 @@ Al confirmar objetos, se elige pago habitual o pavos; no se aceptan pagos combin
 
 Las recargas mexicanas muestran transferencia; las de USA muestran PayPal. Aprobar una recarga registra un crédito una sola vez. Rechazarla requiere un motivo y no aumenta el saldo. La acreditación y el movimiento se guardan en la misma transacción.
 
+### Revisar una recarga
+
+Cada recarga tiene una referencia `RECARGA-XXXXXXXX` (`wallet_topups.reference_code`) que el cliente escribe en el concepto de la transferencia o en la nota de PayPal. Antes de aprobar, el admin busca esa referencia y el importe en el banco o en PayPal. La imagen del comprobante no es prueba suficiente: se puede editar, y el checksum solo detecta archivos idénticos.
+
+### Congelar cuentas y ajustar saldos
+
+En el detalle del cliente (`/admin/pavos`):
+
+- **Congelar cuenta** (`set_wallet_frozen`): bloquea las compras con pavos y conserva el saldo. Pide un motivo. Se usa ante un contracargo, una disputa de PayPal o la sospecha de una cuenta robada. El cliente ve que su saldo está en revisión y el checkout desactiva el pago con pavos. La base también rechaza la compra (`account_frozen`).
+- **Ajustar saldo** (`adjust_wallet`): agrega o quita pavos con motivo obligatorio. Queda en el ledger como `adjustment`, con el admin que lo hizo, y en `audit_log`. El saldo nunca queda en negativo: si el cliente ya gastó los pavos, se congela la cuenta en lugar de dejar deuda.
+
 ## Entregas y devoluciones
 
 La compra con saldo bloquea la cuenta, valida la propiedad de la sesión, cotización e ID, crea el pedido pagado, descuenta los pavos y encola `wallet.deliver` dentro de una sola transacción PostgreSQL. Un reintento con la misma clave no vuelve a cobrar.

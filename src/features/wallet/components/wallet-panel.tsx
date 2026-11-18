@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { useStoreRegion } from "@/features/pricing/components/region-provider";
-import { topupLabels, topupPrice, topupStatus, walletMoney, type WalletTopup } from "../domain/wallet";
+import { movementLabels, topupLabels, topupPrice, topupReference, topupStatus, walletMoney, type WalletTopup } from "../domain/wallet";
 import { useWallet, walletRequest } from "./use-wallet";
 import styles from "./wallet.module.css";
 
@@ -39,6 +39,7 @@ export function WalletPanel() {
   return <div className={styles.panel}>
     <header className={styles.balance}><div><p className="eyebrow">PAVOS DE LA TIENDA</p><h2>Tu próxima compra empieza aquí</h2><p>Saldo para comprar objetos en SigfriedLootBox. Se usa dentro de esta página.</p></div><div><strong>{data ? data.balance.toLocaleString("es-MX") : "…"}</strong><span>pavos disponibles</span></div></header>
     {error && <p className="notice error" role="alert">{error}</p>}
+    {data?.frozen && <p className="notice error" role="alert">Tu saldo está en revisión y por ahora no puedes pagar con pavos. Escríbenos para resolverlo; mientras tanto puedes usar el pago habitual.</p>}
     <section className={styles.recharge} aria-labelledby="recharge-title"><div><p className="eyebrow">RECARGA TU SALDO</p><h3 id="recharge-title">¿Cuántos pavos quieres comprar?</h3><p>Elige de 100 a 50,000 pavos, en incrementos de 100.</p></div>
       <fieldset disabled={busy}><label htmlFor="wallet-range">Cantidad de pavos <strong>{amount.toLocaleString("es-MX")}</strong></label><input id="wallet-range" type="range" min={100} max={50000} step={100} value={amount} onChange={(e) => { setAmount(Number(e.target.value)); setKey(null); }} />
       <div className={styles.amountButtons}>{[1000,3500,5000,13500].map((n) => <button type="button" key={n} aria-pressed={amount===n} onClick={() => { setAmount(n); setKey(null); }}>{n.toLocaleString("es-MX")}</button>)}</div>
@@ -50,8 +51,8 @@ export function WalletPanel() {
     {message && <p className="notice" role="status">{message}</p>}
     <section><h3>Mis recargas</h3><p>Se muestran las últimas 100 recargas.</p><div className={styles.list}>{data?.topups.length===0 && <p>Aún no has comprado pavos.</p>}{data?.topups.map((t) => { const status = topupStatus(t); return <article key={t.id}><header><strong>{t.vbucks.toLocaleString("es-MX")} pavos</strong><span>{walletMoney(t.amount_cents,t.region)}</span><b>{topupLabels[status]}</b></header><small>Recarga #{t.id.slice(0,8).toUpperCase()} · {new Date(t.created_at).toLocaleDateString("es-MX")}{status==="awaiting_payment" && t.expires_at && ` · Paga y sube tu comprobante antes del ${new Date(t.expires_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}`}</small>{t.review_note && <p>{t.review_note}</p>}
       {status==="expired" && <p>Esta recarga venció sin comprobante. Crea una nueva; si ya pagaste, escríbenos con tu comprobante.</p>}
-      {status==="awaiting_payment" && <><div className={styles.payment}>{t.region==="mx" ? <><p>Banco: <strong>{data.paymentDetails.name}</strong></p><p>Beneficiario: <strong>{data.paymentDetails.beneficiary}</strong></p><p>CLABE: <strong>{data.paymentDetails.clabe}</strong></p></> : <p>PayPal: <strong>{data.paymentDetails.paypal}</strong></p>}<p>Referencia: RECARGA-{t.id.slice(0,8).toUpperCase()}</p></div><form onSubmit={(e) => void receipt(e,t)}><label>Comprobante de la recarga<input type="file" name="receipt" accept="image/jpeg,image/png,application/pdf" required disabled={busy} /></label><small>JPG, PNG o PDF de máximo 5 MB.</small><button className="secondary-button" disabled={busy}>Enviar comprobante</button></form></>}
+      {status==="awaiting_payment" && <><div className={styles.payment}>{t.region==="mx" ? <><p>Banco: <strong>{data.paymentDetails.name}</strong></p><p>Beneficiario: <strong>{data.paymentDetails.beneficiary}</strong></p><p>CLABE: <strong>{data.paymentDetails.clabe}</strong></p></> : <p>PayPal: <strong>{data.paymentDetails.paypal}</strong></p>}<p>Escribe en el concepto o la nota del pago: <strong>{topupReference(t)}</strong></p></div><form onSubmit={(e) => void receipt(e,t)}><label>Comprobante de la recarga<input type="file" name="receipt" accept="image/jpeg,image/png,application/pdf" required disabled={busy} /></label><small>JPG, PNG o PDF de máximo 5 MB.</small><button className="secondary-button" disabled={busy}>Enviar comprobante</button></form></>}
     </article>; })}</div></section>
-    <section><h3>Movimientos de pavos</h3><p>Últimos 100 movimientos.</p><div className={styles.list}>{data?.movements.map((m) => <article key={m.id}><header><span>{m.kind==="topup" ? "Recarga acreditada" : m.kind==="purchase" ? "Compra de objetos" : "Pavos devueltos"}</span><strong>{m.delta>0 ? "+" : ""}{m.delta.toLocaleString("es-MX")}</strong></header><small>{new Date(m.created_at).toLocaleString("es-MX")}</small></article>)}</div><Link href="/cuenta">Ver mis pedidos y entregas</Link></section>
+    <section><h3>Movimientos de pavos</h3><p>Últimos 100 movimientos.</p><div className={styles.list}>{data?.movements.map((m) => <article key={m.id}><header><span>{movementLabels[m.kind]}</span><strong>{m.delta>0 ? "+" : ""}{m.delta.toLocaleString("es-MX")}</strong></header><small>{new Date(m.created_at).toLocaleString("es-MX")}</small></article>)}</div><Link href="/cuenta">Ver mis pedidos y entregas</Link></section>
   </div>;
 }

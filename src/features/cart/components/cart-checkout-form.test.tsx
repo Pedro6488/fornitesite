@@ -26,8 +26,8 @@ const commerce = vi.hoisted(() => ({
   clearCart: vi.fn(),
   refresh: vi.fn().mockResolvedValue(undefined),
 }));
-const wallet = vi.hoisted(() => ({ balance:1000 }));
-vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,automaticDelivery:true },error:null }) }));
+const wallet = vi.hoisted(() => ({ balance:1000, frozen:false }));
+vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,frozen:wallet.frozen,automaticDelivery:true },error:null }) }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/features/commerce/components/commerce-state-provider", () => ({ useCommerceState: () => commerce }));
@@ -41,7 +41,7 @@ const item: CatalogItem = {
 describe("CartCheckoutForm", () => {
   beforeEach(() => {
     commerce.authenticated = true;
-    wallet.balance=1000;
+    wallet.balance=1000; wallet.frozen=false;
     commerce.sessionId = "session-a";
     commerce.whatsapp = "525512345678";
     commerce.email = "cliente@example.com";
@@ -61,6 +61,14 @@ describe("CartCheckoutForm", () => {
     fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
     expect(screen.getByText(/No alcanza el saldo para todo el pedido/)).toBeInTheDocument();
+  });
+
+  it("bloquea el pago con pavos si la cuenta está congelada aunque alcance el saldo", async () => {
+    wallet.frozen=true;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
+    expect(screen.getByText(/Tu saldo está en revisión/)).toBeInTheDocument();
   });
 
   it("envía únicamente el método pavos y permite volver al pago habitual",async () => {
