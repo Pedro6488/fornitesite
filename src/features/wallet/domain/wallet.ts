@@ -9,7 +9,7 @@ export function topupStatus(topup: Pick<WalletTopup, "status" | "expires_at">, n
   return topup.status === "awaiting_payment" && topup.expires_at && Date.parse(topup.expires_at) <= now ? "expired" : topup.status;
 }
 export type WalletMovement = { id: string; delta: number; kind: "topup" | "purchase" | "refund" | "adjustment"; order_id: string | null; reason?: string | null; created_at: string };
-export type WalletData = { balance: number; frozen: boolean; rates: WalletRate[]; topups: WalletTopup[]; movements: WalletMovement[]; automaticDelivery: boolean };
+export type WalletData = { balance: number; frozen: boolean; paused?: boolean; rates: WalletRate[]; topups: WalletTopup[]; movements: WalletMovement[]; automaticDelivery: boolean; supportWhatsapp?: string };
 export const movementLabels: Record<WalletMovement["kind"], string> = { topup: "Recarga acreditada", purchase: "Compra de objetos", refund: "Pavos devueltos", adjustment: "Ajuste de saldo" };
 export function topupPrice(vbucks: number, rate: WalletRate | undefined): number | null {
   if (!rate?.active || !rate.cents_per_100 || !Number.isInteger(vbucks) || vbucks < 100 || vbucks > 50000 || vbucks % 100) return null;

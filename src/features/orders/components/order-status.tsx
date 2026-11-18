@@ -6,6 +6,7 @@ import { formatMxn, formatUsdCents, PAYPAL_FEE_USD_CENTS } from "@/features/pric
 import { PurchaseConfetti } from "@/shared/components/purchase-confetti";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
 import { BackButton } from "@/shared/components/back-button";
+import { toStore } from "@/features/wallet/domain/wallet-whatsapp";
 
 const statusCopy: Record<OrderState, string> = {
   draft: "Preparando pedido",
@@ -53,6 +54,7 @@ export function OrderStatus({
   const [deliveryFeedbackSubmitted, setDeliveryFeedbackSubmitted] = useState(Boolean(initialOrder.deliveryFeedbackSubmittedAt));
   const isWalletOrder = order.paymentSource === "wallet";
   const isUsdOrder = order.currency === "USD" && !isWalletOrder;
+  const refundedVbucks = isWalletOrder ? (order.items ?? []).filter((item) => item.delivery === "refunded").reduce((sum, item) => sum + (item.vbucksPrice ?? 0), 0) : 0;
   const totalLabel = isWalletOrder ? `${order.walletVbucks?.toLocaleString("es-MX")} pavos` : isUsdOrder
     ? `${formatUsdCents(order.amountUsdCents ?? 0)} USD`
     : formatMxn(order.amountMxnCents / 100);
@@ -62,9 +64,11 @@ export function OrderStatus({
   const whatsappHref = useMemo(() => {
     if (!whatsappNumber) return null;
     const tracking = `${appUrl}/pedidos/${order.id}?access=${order.publicToken}`;
-    const copy = `Hola, necesito ayuda con el pedido ${order.id.slice(0, 8).toUpperCase()}. Seguimiento: ${tracking}`;
+    const copy = refundedVbucks > 0
+      ? toStore.refunded({ orderId: order.id, vbucks: refundedVbucks, url: tracking })
+      : `Hola, necesito ayuda con el pedido ${order.id.slice(0, 8).toUpperCase()}. Seguimiento: ${tracking}`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(copy)}`;
-  }, [appUrl, order.id, order.publicToken, whatsappNumber]);
+  }, [appUrl, order.id, order.publicToken, refundedVbucks, whatsappNumber]);
   async function refresh(showLoading = false) {
     if (showLoading) setLoading(true);
     try {
@@ -168,6 +172,7 @@ export function OrderStatus({
         ))}
         {isUsdOrder && <p><span>Comisión PayPal</span><strong>{formatUsdCents(order.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
       </div>
+      {refundedVbucks > 0 && <p className="notice" role="status">No pudimos enviar algunos objetos, así que devolvimos <strong>{refundedVbucks.toLocaleString("es-MX")} pavos</strong> a tu saldo. Ya puedes usarlos en tu próxima compra desde <a href="/pavos">Mis pavos</a>.{whatsappHref && <> Si necesitas ayuda, <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => void trackWhatsapp()}>escríbenos por WhatsApp</a>.</>}</p>}
       <div className="recipient-id-notice">
         <span>
           {order.status === "manual_review"
