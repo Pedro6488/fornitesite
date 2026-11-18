@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { useStoreRegion } from "@/features/pricing/components/region-provider";
-import { topupLabels, topupPrice, walletMoney, type WalletTopup } from "../domain/wallet";
+import { topupLabels, topupPrice, topupStatus, walletMoney, type WalletTopup } from "../domain/wallet";
 import { useWallet, walletRequest } from "./use-wallet";
 import styles from "./wallet.module.css";
 
@@ -48,9 +48,10 @@ export function WalletPanel() {
       <small>Tu saldo aumenta después de verificar el pago de la recarga. Al comprar objetos con saldo suficiente, el envío se inicia automáticamente.</small>
     </section>
     {message && <p className="notice" role="status">{message}</p>}
-    <section><h3>Mis recargas</h3><p>Se muestran las últimas 100 recargas.</p><div className={styles.list}>{data?.topups.length===0 && <p>Aún no has comprado pavos.</p>}{data?.topups.map((t) => <article key={t.id}><header><strong>{t.vbucks.toLocaleString("es-MX")} pavos</strong><span>{walletMoney(t.amount_cents,t.region)}</span><b>{topupLabels[t.status]}</b></header><small>Recarga #{t.id.slice(0,8).toUpperCase()} · {new Date(t.created_at).toLocaleDateString("es-MX")}</small>{t.review_note && <p>{t.review_note}</p>}
-      {t.status==="awaiting_payment" && <><div className={styles.payment}>{t.region==="mx" ? <><p>Banco: <strong>{data.paymentDetails.name}</strong></p><p>Beneficiario: <strong>{data.paymentDetails.beneficiary}</strong></p><p>CLABE: <strong>{data.paymentDetails.clabe}</strong></p></> : <p>PayPal: <strong>{data.paymentDetails.paypal}</strong></p>}<p>Referencia: RECARGA-{t.id.slice(0,8).toUpperCase()}</p></div><form onSubmit={(e) => void receipt(e,t)}><label>Comprobante de la recarga<input type="file" name="receipt" accept="image/jpeg,image/png,application/pdf" required disabled={busy} /></label><small>JPG, PNG o PDF de máximo 5 MB.</small><button className="secondary-button" disabled={busy}>Enviar comprobante</button></form></>}
-    </article>)}</div></section>
+    <section><h3>Mis recargas</h3><p>Se muestran las últimas 100 recargas.</p><div className={styles.list}>{data?.topups.length===0 && <p>Aún no has comprado pavos.</p>}{data?.topups.map((t) => { const status = topupStatus(t); return <article key={t.id}><header><strong>{t.vbucks.toLocaleString("es-MX")} pavos</strong><span>{walletMoney(t.amount_cents,t.region)}</span><b>{topupLabels[status]}</b></header><small>Recarga #{t.id.slice(0,8).toUpperCase()} · {new Date(t.created_at).toLocaleDateString("es-MX")}{status==="awaiting_payment" && t.expires_at && ` · Paga y sube tu comprobante antes del ${new Date(t.expires_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}`}</small>{t.review_note && <p>{t.review_note}</p>}
+      {status==="expired" && <p>Esta recarga venció sin comprobante. Crea una nueva; si ya pagaste, escríbenos con tu comprobante.</p>}
+      {status==="awaiting_payment" && <><div className={styles.payment}>{t.region==="mx" ? <><p>Banco: <strong>{data.paymentDetails.name}</strong></p><p>Beneficiario: <strong>{data.paymentDetails.beneficiary}</strong></p><p>CLABE: <strong>{data.paymentDetails.clabe}</strong></p></> : <p>PayPal: <strong>{data.paymentDetails.paypal}</strong></p>}<p>Referencia: RECARGA-{t.id.slice(0,8).toUpperCase()}</p></div><form onSubmit={(e) => void receipt(e,t)}><label>Comprobante de la recarga<input type="file" name="receipt" accept="image/jpeg,image/png,application/pdf" required disabled={busy} /></label><small>JPG, PNG o PDF de máximo 5 MB.</small><button className="secondary-button" disabled={busy}>Enviar comprobante</button></form></>}
+    </article>; })}</div></section>
     <section><h3>Movimientos de pavos</h3><p>Últimos 100 movimientos.</p><div className={styles.list}>{data?.movements.map((m) => <article key={m.id}><header><span>{m.kind==="topup" ? "Recarga acreditada" : m.kind==="purchase" ? "Compra de objetos" : "Pavos devueltos"}</span><strong>{m.delta>0 ? "+" : ""}{m.delta.toLocaleString("es-MX")}</strong></header><small>{new Date(m.created_at).toLocaleString("es-MX")}</small></article>)}</div><Link href="/cuenta">Ver mis pedidos y entregas</Link></section>
   </div>;
 }

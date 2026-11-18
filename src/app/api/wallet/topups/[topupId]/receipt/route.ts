@@ -3,13 +3,19 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { walletContext } from "@/features/wallet/server/context";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
+const EXPIRED = "Esta recarga venció a las 48 horas. Crea una nueva; si ya pagaste, escríbenos con tu comprobante.";
 export async function POST(request: Request, { params }: { params: Promise<{ topupId: string }> }) {
   const ctx = await walletContext(request);
   if (!ctx) return NextResponse.json({ error: "Inicia sesión." }, { status: 401 });
   const { topupId } = await params;
   if (!z.uuid().safeParse(topupId).success) return NextResponse.json({ error: "Recarga inválida." }, { status: 400 });
-  const { data: topup, error: lookupError } = await ctx.database.from("wallet_topups").select("id,status").eq("id", topupId).eq("user_id", ctx.user.id).maybeSingle();
+  const { data: topup, error: lookupError } = await ctx.database.from("wallet_topups").select("id,status,expires_at").eq("id", topupId).eq("user_id", ctx.user.id).maybeSingle();
   if (lookupError || !topup) return NextResponse.json({ error: "Recarga no encontrada." }, { status: 404 });
+  if (topup.status === "awaiting_payment" && Date.parse(topup.expires_at) <= Date.now()) {
+    await ctx.database.from("wallet_topups").update({ status: "expired" }).eq("id", topup.id).eq("status", "awaiting_payment");
+    return NextResponse.json({ error: EXPIRED }, { status: 409 });
+  }
+  if (topup.status === "expired") return NextResponse.json({ error: EXPIRED }, { status: 409 });
   if (topup.status !== "awaiting_payment") return NextResponse.json({ error: "Esta recarga ya tiene un comprobante o fue revisada." }, { status: 409 });
   if (!await consumeCommerceRateLimit(ctx.database, ctx.user.id, "wallet.receipt", 10, 3600)) return NextResponse.json({ error: "Espera antes de enviar otro comprobante." }, { status: 429 });
   const form = await request.formData().catch(() => null);
@@ -25,7 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ top
   const { data, error } = await ctx.database.from("wallet_topups").update({ status: "submitted", receipt_path: path, receipt_checksum: createHash("sha256").update(bytes).digest("hex") }).eq("id", topup.id).eq("user_id", ctx.user.id).eq("status", "awaiting_payment").select("id").maybeSingle();
   if (error || !data) {
     await ctx.database.storage.from("wallet-receipts").remove([path]);
-    return NextResponse.json({ error: error?.code === "23505" ? "Este comprobante ya se utilizó en otra recarga." : "La recarga cambió o no pudo guardarse." }, { status: 409 });
+    return NextResponse.json({ error: error?.code === "23505" ? "Este comprobante ya se utilizó en otra recarga." : error?.message?.includes("topup_expired") ? EXPIRED : "La recarga cambió o no pudo guardarse." }, { status: 409 });
   }
   return NextResponse.json({ ok: true });
 }
