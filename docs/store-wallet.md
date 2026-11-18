@@ -18,15 +18,17 @@ Las recargas mexicanas muestran transferencia; las de USA muestran PayPal. Aprob
 
 La compra con saldo bloquea la cuenta, valida la propiedad de la sesión, cotización e ID, crea el pedido pagado, descuenta los pavos y encola `wallet.deliver` dentro de una sola transacción PostgreSQL. Un reintento con la misma clave no vuelve a cobrar.
 
-El envío empieza inmediatamente sin aprobación de admin. Se conserva el identificador de cada objeto para evitar regalos repetidos. Si se interrumpe una ejecución, el trabajo se puede recuperar después de cinco minutos. Los objetos nunca intentados se reanudan; los resultados inciertos se concilian antes de cualquier nueva acción.
+El envío empieza inmediatamente sin aprobación de admin. Se conserva el identificador de cada objeto para evitar regalos repetidos. Si se interrumpe una ejecución, el trabajo se puede recuperar después de cinco minutos. Solo `claim_wallet_job` toma estos trabajos; el worker general los ignora. Tras 8 intentos el trabajo queda `failed` y se avisa al admin por Telegram.
+
+Una recarga sin comprobante vence a las 48 horas (`expires_at`, estado `expired`). La base rechaza adjuntar un comprobante a una recarga vencida, y el cron de pavos marca las vencidas en cada llamada. Los objetos nunca intentados se reanudan; los resultados inciertos se concilian antes de cualquier nueva acción.
 
 Los rechazos definitivos conocidos se devuelven por objeto una sola vez. Un objeto devuelto queda excluido de los siguientes envíos. Un timeout o la ausencia en el historial no prueban por sí solos que el regalo no se envió: esos casos conservan el saldo debitado y generan aviso operativo para su comprobación. No se marca un reembolso manual desde la ruta genérica de estados.
 
 ## Activación por ambiente
 
-1. Aplicar `supabase/migrations/20261117000100_store_wallet.sql` antes de desplegar el código. Es aditiva: conserva los pedidos externos existentes.
+1. Aplicar `supabase/migrations/20261117000100_store_wallet.sql` y las migraciones `20261118…` de pavos antes de desplegar el código. Son aditivas: conservan los pedidos externos existentes.
 2. Mantener `FULFILLMENT_MODE=fnshop` y un proveedor listo. En QA usar `FNSHOP_SIMULATE=true`; las protecciones existentes evitan llamadas reales fuera de producción.
-3. Configurar `CRON_SECRET` y ejecutar `/api/internal/wallet` cada cinco minutos con `Authorization: Bearer <CRON_SECRET>`. `vercel.json` declara ese trabajo; el alojamiento debe admitir dicha frecuencia. Si no la admite, configurar un programador externo equivalente antes de habilitar compras con saldo.
+3. Configurar `CRON_SECRET` y los secrets del workflow `.github/workflows/wallet-cron.yml`, que llama a `/api/internal/wallet` cada cinco minutos (ver «Cola de pavos» en `docs/deployment.md`). Vercel Hobby no admite esa frecuencia, por eso no está en `vercel.json`.
 4. Desde Admin → Clientes con pavos, definir las tarifas de MXN y USD y activar únicamente las regiones listas para cobrar.
 5. Probar una recarga, aprobación duplicada, compra con saldo, saldo insuficiente y devolución de un rechazo definitivo en QA.
 
