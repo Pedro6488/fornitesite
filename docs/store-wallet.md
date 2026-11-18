@@ -14,6 +14,14 @@ Al confirmar objetos, se elige pago habitual o pavos; no se aceptan pagos combin
 
 Las recargas mexicanas muestran transferencia; las de USA muestran PayPal. Aprobar una recarga registra un crédito una sola vez. Rechazarla requiere un motivo y no aumenta el saldo. La acreditación y el movimiento se guardan en la misma transacción.
 
+### Precio con pavos contra pago habitual
+
+Política: 1 pavo de la tienda equivale a 1 pavo del precio de Fortnite. El pago habitual usa tramos por objeto (`price_rules`) y precios especiales (`offer_price_overrides`); los pavos usan la tarifa de recarga. Por eso, según el objeto, uno u otro puede salir más barato:
+
+- **Checkout:** muestra "Con pavos ahorras $Z" cuando conviene y "el pago habitual sale más barato" cuando no, comparando contra la tarifa de recarga actual (`compareWalletPrice`).
+- **Precios especiales:** cada excepción puede marcarse **Bloquear pavos** (`wallet_allowed=false`). La cotización lo indica por línea, el checkout lo explica y la base rechaza la compra (`wallet_not_allowed`). En **Admin → Precios** se avisa cuando con pavos un objeto saldría más barato que su precio especial.
+- **USA:** la recarga por PayPal no cobra los $2.30 del pedido habitual. El formulario de la tarifa muestra el neto por cada 100 pavos después de la comisión de PayPal (5.4% + $0.30, en `PAYPAL_PERCENT_BP` y `PAYPAL_FIXED_CENTS`), para que la tarifa la cubra.
+
 ### Revisar una recarga
 
 Cada recarga tiene una referencia `RECARGA-XXXXXXXX` (`wallet_topups.reference_code`) que el cliente escribe en el concepto de la transferencia o en la nota de PayPal. Antes de aprobar, el admin busca esa referencia y el importe en el banco o en PayPal. La imagen del comprobante no es prueba suficiente: se puede editar, y el checksum solo detecta archivos idénticos.
