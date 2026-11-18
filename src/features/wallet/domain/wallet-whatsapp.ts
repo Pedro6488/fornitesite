@@ -33,6 +33,9 @@ export const toCustomer = {
     `Hola, tu pedido #${orderNumber(input.orderId)} pagado con pavos ya se envió a ${input.displayName}:\n${bullets(input.items)}\n\nRevisa tus regalos en Fortnite. Seguimiento: ${input.url}`,
   refunded: (input: { orderId: string; items: readonly string[]; vbucks: number; url: string }) =>
     `Hola, no pudimos enviar ${input.items.length === 1 ? "este objeto" : "estos objetos"} de tu pedido #${orderNumber(input.orderId)}:\n${bullets(input.items)}\n\nTe devolvimos ${pavos(input.vbucks)} a tu saldo; puedes usarlos en tu próxima compra. Detalle: ${input.url}`,
+  /** Para listas de difusión de WhatsApp Business: se copia y se pega. */
+  campaign: (input: { label: string; minVbucks: number; bonusBp: number; cap: number | null; endsAt: string; firstTopupOnly: boolean; appUrl: string }) =>
+    `🎁 ${input.label} en SigfriedLootBox\nRecarga desde ${pavos(input.minVbucks)} y recibe +${(input.bonusBp / 100).toLocaleString("es-MX")}% de pavos de regalo${input.cap ? ` (hasta ${pavos(input.cap)})` : ""}${input.firstTopupOnly ? " en tu primera recarga" : ""}.\nVálido hasta el ${new Date(input.endsAt).toLocaleDateString("es-MX", { day: "numeric", month: "long" })}.\n\nCompra tus pavos aquí: ${input.appUrl}/pavos\nAl pagar con pavos, el envío a tu ID de Fortnite es automático.`,
   frozen: (input: { reason: string }) =>
     `Hola, pausamos por seguridad el uso de tu saldo de pavos (${input.reason}). Tu saldo se conserva. Respóndenos por este medio para resolverlo.`,
 };

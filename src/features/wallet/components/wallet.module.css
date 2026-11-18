@@ -31,3 +31,18 @@
 .whatsNotice p { margin:0; flex:1 1 260px; }
 .list article > a.secondary-button, .list article > small { display:inline-block; margin-top:12px; }
 .netNote { margin:0; padding:10px 12px; background:#090d1d; border-left:3px solid #f0a356; font-size:.92rem; }
+.gift { font-style:normal; color:var(--loot-lime,#d6ff38); }
+.nextOffer { margin:0; padding:12px 14px; background:#162038; border-left:3px solid var(--loot-lime,#d6ff38); }
+.linkButton { background:none; border:0; padding:0; color:var(--loot-lime,#d6ff38); text-decoration:underline; cursor:pointer; font:inherit; }
+.campaign { background:#1d2a12; border:1px solid var(--loot-lime,#d6ff38); padding:14px 16px; display:grid; gap:6px; }
+.campaign p { margin:0; }
+.tiers { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr)); gap:8px; }
+.tiers li { display:grid; gap:2px; padding:10px 12px; background:#090d1d; border:1px solid #2c334e; }
+.tiers li[aria-current=true] { border-color:var(--loot-lime,#d6ff38); }
+.tiers span { font-size:.85rem; color:#aab1cc; }
+.offerRow { background:#090d1d; border:1px solid #2c334e !important; padding:16px !important; }
+.offerRow header { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:baseline; }
+.marginOk { color:#5ccf8f; }
+.marginBad { color:#ff7a84; }
+.copyBox { display:grid; gap:8px; }
+.copyBox textarea { width:100%; min-height:120px; font:inherit; background:#11162c; color:inherit; border:1px solid #343b54; padding:10px; }
