@@ -22,6 +22,33 @@ Política: 1 pavo de la tienda equivale a 1 pavo del precio de Fortnite. El pago
 - **Precios especiales:** cada excepción puede marcarse **Bloquear pavos** (`wallet_allowed=false`). La cotización lo indica por línea, el checkout lo explica y la base rechaza la compra (`wallet_not_allowed`). En **Admin → Precios** se avisa cuando con pavos un objeto saldría más barato que su precio especial.
 - **USA:** la recarga por PayPal no cobra los $2.30 del pedido habitual. El formulario de la tarifa muestra el neto por cada 100 pavos después de la comisión de PayPal (5.4% + $0.30, en `PAYPAL_PERCENT_BP` y `PAYPAL_FIXED_CENTS`), para que la tarifa la cubra.
 
+### Incentivos: precio por volumen y promociones
+
+Se configuran en **Admin → Clientes con pavos**:
+
+1. **Costo y margen** (por región, en el formulario de la tarifa): cuánto le cuesta a la tienda entregar 100 pavos y el margen mínimo aceptado. **Sin costo capturado no se puede activar ningún tramo ni promoción**, y los que ya existan no se aplican.
+2. **Precio por volumen** (`wallet_rate_tiers`): "desde X pavos, $Y por 100". Se aplica el tramo más alto que alcanza la recarga; debajo del primero se cobra la tarifa base.
+3. **Promociones** (`wallet_bonus_rules`): "+N % de pavos de regalo desde X", con inicio, fin, tope opcional y opción de solo primera recarga. Si coinciden varias, se aplica la mayor; no se suman.
+
+Reglas que aplica la base:
+
+- **Guardia de margen** (`wallet_tier_valid`, `wallet_bonus_valid`): un tramo es válido si su precio por 100 cubre `costo × (1 + margen)`. Una promoción es válida si, con el regalo completo, todos los niveles de precio alcanzables desde su mínimo cubren lo mismo. `save_wallet_tier` y `save_wallet_bonus` rechazan con `below_margin` o `cost_required`. Al cobrar y al mostrar las ofertas se ignora cualquier tramo o promoción que haya quedado inválida, por ejemplo tras cambiar el costo.
+- **Lo que ve el cliente es lo que recibe**: `/pavos` calcula el total y el regalo con el mismo cálculo que la base (`domain/wallet-offers.ts` ↔ `wallet_topup_quote`). `create_wallet_topup` recibe el regalo esperado y rechaza con `promo_changed` si cambió.
+- **El regalo se fija al crear la recarga** (`wallet_topups.bonus_vbucks`) y se acredita al aprobarla como movimiento `bonus` aparte, una sola vez. Si después hay un contracargo, el ajuste negativo debe incluir también el regalo de esa recarga.
+
+Lo que ve el cliente:
+
+- En `/pavos`: las promociones vigentes, la tabla de precio por volumen, "Recibes 5,000 + 250 de regalo", el precio efectivo por 100 y "Agrega 500 pavos y recibes +250 de regalo" con un botón para subir de escalón.
+- En el checkout: la promoción vigente con un enlace a comprar pavos.
+
+**Difusión:** no hay correo. Cada promoción vigente tiene **Copiar mensaje** con el texto listo para una lista de difusión de WhatsApp Business.
+
+Ejemplo:
+
+- Configuración: base $7.50 por 100, costo $5.00 por 100, margen mínimo 15 % (nada puede quedar debajo de $5.75 efectivos), tramo desde 5,000 a $7.00 y promoción de +5 % desde 5,000.
+- Una recarga de 5,000 cuesta $350 y acredita 5,250, es decir, $6.67 por 100.
+- Una promoción de +40 % se rechaza, porque dejaría $5.00 por 100.
+
 ### Revisar una recarga
 
 Cada recarga tiene una referencia `RECARGA-XXXXXXXX` (`wallet_topups.reference_code`) que el cliente escribe en el concepto de la transferencia o en la nota de PayPal. Antes de aprobar, el admin busca esa referencia y el importe en el banco o en PayPal. La imagen del comprobante no es prueba suficiente: se puede editar, y el checksum solo detecta archivos idénticos.
