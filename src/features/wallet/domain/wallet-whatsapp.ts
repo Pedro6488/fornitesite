@@ -46,6 +46,8 @@ export const toStore = {
     `Hola, mi recarga ${input.reference} de ${pavos(input.vbucks)} fue rechazada y quiero revisarla. Te envío mi comprobante.`,
   topupExpired: (input: { reference: string; vbucks: number }) =>
     `Hola, pagué la recarga ${input.reference} de ${pavos(input.vbucks)}, pero venció antes de subir el comprobante. Te lo envío por aquí.`,
+  topupSubmitted: (input: { reference: string; vbucks: number }) =>
+    `Hola, ya subí el comprobante de mi recarga ${input.reference} de ${pavos(input.vbucks)}. ¿Me confirman cuando esté acreditada?`,
   frozen: () => "Hola, mi saldo de pavos aparece en revisión y quiero resolverlo.",
   refunded: (input: { orderId: string; vbucks: number; url: string }) =>
     `Hola, en mi pedido #${orderNumber(input.orderId)} me devolvieron ${pavos(input.vbucks)}. Quiero ayuda con los objetos que no se enviaron. Seguimiento: ${input.url}`,

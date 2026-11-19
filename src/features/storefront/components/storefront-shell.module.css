@@ -70,3 +70,8 @@
 .help { transition: background 180ms, transform 180ms; }.help:active { transform: scale(.96); }
 @media (prefers-reduced-motion: reduce) { .help { transition: none; }.help:active { transform: none; } }
 :global(body:has(.detail-shell, .cart-page, .checkout-flow, .order-tracking-page)) .footer { display: none; }
+/* Con el saldo visible no cabe todo: se va «Hablemos» en anchos medios y el texto de la marca en móvil, para que nada se salga del encabezado. */
+@media (max-width: 1280px) { .header:has(.wallet) .help { display: none; } }
+@media (max-width: 600px) { .header:has(.wallet) .brand > span { display: none; } }
+@media (min-width: 601px) and (max-width: 800px) { .brand > span { display: none; } }
+@media (max-width: 1160px) { .header:has(.region) .navigation { display: none; } }

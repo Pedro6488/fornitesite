@@ -1,7 +1,7 @@
 "use client";
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, RefreshCw } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CircleCheck, Clock3, RefreshCw } from "lucide-react";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { useStoreRegion } from "@/features/pricing/components/region-provider";
 import { movementLabels, topupLabels, topupReference, topupStatus, walletMoney, type WalletTopup } from "../domain/wallet";
@@ -32,6 +32,10 @@ export function WalletPanel({ offers = null, variant = "page", initialAmount = n
   const [amount, setAmount] = useState(initialAmount ?? 3500);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  // Confirmación grande en «Tu avance»: el cliente tiene que ver que su recarga sí se creó o que su comprobante sí llegó.
+  const [flash, setFlash] = useState<{ title: string; body: string } | null>(null);
+  const [receiptError, setReceiptError] = useState<{ id: string; text: string } | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const [key, setKey] = useState<string | null>(null);
   const guest = commerce.ready && !commerce.authenticated;
   // Con sesión usamos las ofertas de la cuenta (respetan "solo primera recarga"); si no cargan, las públicas.
@@ -48,26 +52,36 @@ export function WalletPanel({ offers = null, variant = "page", initialAmount = n
   const step = pending.length > 0 ? 1 : reviewing.length > 0 ? 2 : balance > 0 ? 3 : 0;
   const pickAmount = (value: number) => { setAmount(value); setKey(null); };
 
+  const showProgress = () => window.requestAnimationFrame(() => document.getElementById("siguiente-paso")?.scrollIntoView({ behavior: "smooth", block: "start" }));
   async function createTopup() {
     if (cents === null || busy) return;
-    setBusy(true); setMessage("");
+    setBusy(true); setMessage(""); setFlash(null);
     const attemptKey = key ?? crypto.randomUUID(); setKey(attemptKey);
     try {
-      await walletRequest("/api/wallet/topups", { method: "POST", headers: { "Content-Type":"application/json" }, body: JSON.stringify({ region, vbucks: amount, expectedCents: cents, expectedBonus: quote?.bonus ?? 0, key: attemptKey }) });
-      setKey(null); setMessage("Recarga creada. Paga con los datos de arriba y sube tu comprobante.");
+      const created = await walletRequest<{ topup?: WalletTopup }>("/api/wallet/topups", { method: "POST", headers: { "Content-Type":"application/json" }, body: JSON.stringify({ region, vbucks: amount, expectedCents: cents, expectedBonus: quote?.bonus ?? 0, key: attemptKey }) });
+      setKey(null);
+      const t = created.topup;
+      setFlash({ title: t ? `Tu recarga ${topupReference(t)} está creada` : "Tu recarga está creada",
+        body: t ? `Falta un paso: paga exactamente ${walletMoney(t.amount_cents, t.region)} con la referencia ${topupReference(t)} y sube tu comprobante aquí abajo.` : "Falta un paso: paga con la referencia que ves abajo y sube tu comprobante." });
       await reload();
-      document.getElementById("siguiente-paso")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      showProgress();
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : "No fue posible crear la recarga."); }
     finally { setBusy(false); }
   }
   async function receipt(event: FormEvent<HTMLFormElement>, topup: WalletTopup) {
-    event.preventDefault(); setBusy(true); setMessage("");
+    event.preventDefault(); setBusy(true); setReceiptError(null); setFlash(null);
     try {
       await walletRequest(`/api/wallet/topups/${topup.id}/receipt`, { method:"POST", body: new FormData(event.currentTarget) });
-      setMessage("Comprobante recibido. Te avisamos por WhatsApp en cuanto acreditemos tus pavos."); await reload();
-    } catch (cause) { setMessage(cause instanceof Error ? cause.message : "No fue posible enviar el comprobante."); }
+      setFlash({ title: "Recibimos tu comprobante", body: `Ya no tienes que hacer nada más. Revisamos tu pago con la referencia ${topupReference(topup)} y te avisamos por WhatsApp cuando tus ${n(topup.vbucks + (topup.bonus_vbucks ?? 0))} pavos estén en tu saldo.` });
+      await reload();
+      showProgress();
+    } catch (cause) { setReceiptError({ id: topup.id, text: cause instanceof Error ? cause.message : "No fue posible enviar el comprobante." }); }
     finally { setBusy(false); }
   }
+  async function copy(id: string, text: string) {
+    try { await navigator.clipboard.writeText(text); setCopied(id); window.setTimeout(() => setCopied((current) => current === id ? null : current), 2000); } catch { /* el texto queda visible para copiarlo a mano */ }
+  }
+  const copyButton = (id: string, text: string, label: string) => <button type="button" className={styles.copy} onClick={() => void copy(id, text)} aria-label={`Copiar ${label}`}>{copied === id ? "¡Copiado!" : "Copiar"}</button>;
   const support = (text: string) => whatsappLink(data?.supportWhatsapp, text);
   if (!commerce.ready) return <p>Cargando tu cuenta…</p>;
 
@@ -106,16 +120,20 @@ export function WalletPanel({ offers = null, variant = "page", initialAmount = n
 
   const faq = <section className={explainer.block} aria-labelledby="faq-title"><header><p className={explainer.eyebrow}>PREGUNTAS FRECUENTES</p><h2 id="faq-title">SIN DUDAS, <span>A RECARGAR.</span></h2></header><WalletFaq /></section>;
 
-  const recharge = <section className={styles.recharge} id="recargar" aria-labelledby="recharge-title"><div><p className="eyebrow">RECARGA TU SALDO</p><h2 id="recharge-title">Juega con la cantidad</h2><p>Mueve la barra o elige un escalón: ves al momento cuánto pagas, cuántos pavos recibes y tu regalo.</p></div>
+  // Con una recarga en curso, la calculadora queda plegada: lo principal es terminar esa recarga, no empezar otra.
+  const inProgress = pending.length > 0 || reviewing.length > 0;
+  const calculator = <WalletCalculator amount={amount} onAmount={pickAmount} source={source} disabled={busy} aside={<details className={styles.afterDetails} open><summary>¿Qué pasa después de comprar?</summary><WalletAfterBuy /></details>}>
+    {() => <>
+      {!guest && data && <p className={styles.after}>Saldo después de acreditarse: <strong>{n(balance + (quote?.credited ?? amount))} pavos</strong></p>}
+      {guest
+        ? <Link className="primary-button" href={`/cuenta?next=${encodeURIComponent(`/pavos?cantidad=${amount}#recargar`)}`}>Inicia sesión para comprar</Link>
+        : <button type="button" className="primary-button" disabled={cents===null || !data || busy} onClick={() => void createTopup()}>{busy ? "Creando tu recarga…" : `Comprar ${n(amount)} pavos`}</button>}
+    </>}
+  </WalletCalculator>;
+  const recharge = <section className={styles.recharge} id="recargar" aria-labelledby="recharge-title"><div><p className="eyebrow">RECARGA TU SALDO</p><h2 id="recharge-title">{inProgress ? "¿Otra recarga?" : "Juega con la cantidad"}</h2><p>{inProgress ? "Primero termina la recarga de arriba. Si quieres más pavos, abre la calculadora." : "Mueve la barra o elige un escalón: ves al momento cuánto pagas, cuántos pavos recibes y tu regalo."}</p></div>
     {regionBonuses.length > 0 && <div className={styles.campaign} role="note">{regionBonuses.map((bonus) => <p key={bonus.id}>🎁 <strong>{bonus.label}</strong>: +{(bonus.bonus_bp/100).toLocaleString("es-MX")}% de pavos de regalo desde {n(bonus.min_vbucks)}{bonus.bonus_cap ? ` (hasta ${n(bonus.bonus_cap)})` : ""}{bonus.first_topup_only ? " en tu primera recarga" : ""}. Válido hasta el {new Date(bonus.ends_at).toLocaleDateString("es-MX", { day:"numeric", month:"long" })}.</p>)}</div>}
-    <WalletCalculator amount={amount} onAmount={pickAmount} source={source} disabled={busy} aside={<details className={styles.afterDetails} open><summary>¿Qué pasa después de comprar?</summary><WalletAfterBuy /></details>}>
-      {() => <>
-        {!guest && data && <p className={styles.after}>Saldo después de acreditarse: <strong>{n(balance + (quote?.credited ?? amount))} pavos</strong></p>}
-        {guest
-          ? <Link className="primary-button" href={`/cuenta?next=${encodeURIComponent(`/pavos?cantidad=${amount}#recargar`)}`}>Inicia sesión para comprar</Link>
-          : <button type="button" className="primary-button" disabled={cents===null || !data || busy} onClick={() => void createTopup()}>{busy ? "Procesando…" : `Comprar ${n(amount)} pavos`}</button>}
-      </>}
-    </WalletCalculator>
+    {message && <p className="notice error" role="alert">{message}</p>}
+    {inProgress ? <details className={styles.another}><summary>Quiero otra recarga</summary>{calculator}</details> : calculator}
   </section>;
 
   return <div className={`${styles.panel} ${explainer.explainer}`}>
@@ -130,17 +148,21 @@ export function WalletPanel({ offers = null, variant = "page", initialAmount = n
     {data && <section className={explainer.block} id="siguiente-paso" aria-labelledby="progress-title">
       <header><p className={explainer.eyebrow}>TU AVANCE</p><h2 id="progress-title">{step === 0 ? <>ELIGE TU <span>RECARGA</span></> : step === 1 ? <>PAGA Y SUBE TU <span>COMPROBANTE</span></> : step === 2 ? <>ESTAMOS REVISANDO <span>TU PAGO</span></> : <>LISTO PARA <span>COMPRAR</span></>}</h2>
         <p>{step === 0 ? "Elige cuántos pavos quieres abajo. Te damos los datos de pago y tu referencia." : step === 1 ? "Haz el pago con la referencia de tu recarga y sube el comprobante aquí mismo." : step === 2 ? "Confirmamos tu pago con la referencia y te avisamos por WhatsApp cuando tus pavos estén en tu saldo." : "En el checkout elige “Mis pavos de la tienda” y tu pedido se envía solo."}</p></header>
+      {flash && <div className={styles.flash} role="status" aria-live="polite"><CircleCheck aria-hidden="true" size={28} /><div><strong>{flash.title}</strong><p>{flash.body}</p></div><button type="button" className={styles.flashClose} onClick={() => setFlash(null)} aria-label="Cerrar aviso">×</button></div>}
       <WalletSteps current={step} />
       {step === 3 && <Link className={explainer.primary} href="/fortnite#catalogo">Ver objetos <ArrowUpRight size={18} aria-hidden="true" /></Link>}
       {pending.map((t) => <article key={t.id} className={styles.pendingCard}>
-        <header><strong>{n(t.vbucks)} pavos{t.bonus_vbucks ? ` + ${n(t.bonus_vbucks)} de regalo` : ""}</strong><span>{walletMoney(t.amount_cents,t.region)}</span></header>
-        <div className={styles.payment}>{t.region==="mx" ? <><p>Banco: <strong>{data.paymentDetails.name}</strong></p><p>Beneficiario: <strong>{data.paymentDetails.beneficiary}</strong></p><p>CLABE: <strong>{data.paymentDetails.clabe}</strong></p></> : <p>PayPal: <strong>{data.paymentDetails.paypal}</strong></p>}<p>Monto exacto: <strong>{walletMoney(t.amount_cents,t.region)}</strong></p><p>Escribe en el concepto o la nota del pago: <strong className={styles.reference}>{topupReference(t)}</strong></p></div>
+        <header><span className={styles.cardState} data-state="pay">Paso 2 · Pendiente de pago</span><strong>{n(t.vbucks)} pavos{t.bonus_vbucks ? ` + ${n(t.bonus_vbucks)} de regalo` : ""}</strong><span>{walletMoney(t.amount_cents,t.region)}</span></header>
+        <div className={styles.payment}>{t.region==="mx" ? <><p>Banco: <strong>{data.paymentDetails.name}</strong></p><p>Beneficiario: <strong>{data.paymentDetails.beneficiary}</strong></p><p>CLABE: <strong>{data.paymentDetails.clabe}</strong> {copyButton(`clabe-${t.id}`, data.paymentDetails.clabe, "CLABE")}</p></> : <p>PayPal: <strong>{data.paymentDetails.paypal}</strong> {copyButton(`paypal-${t.id}`, data.paymentDetails.paypal, "correo de PayPal")}</p>}<p>Monto exacto: <strong>{walletMoney(t.amount_cents,t.region)}</strong></p><p>Escribe en el concepto o la nota del pago: <strong className={styles.reference}>{topupReference(t)}</strong> {copyButton(`ref-${t.id}`, topupReference(t), "referencia")}</p></div>
         {t.expires_at && <small>Paga y sube tu comprobante antes del {new Date(t.expires_at).toLocaleString("es-MX", { dateStyle: "medium", timeStyle: "short" })}.</small>}
-        <form onSubmit={(e) => void receipt(e,t)}><label>Comprobante de la recarga<input type="file" name="receipt" accept="image/jpeg,image/png,application/pdf" required disabled={busy} /></label><small>JPG, PNG o PDF de máximo 5 MB.</small><button className="primary-button" disabled={busy}>Enviar comprobante</button></form>
+        <form onSubmit={(e) => void receipt(e,t)}><label>Comprobante de la recarga<input type="file" name="receipt" accept="image/jpeg,image/png,application/pdf" required disabled={busy} /></label><small>JPG, PNG o PDF de máximo 5 MB.</small>{receiptError?.id === t.id && <p className="notice error" role="alert">{receiptError.text}</p>}<button className="primary-button" disabled={busy}>{busy ? "Enviando comprobante…" : "Enviar comprobante"}</button></form>
       </article>)}
+      {reviewing.map((t) => { const href = support(toStore.topupSubmitted({ reference: topupReference(t), vbucks: t.vbucks })); return <article key={t.id} className={`${styles.pendingCard} ${styles.reviewCard}`}>
+        <header><span className={styles.cardState} data-state="review"><Clock3 aria-hidden="true" size={14} /> Paso 3 · Comprobante en revisión</span><strong>{n(t.vbucks)} pavos{t.bonus_vbucks ? ` + ${n(t.bonus_vbucks)} de regalo` : ""}</strong><span>{walletMoney(t.amount_cents,t.region)}</span></header>
+        <p>Ya recibimos tu comprobante de la recarga <strong className={styles.reference}>{topupReference(t)}</strong>. No tienes que hacer nada más: confirmamos el pago con el banco o PayPal y te avisamos por WhatsApp. Tus pavos aparecerán en tu saldo.</p>
+        {href && <a className="secondary-button" href={href} target="_blank" rel="noreferrer">¿Dudas? Escríbenos por WhatsApp</a>}
+      </article>; })}
     </section>}
-
-    {message && <p className="notice" role="status">{message}</p>}
     {recharge}
     {guest && variant === "page" && why}
 

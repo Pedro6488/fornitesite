@@ -58,6 +58,32 @@ describe("compra de pavos",() => {
     expect(screen.getAllByText("RECARGA-ABCDEF12").length).toBeGreaterThan(0);
     expect(screen.getByLabelText("Comprobante de la recarga")).toBeInTheDocument();
   });
+  it("al crear la recarga confirma en grande, con la referencia y el monto, en «Tu avance»",async () => {
+    state.request.mockResolvedValue({ topup:{ id:"d72f44bd-0000-0000-0000-000000000000",user_id:"u",vbucks:2800,region:"mx",amount_cents:19600,status:"awaiting_payment",review_note:null,created_at:"2026-11-19T10:00:00Z",reference_code:"RECARGA-D72F44BD" } });
+    render(<WalletPanel />);
+    fireEvent.click(screen.getByRole("button",{ name:"Comprar 3,500 pavos" }));
+    const status = await screen.findByText("Tu recarga RECARGA-D72F44BD está creada");
+    expect(status.closest("[role=status]")).toHaveTextContent("paga exactamente $196.00 MXN con la referencia RECARGA-D72F44BD");
+    expect(status.closest("#siguiente-paso")).not.toBeNull();
+  });
+  it("al subir el comprobante confirma que ya no hay nada más que hacer",async () => {
+    state.balance=0;
+    state.topups=[{ id:"abcdef12-0000-0000-0000-000000000000",user_id:"u",vbucks:2800,bonus_vbucks:200,region:"mx",amount_cents:19600,status:"awaiting_payment",review_note:null,created_at:"2026-11-19T10:00:00Z",expires_at:"2099-01-01T00:00:00Z",reference_code:"RECARGA-ABCDEF12" }];
+    render(<WalletPanel />);
+    fireEvent.change(screen.getByLabelText("Comprobante de la recarga"),{ target:{ files:[new File(["x"],"pago.png",{ type:"image/png" })] } });
+    fireEvent.submit(screen.getByRole("button",{ name:"Enviar comprobante" }).closest("form")!);
+    expect(await screen.findByText("Recibimos tu comprobante")).toBeInTheDocument();
+    expect(screen.getByText(/Ya no tienes que hacer nada más/)).toHaveTextContent("tus 3,000 pavos");
+  });
+  it("con un comprobante en revisión muestra su tarjeta y pliega la calculadora",() => {
+    state.balance=0;
+    state.topups=[{ id:"2b4cbb44-0000-0000-0000-000000000000",user_id:"u",vbucks:2800,region:"mx",amount_cents:19600,status:"submitted",review_note:null,created_at:"2026-11-19T10:00:00Z",reference_code:"RECARGA-2B4CBB44" }];
+    render(<WalletPanel />);
+    expect(screen.getByText(/Paso 3 · Comprobante en revisión/)).toBeInTheDocument();
+    expect(screen.getAllByText("RECARGA-2B4CBB44").length).toBeGreaterThan(0);
+    expect(screen.getByText("Quiero otra recarga").closest("details")).not.toHaveAttribute("open");
+    expect(screen.getByRole("heading",{ name:"¿Otra recarga?" })).toBeInTheDocument();
+  });
   it("con saldo, invita a usar los pavos",() => {
     render(<WalletPanel />);
     expect(screen.getByRole("heading",{ name:/LISTO PARA COMPRAR/ })).toBeInTheDocument();

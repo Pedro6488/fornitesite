@@ -34,8 +34,8 @@ curl -H "Authorization: Bearer <CRON_SECRET>" https://<dominio-qa>/api/internal/
 | # | Quién | Acción | Debe pasar |
 |---|---|---|---|
 | A1 | Cliente | En la portada, mover la calculadora y tocar "Quiero N pavos". | Abre `/pavos` con esa misma cantidad. |
-| A2 | Cliente | Comprar la recarga. | Arriba, en "Tu avance", aparecen: "Paga y sube tu comprobante", los datos de pago, el monto exacto y la referencia `RECARGA-XXXXXXXX`. |
-| A3 | Cliente | Subir un comprobante (JPG, PNG o PDF). | Aparece "Comprobante recibido" y el paso cambia a "Estamos revisando tu pago". |
+| A2 | Cliente | Comprar la recarga. | La página sube sola a "Tu avance" y muestra el aviso verde **"Tu recarga RECARGA-… está creada"** con el monto exacto. Debajo está la tarjeta "Paso 2 · Pendiente de pago" con los datos de pago y botones "Copiar" para la CLABE y la referencia. La calculadora queda plegada en "Quiero otra recarga". |
+| A3 | Cliente | Subir un comprobante (JPG, PNG o PDF). | Aviso verde **"Recibimos tu comprobante"**: ya no hay nada más que hacer. La tarjeta cambia a "Paso 3 · Comprobante en revisión", con la referencia, y el título a "Estamos revisando tu pago". La calculadora sigue plegada. |
 | A4 | Telegram | Esperar menos de un minuto. | Llega **"🧾 Recarga de pavos por liberar · RECARGA-…"** con los pavos, el regalo, el monto, el correo del cliente y el botón "Abrir en el panel". |
 | A5 | Admin | Mirar el menú. | "Recargas de pavos" (en Operación) y la franja superior ("recargas") muestran el contador. La recarga aparece primero en `/admin/pavos`, en "Comprobantes por revisar". |
 | A6 | Admin | "Confirmar pago y acreditar pavos". | La recarga sale de la lista y el contador baja. El botón de WhatsApp abre un mensaje con la referencia, los pavos, **el regalo** y el saldo correcto. |
