@@ -55,3 +55,21 @@
 .afterDetails summary { cursor:pointer; color:var(--loot-lime,#d6ff38); font-weight:800; font-size:14px; margin-bottom:8px; }
 .detailHead { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
 .detailHead h2 { margin:0; }
+/* Confirmación grande: la recarga se creó o el comprobante llegó. */
+.flash { position:relative; display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start; padding:18px 48px 18px 18px; background:#16260f; border:2px solid var(--loot-lime,#d6ff38); color:#fff; animation:flashIn .3s ease; }
+.flash > svg { color:var(--loot-lime,#d6ff38); }
+.flash strong { display:block; font-size:1.15rem; margin-bottom:4px; }
+.flash p { margin:0; color:#dfe6c8; line-height:1.45; }
+.flashClose { position:absolute; top:8px; right:8px; width:36px; height:36px; display:grid; place-items:center; background:transparent; border:0; color:#fff; font-size:22px; cursor:pointer; }
+.flashClose:focus-visible { outline:3px solid var(--loot-lime,#d6ff38); }
+@keyframes flashIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation:none; } }
+.cardState { flex-basis:100%; display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--loot-lime,#d6ff38); }
+.cardState[data-state=review] { color:#ffd166; }
+.reviewCard { border-color:#ffd16699; }
+.reviewCard > p { margin:0; line-height:1.5; }
+.copy { margin-left:6px; padding:2px 10px; min-height:28px; background:#1b2340; color:#fff; border:1px solid #3d4969; font-size:12px; font-weight:700; cursor:pointer; vertical-align:middle; }
+.copy:hover { border-color:var(--loot-lime,#d6ff38); }
+.another { border:1px solid #ffffff1a; padding:12px 16px; }
+.another > summary { cursor:pointer; color:var(--loot-lime,#d6ff38); font-weight:800; }
+.another[open] > summary { margin-bottom:14px; }
