@@ -1,0 +1,75 @@
+{
+  "devName": "[VIRTUAL]1 x Miku's Beam for -1 MtxCurrency",
+  "offerId": "v2:/59117db7afa71835f310f20b7073c5fa838671fc78daee3c7a01e81408c14385",
+  "finalPrice": 700,
+  "regularPrice": 700,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": {
+    "name": "Ruedas Rayo de Miku",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9c89d2c3642f36ad/renderimage_0.png"
+  },
+  "banner": {
+    "value": "Animado",
+    "intensity": "High",
+    "backendValue": "Animated"
+  },
+  "layout": {
+    "id": "PirateCactus1",
+    "name": "Hatsune Miku",
+    "index": 10,
+    "rank": 198,
+    "showIneligibleOffers": "always",
+    "useWidePreview": true,
+    "displayType": "tileGrid"
+  },
+  "offerTag": null,
+  "tileSize": "Size_1_x_1",
+  "colors": {
+    "color1": "10d8e0ff",
+    "color2": "93f9ffff",
+    "color3": "0ab8d0ff",
+    "textBackgroundColor": "35c0b9ff"
+  },
+  "newDisplayAsset": {
+    "id": "DAv2_Bundle_Featured_Wheel_AventurineAnimated",
+    "materialInstances": [],
+    "renderImages": [
+      {
+        "productTag": "Product.DelMar",
+        "fileName": "cosmo__9c89d2c3642f36ad_e98b3a3158ec34ac.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9c89d2c3642f36ad/renderimage_0.png"
+      }
+    ]
+  },
+  "brItems": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Wheel_AventurineAnimated",
+      "name": "Rayo de Miku",
+      "type": {
+        "value": "wheel",
+        "displayValue": "Rueda",
+        "backendValue": "VehicleCosmetics_Wheel"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_aventurineanimated/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_aventurineanimated/large.png"
+      },
+      "vehicle": "VCID_Wheel_AventurineAnimated"
+    }
+  ],
+  "instruments": null
+}

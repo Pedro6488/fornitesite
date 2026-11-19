@@ -10,20 +10,23 @@ const createSchema = z.discriminatedUnion("type", [
   .refine((value) => !value.effectiveUntil || !value.effectiveFrom || new Date(value.effectiveUntil) > new Date(value.effectiveFrom), "La vigencia no es válida.");
 const updateSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("toggle"), type: z.enum(["rule", "override"]), id: z.uuid(), active: z.boolean() }),
+  z.object({ action: z.literal("walletAllowed"), type: z.literal("override"), id: z.uuid(), walletAllowed: z.boolean() }),
   z.object({ action: z.literal("editRule"), type: z.literal("rule"), id: z.uuid(), minVbucks: z.number().int().positive(), maxVbucks: z.number().int().positive().nullable(), mxnPerHundred: z.number().positive(), effectiveFrom: z.iso.datetime().optional(), effectiveUntil: z.iso.datetime().nullable().optional() }),
   z.object({ action: z.literal("editOverride"), type: z.literal("override"), id: z.uuid(), amountMxnCents: z.number().int().positive(), effectiveFrom: z.iso.datetime().optional(), effectiveUntil: z.iso.datetime().nullable().optional() })
 ]).refine((value) => value.action !== "editRule" || value.maxVbucks === null || value.maxVbucks >= value.minVbucks, "El rango no es válido.")
-  .refine((value) => value.action === "toggle" || !value.effectiveUntil || !value.effectiveFrom || new Date(value.effectiveUntil) > new Date(value.effectiveFrom), "La vigencia no es válida.");
+  .refine((value) => value.action === "toggle" || value.action === "walletAllowed" || !value.effectiveUntil || !value.effectiveFrom || new Date(value.effectiveUntil) > new Date(value.effectiveFrom), "La vigencia no es válida.");
 
 export async function GET(request: Request) {
   const staff = await authorizeStaff(request);
   if (!staff) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
-  const [rules, overrides] = await Promise.all([
+  const [rules, overrides, walletRate] = await Promise.all([
     staff.database.from("price_rules").select("*").order("min_vbucks"),
-    staff.database.from("offer_price_overrides").select("*").order("created_at", { ascending: false }).limit(200)
+    staff.database.from("offer_price_overrides").select("*").order("created_at", { ascending: false }).limit(200),
+    staff.database.from("wallet_rates").select("cents_per_100,active").eq("region", "mx").maybeSingle()
   ]);
   if (rules.error || overrides.error) return NextResponse.json({ error: "No fue posible consultar precios." }, { status: 503 });
-  return NextResponse.json({ rules: rules.data, overrides: overrides.data });
+  // La tarifa de pavos solo sirve para avisar si un precio especial sale más barato con pavos.
+  return NextResponse.json({ rules: rules.data, overrides: overrides.data, walletRate: walletRate.error ? null : walletRate.data });
 }
 
 export async function POST(request: Request) {
@@ -68,6 +71,14 @@ export async function PATCH(request: Request) {
     const { data, error } = await staff.database.from("offer_price_overrides").update({ amount_mxn_cents: parsed.data.amountMxnCents, effective_from: parsed.data.effectiveFrom ?? before.effective_from, effective_until: parsed.data.effectiveUntil ?? null }).eq("id", parsed.data.id).select().single();
     if (error) return NextResponse.json({ error: "No fue posible editar la excepción." }, { status: 409 });
     await staff.database.from("audit_log").insert({ actor_id: staff.user.id, action: "price.update", entity_type: "override", entity_id: data.id, before_data: before, after_data: data });
+    return NextResponse.json({ item: data });
+  }
+  if (parsed.data.action === "walletAllowed") {
+    const { data: before } = await staff.database.from("offer_price_overrides").select("*").eq("id", parsed.data.id).maybeSingle();
+    if (!before) return NextResponse.json({ error: "No encontramos la excepción." }, { status: 404 });
+    const { data, error } = await staff.database.from("offer_price_overrides").update({ wallet_allowed: parsed.data.walletAllowed }).eq("id", parsed.data.id).select().single();
+    if (error) return NextResponse.json({ error: "No fue posible cambiar el pago con pavos de este objeto." }, { status: 409 });
+    await staff.database.from("audit_log").insert({ actor_id: staff.user.id, action: "price.wallet_allowed", entity_type: "override", entity_id: data.id, before_data: before, after_data: data });
     return NextResponse.json({ item: data });
   }
   const table = parsed.data.type === "rule" ? "price_rules" : "offer_price_overrides";

@@ -13,6 +13,13 @@ const order: Order = {
 const bank = { name: "Nu", beneficiary: "Tienda", clabe: "123456789012345678", concept: "Pedido", paypal: "pagos@example.com" };
 
 describe("datos de pago por región del pedido", () => {
+  it("muestra pavos y envío automático sin pedir una transferencia",() => {
+    render(<OrderStatus initialOrder={{ ...order,status:"paid",currency:"USD",paymentSource:"wallet",walletVbucks:1500 }} bank={bank} whatsappNumber={null} appUrl="https://example.com" />);
+    expect(screen.getByText("1,500 pavos")).toBeInTheDocument();
+    expect(screen.getByText(/Pagado con tus pavos de la tienda/)).toBeInTheDocument();
+    expect(screen.queryByText("Comisión PayPal")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Comprobante de pago")).not.toBeInTheDocument();
+  });
   it.each(["receipt_submitted", "transfer_review"] as const)("explica el plazo de entrega durante %s", (status) => {
     render(<OrderStatus initialOrder={{ ...order, status }} bank={bank} whatsappNumber={null} appUrl="https://example.com" />);
     expect(screen.getByText(/Tu pago está en revisión.*1 a 10 minutos.*Gracias por tu paciencia/)).toBeInTheDocument();

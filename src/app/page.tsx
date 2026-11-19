@@ -1,24 +1,29 @@
 import { StorefrontTransition } from "@/features/storefront/components/storefront-transition";
+import { randomInt } from "node:crypto";
 import { getCatalogService } from "@/features/catalog/server/get-catalog";
 import { getPublicDeliveryReferences } from "@/features/community/server/get-community";
 import { HomeReferences } from "@/features/storefront/components/home-references";
 import { StorefrontLink as Link } from "@/features/storefront/components/storefront-link";
 import { ArrowRight, ArrowUpRight, Check, ChevronDown, Gamepad2, MousePointer2, ShieldCheck, Sparkles, Ticket } from "lucide-react";
 import { HomeHero } from "@/features/storefront/components/home-hero";
+import { HomeWalletSection } from "@/features/wallet/components/home-wallet-section";
+import { getPublicWalletOffers } from "@/features/wallet/server/public-offers";
 import styles from "./home.module.css";
 
 const questions = [
 { question: "¿Cómo recibo mi compra?", answer: "Elige tus objetos de Fortnite. Validamos tu ID y la disponibilidad antes del pago y coordinamos la entrega de tu pedido." },
 { question: "¿Necesito compartir mi contraseña?", answer: "No. Solo necesitamos tu ID de jugador de Fortnite. Tu contraseña se queda contigo." },
+{ question: "¿Qué son los pavos de la tienda?", answer: "Es saldo en SigfriedLootBox, no paVos de Epic. Recargas una vez, confirmamos tu pago y desde ahí cada objeto que pagues con pavos se envía solo a tu ID de Fortnite." },
 { question: "¿Puedo comprar varios objetos juntos?", answer: "Sí. Agrega tus objetos de Fortnite al carrito y revisa los productos, el precio y los datos necesarios antes de continuar." },
 ];
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [catalogResult, referencesResult] = await Promise.allSettled([
+  const [catalogResult, referencesResult, walletOffers] = await Promise.allSettled([
     getCatalogService().then((catalog) => catalog.list()),
     getPublicDeliveryReferences(),
+    getPublicWalletOffers(),
   ]);
   const items = catalogResult.status === "fulfilled" ? catalogResult.value : [];
   const references = referencesResult.status === "fulfilled" ? referencesResult.value : [];
@@ -26,14 +31,14 @@ export default async function HomePage() {
   if (referencesResult.status === "rejected") console.error("Home references unavailable", referencesResult.reason);
   const candidates = items.filter((item) => item.imageUrl);
   for (let index = candidates.length - 1; index > 0; index--) {
-    const other = Math.floor(Math.random() * (index + 1));
+    const other = randomInt(index + 1);
     [candidates[index], candidates[other]] = [candidates[other], candidates[index]];
   }
   const showcase = candidates.slice(0, 8).map((item) => ({ id: item.mainId, name: item.name, image: item.imageUrl! }));
   const whatsapp = process.env.WHATSAPP_BUSINESS_NUMBER?.replace(/\D/g, "") || "5215619857749";
   const contactUrl = `https://wa.me/${whatsapp}?text=${encodeURIComponent("Hola, tengo una duda sobre una compra en SigfriedLootBox.")}`;
   return <StorefrontTransition><div className={styles.home} data-storefront-home>
-    <nav className={styles.quickGames} aria-label="Acceso rápido a juegos"><Link href="/fortnite#catalogo">Fortnite</Link></nav>
+    <nav className={styles.quickGames} aria-label="Acceso rápido a juegos"><Link href="/fortnite#catalogo">Fortnite</Link><Link href="/pavos">Pavos</Link></nav>
     <HomeHero items={showcase} />
 
     <HomeReferences references={references} unavailable={referencesResult.status === "rejected"} />
@@ -46,6 +51,8 @@ export default async function HomePage() {
         <article><div className={styles.stepIcon}><Ticket size={23} aria-hidden="true" /><span>03</span></div><h3>Completa tu compra</h3><p>Confirma el pago y la entrega de tus objetos de Fortnite. Si tienes una duda, estamos a un mensaje.</p></article>
       </div>
     </section>
+
+    <HomeWalletSection offers={walletOffers.status === "fulfilled" ? walletOffers.value : null} />
 
     <section className={styles.support} aria-labelledby="support-title">
       <div className={styles.supportVisual} aria-hidden="true"><div className={styles.chatBubble}><Gamepad2 size={24} /><span>¿Listo para la siguiente?</span><Check size={16} /></div><div className={styles.chatReply}><span>Vamos por ese loot.</span><Sparkles size={18} /></div><span className={styles.supportStamp}>SOPORTE<br />PARA JUGADORES ↗</span></div>

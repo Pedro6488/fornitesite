@@ -21,6 +21,7 @@ export type DeliveryItem = Readonly<{
 }>;
 
 export type DeliveryOrder = Readonly<{
+  walletPaid?: boolean;
   id: string; status: OrderStatus; displayName: string; platform: string;
   epicAccountId: string; providerReceiverId: string | null; items: readonly DeliveryItem[];
 }>;
@@ -40,7 +41,8 @@ export interface DeliveryStore {
 }
 
 export type ItemReport = Readonly<{ itemId: string; name: string; result: "sent" | "unknown" | "failed" | "skipped" | "not_attempted"; message: string | null }>;
-export type DeliveryReport = Readonly<{ status: OrderStatus; items: readonly ItemReport[]; message: string }>;
+/** `senderDown`: el fallo fue de las cuentas emisoras o de FN Shop, no del cliente (los pavos pausan su uso). */
+export type DeliveryReport = Readonly<{ status: OrderStatus; items: readonly ItemReport[]; message: string; senderDown?: boolean }>;
 
 export class DeliveryError extends Error {
   constructor(message: string, readonly httpStatus: number) {
@@ -129,7 +131,7 @@ async function step(store: DeliveryStore, order: { id: string }, from: OrderStat
  * Termina el pedido como «Entregado», «Conciliando» o «Revisión manual».
  */
 export async function deliverOrder(
-  input: { orderId: string; actorId: string; confirmPayment: boolean; timeBudgetMs?: number },
+  input: { orderId: string; actorId: string; confirmPayment: boolean; timeBudgetMs?: number; trigger?: "admin" | "system" },
   deps: { store: DeliveryStore; fnshop: FnShopCaller; now?: () => number },
 ): Promise<DeliveryReport> {
   const now = deps.now ?? Date.now;
@@ -157,6 +159,7 @@ export async function deliverOrder(
   const { receiver, receiverId } = recipient(order);
   const reports: ItemReport[] = [];
   let stopReason: string | null = null;
+  let senderDown = false;
 
   for (const item of order.items) {
     const previous = item.fulfillment?.status;
@@ -175,7 +178,7 @@ export async function deliverOrder(
     }
     try {
       const response = await fnshop.call("gift_send", giftParams(order, item, fnshop.config.category, { order_id: item.id }), {
-        trigger: "admin", actorId: input.actorId, orderId: order.id, orderItemId: item.id,
+        trigger: input.trigger ?? "admin", actorId: input.actorId, orderId: order.id, orderItemId: item.id,
       });
       const result = interpretGiftSend(response.body);
       await fnshop.decide(response.callId, result.outcome);
@@ -189,6 +192,7 @@ export async function deliverOrder(
         await store.finish(item.id, { status: "failed", code: result.code, message: result.message });
         reports.push({ itemId: item.id, name: item.name, result: "failed", message: result.message });
         if (needsSenderAttention(result.reasons, result.code)) {
+          senderDown = true;
           await store.alert(`⚠️ FN Shop rechazó un regalo del pedido #${order.id.slice(0, 8).toUpperCase()}: ${result.message}`, `fnshop:sender:${result.code}:${result.reasons.join(",")}:${new Date(started).toISOString().slice(0, 13)}`, order.id);
           // Sin saldo o sin cupo, los demás objetos fallarían igual: no se gastan más requests.
           if (result.reasons.includes("vbucks") || result.reasons.includes("gifts") || result.code === "plan_limit_reached") stopReason = result.message;
@@ -200,6 +204,7 @@ export async function deliverOrder(
         await store.finish(item.id, { status: "failed", code: `not_sent:${error.reason}`, message: error.message });
         reports.push({ itemId: item.id, name: item.name, result: "failed", message: error.message });
         stopReason = error.message;
+        senderDown = true;
       } else {
         // La llamada pudo haber llegado a Epic: resultado dudoso.
         const message = error instanceof FnShopTransportError ? `Sin respuesta de FN Shop (${error.message}). Concilia antes de reintentar.` : "Error inesperado durante el envío. Concilia antes de reintentar.";
@@ -210,7 +215,7 @@ export async function deliverOrder(
     }
   }
 
-  return settle(store, order.id, status, reports, actor);
+  return { ...await settle(store, order.id, status, reports, actor), senderDown };
 }
 
 async function settle(store: DeliveryStore, orderId: string, from: OrderStatus, reports: readonly ItemReport[], actor: Record<string, unknown>): Promise<DeliveryReport> {

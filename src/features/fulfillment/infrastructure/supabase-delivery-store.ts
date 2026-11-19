@@ -5,9 +5,10 @@ import type { OrderStatus } from "@/features/orders/domain/order";
 import type { DeliveryItem, DeliveryOrder, DeliveryStore, FulfillmentStatus, ItemFinish } from "../application/deliver-order";
 
 type OrderRow = {
+  payment_source: string;
   id: string; status: OrderStatus; epic_display_name: string; recipient_platform: string | null; epic_account_id: string;
   recipient_validation_id: string | null;
-  order_items: { id: string; item_main_id: string; offer_id: string; item_name: string; vbucks_price: number; created_at: string }[];
+  order_items: { id: string; item_main_id: string; offer_id: string; item_name: string; vbucks_price: number; created_at: string; wallet_refunded: boolean }[];
 };
 type FulfillmentRow = { order_item_id: string | null; status: FulfillmentStatus; started_at: string | null };
 
@@ -20,7 +21,7 @@ export class SupabaseDeliveryStore implements DeliveryStore {
 
   async load(orderId: string): Promise<DeliveryOrder | null> {
     const { data: order, error } = await this.database.from("orders")
-      .select("id,status,epic_display_name,recipient_platform,epic_account_id,recipient_validation_id,order_items(id,item_main_id,offer_id,item_name,vbucks_price,created_at)")
+      .select("id,status,payment_source,epic_display_name,recipient_platform,epic_account_id,recipient_validation_id,order_items(id,item_main_id,offer_id,item_name,vbucks_price,created_at,wallet_refunded)")
       .eq("id", orderId).maybeSingle<OrderRow>();
     if (error) throw error;
     if (!order) return null;
@@ -33,6 +34,7 @@ export class SupabaseDeliveryStore implements DeliveryStore {
     if (fulfillmentError) throw fulfillmentError;
     const byItem = new Map((fulfillments ?? []).filter((row) => row.order_item_id).map((row) => [row.order_item_id!, row]));
     const items: DeliveryItem[] = (order.order_items ?? [])
+      .filter((item) => !item.wallet_refunded)
       .toSorted((left, right) => left.created_at.localeCompare(right.created_at) || left.id.localeCompare(right.id))
       .map((item) => {
         const fulfillment = byItem.get(item.id);
@@ -42,7 +44,7 @@ export class SupabaseDeliveryStore implements DeliveryStore {
         };
       });
     return {
-      id: order.id, status: order.status, displayName: order.epic_display_name, platform: order.recipient_platform ?? "epic",
+      id: order.id, walletPaid: order.payment_source === "wallet", status: order.status, displayName: order.epic_display_name, platform: order.recipient_platform ?? "epic",
       epicAccountId: order.epic_account_id, providerReceiverId: validation.data?.provider_receiver_id ?? null, items,
     };
   }
@@ -52,6 +54,11 @@ export class SupabaseDeliveryStore implements DeliveryStore {
   }
 
   async claim(order: DeliveryOrder, item: DeliveryItem, input: { receiver: string; receiverId: string | null; actorId: string }): Promise<boolean> {
+    if (order.walletPaid) {
+      const { data, error } = await this.database.rpc("claim_wallet_delivery_item", { p_order: order.id, p_item: item.id, p_receiver: input.receiver, p_receiver_id: input.receiverId, p_actor: input.actorId });
+      if (error) throw error;
+      return data === true;
+    }
     const values = {
       offer_id: item.offerId, receiver: input.receiver, receiver_id: input.receiverId, actor_id: input.actorId,
       status: "sending", started_at: new Date().toISOString(), finished_at: null, result_code: null, last_error: null, updated_at: new Date().toISOString(),

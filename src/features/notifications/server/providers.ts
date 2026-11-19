@@ -8,6 +8,7 @@ import { getCatalogService } from "@/features/catalog/server/get-catalog";
 type Contact = { id: string; email: string; marketing_consent: boolean; verified_at: string | null; unsubscribed_at: string | null; welcome_sent_at: string | null };
 type Cart = { id: string; status: string; updated_at: string; commerce_session_id: string };
 type TelegramOrder = {
+  payment_source?: string; wallet_vbucks?: number | null;
   id: string;
   epic_display_name: string;
   contact_whatsapp: string;
@@ -94,7 +95,7 @@ function orderItemsText(order: TelegramOrder) {
 
 async function getTelegramOrder(database: SupabaseClient, orderId: string) {
   const { data: order, error } = await database.from("orders")
-    .select("id,epic_display_name,contact_whatsapp,amount_mxn_cents,order_items(item_name,quantity)").eq("id", orderId)
+    .select("id,epic_display_name,contact_whatsapp,amount_mxn_cents,payment_source,wallet_vbucks,order_items(item_name,quantity)").eq("id", orderId)
     .maybeSingle<TelegramOrder>();
   if (error) throw error;
   return order;
@@ -106,7 +107,8 @@ async function deliverOrderTelegram(database: SupabaseClient, job: OutboxJob, ev
   if (!order) return cancelOutboxJob(database, job.id);
   const url = new URL(`/admin/pedidos/${order.id}`, appUrl());
   const heading = event === "created" ? "🛒 Nuevo pedido" : "🧾 Comprobante recibido";
-  const messageId = await sendTelegram(`${heading} #${order.id.slice(0, 8).toUpperCase()}\n\nObjetos:\n${orderItemsText(order) || "• Sin objetos"}\n\nID de entrega: ${order.epic_display_name}\nTeléfono: ${order.contact_whatsapp}\nTotal: ${(order.amount_mxn_cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" })}`, url.toString());
+  const total = order.payment_source === "wallet" ? `${order.wallet_vbucks} pavos de la tienda · envío automático` : (order.amount_mxn_cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+  const messageId = await sendTelegram(`${heading} #${order.id.slice(0, 8).toUpperCase()}\n\nObjetos:\n${orderItemsText(order) || "• Sin objetos"}\n\nID de entrega: ${order.epic_display_name}\nTeléfono: ${order.contact_whatsapp}\nTotal: ${total}`, url.toString());
   await markOutboxSent(database, job.id, messageId);
 }
 
@@ -173,6 +175,12 @@ async function deliverOperationsTelegram(database: SupabaseClient, job: OutboxJo
 }
 
 export async function deliverOutboxJob(database: SupabaseClient, job: OutboxJob) {
+  if (job.job_type === "wallet.deliver") {
+    if (!job.aggregate_id) return cancelOutboxJob(database, job.id);
+    const { deliverWalletOrder } = await import("@/features/wallet/server/deliver-wallet-order");
+    await deliverWalletOrder(database, job.aggregate_id);
+    return markOutboxSent(database, job.id);
+  }
   if (job.job_type === "telegram.operations.alert") return deliverOperationsTelegram(database, job);
   if (job.job_type === "telegram.cart.started") return cancelOutboxJob(database, job.id);
   if (job.job_type === "telegram.order.created") return deliverOrderTelegram(database, job, "created");

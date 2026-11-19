@@ -17,6 +17,8 @@ import { SystemActionBar } from "@/shared/components/system-action-bar";
 import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import { PurchaseSteps } from "./purchase-steps";
 import { resolveCartAvailability } from "../application/cart-availability";
+import { useWallet } from "@/features/wallet/components/use-wallet";
+import { compareWalletPrice, walletMoney } from "@/features/wallet/domain/wallet";
 
 type Quote = Readonly<{
   id: string;
@@ -27,7 +29,9 @@ type Quote = Readonly<{
   paypalFeeUsdCents: number | null;
   amountUsdCents: number | null;
   totalVbucks: number;
+  walletAllowed?: boolean;
   lines: readonly {
+    walletAllowed?: boolean;
     itemMainId: string;
     name: string;
     imageUrl: string | null;
@@ -50,6 +54,9 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
   const router = useRouter();
   const commerce = useCommerceState();
   const { region } = useStoreRegion();
+  const wallet = useWallet(commerce.authenticated, commerce.sessionId);
+  const [paymentSource, setPaymentSource] = useState<"external" | "wallet">("external");
+  const useWalletPayment = paymentSource === "wallet" && commerce.authenticated;
   const [emailDraft, setEmailDraft] = useState<{ sessionId: string | null; value: string } | null>(null);
   const email = emailDraft && emailDraft.sessionId === commerce.sessionId ? emailDraft.value : commerce.email ?? "";
   const [phoneDraft, setPhoneDraft] = useState<{ sessionId: string | null; value: string } | null>(null);
@@ -103,7 +110,12 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
     (sum, line) => sum + (getRegionalPrice(region, line.vbucksPrice, line.amountMxnCents / 100).amount ?? 0),
     0,
   ) ?? displayTotal;
-  const formatActiveQuoteTotal = region === "us"
+  const walletCost = activeQuote?.totalVbucks ?? lines.reduce((sum,item) => sum+item.finalPriceVbucks,0);
+  const walletPromo = wallet.data?.bonuses?.filter((bonus) => bonus.region === region).toSorted((a, b) => b.bonus_bp - a.bonus_bp)[0] ?? null;
+  const walletBlockedItems = activeQuote?.lines.filter((line) => line.walletAllowed === false).map((line) => line.name) ?? [];
+  const walletComparison = activeQuote && wallet.data ? compareWalletPrice(region === "us" ? activeQuote.amountUsdCents : activeQuote.amountMxnCents, walletCost, wallet.data.rates?.find((rate) => rate.region === region)) : null;
+  const insufficientWallet = !wallet.data || walletBlockedItems.length > 0 || wallet.data.frozen || wallet.data.paused || wallet.data.balance < walletCost || !wallet.data.automaticDelivery;
+  const formatActiveQuoteTotal = useWalletPayment ? `${walletCost.toLocaleString("es-MX")} pavos` : region === "us"
     ? `${formatUsdCents(activeQuote?.amountUsdCents ?? displayTotalWithFeeCents)} USD`
     : formatMxn(activeQuoteTotal);
 
@@ -161,7 +173,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (!activeQuote || !commerce.validation) return;
+    if (!activeQuote || !commerce.validation || (useWalletPayment && insufficientWallet)) return;
     setLoading(true);
     setError(null);
     try {
@@ -177,6 +189,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
           whatsapp,
           customerEmail: email,
           idempotencyKey: activeQuote.idempotencyKey,
+          paymentSource: useWalletPayment ? "wallet" : "external",
         }),
       });
       const body = await response.json();
@@ -303,10 +316,10 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                   </span>
                   <span>{item.name}</span>
                 </span>
-                <strong>{region === "us" && item.amountUsdCents !== null ? `${formatUsdCents(item.amountUsdCents)} USD` : formatRegionalAmount(item.vbucksPrice, item.amountMxnCents)}</strong>
+                <strong>{useWalletPayment ? `${item.vbucksPrice.toLocaleString("es-MX")} pavos` : region === "us" && item.amountUsdCents !== null ? `${formatUsdCents(item.amountUsdCents)} USD` : formatRegionalAmount(item.vbucksPrice, item.amountMxnCents)}</strong>
               </p>
             ))}
-            {region === "us" && <p className="checkout-fee"><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote?.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
+            {!useWalletPayment && region === "us" && <p className="checkout-fee"><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote?.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
           </div>
           <p className="checkout-order-total">
             <span>{activeQuote ? "Total confirmado" : "Total estimado"}</span>
@@ -384,7 +397,26 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                     placeholder="tu@correo.com"
                   />
                 </label>
-                <div className="transfer-only">
+                {!commerce.authenticated && <p className="wallet-comparison">⚡ ¿Compras seguido? Con una cuenta y saldo de pavos, tus próximas compras se envían al instante, sin subir comprobante. <Link href="/pavos">Conoce los pavos</Link></p>}
+                {commerce.authenticated && <fieldset className="wallet-payment-options" disabled={loading}>
+                  <legend>Elige un método de pago</legend>
+                  <label><span><input type="radio" name="payment-source" checked={!useWalletPayment} onChange={() => setPaymentSource("external")} /> {region === "us" ? "PayPal" : "Transferencia bancaria"}</span></label>
+                  <label><span><input type="radio" name="payment-source" checked={useWalletPayment} onChange={() => setPaymentSource("wallet")} /> Mis pavos de la tienda</span></label>
+                  <p>Saldo: {wallet.data ? `${wallet.data.balance.toLocaleString("es-MX")} pavos` : "No disponible"}. Costo: {walletCost.toLocaleString("es-MX")} pavos.</p>
+                  <small>Los pavos de la tienda son tu saldo en SigfriedLootBox, no paVos de tu cuenta de Epic.</small>
+                  {wallet.data && wallet.data.balance === 0 && !useWalletPayment && <p className="wallet-comparison">⚡ Recarga pavos una vez y tus próximas compras se envían al instante, sin subir comprobante. <Link href="/pavos">Ver cómo funciona</Link></p>}
+                  {walletPromo && <p className="wallet-comparison is-savings">🎁 {walletPromo.label}: recarga desde {walletPromo.min_vbucks.toLocaleString("es-MX")} pavos y recibe +{(walletPromo.bonus_bp / 100).toLocaleString("es-MX")}% de regalo, hasta el {new Date(walletPromo.ends_at).toLocaleDateString("es-MX", { day: "numeric", month: "long" })}. <Link href="/pavos">Comprar pavos</Link></p>}
+                  {walletComparison && walletComparison.savingsCents > 0 && <p className="wallet-comparison is-savings">Con pavos ahorras <strong>{walletMoney(walletComparison.savingsCents, region)}</strong>: pago habitual {walletMoney(walletComparison.regularCents, region)}, con pavos {walletCost.toLocaleString("es-MX")} pavos ≈ {walletMoney(walletComparison.equivalentCents, region)} a la tarifa de recarga actual.</p>}
+                  {walletComparison && walletComparison.savingsCents < 0 && <p className="wallet-comparison">Para este pedido el pago habitual sale más barato: {walletMoney(walletComparison.regularCents, region)}, contra ≈ {walletMoney(walletComparison.equivalentCents, region)} en pavos a la tarifa de recarga actual.</p>}
+                  {walletBlockedItems.length > 0 && <p role="alert">{walletBlockedItems.join(", ")} {walletBlockedItems.length === 1 ? "tiene" : "tienen"} precio especial y no se {walletBlockedItems.length === 1 ? "puede" : "pueden"} pagar con pavos. Usa el pago habitual o {walletBlockedItems.length === 1 ? "quítalo" : "quítalos"} del carrito.</p>}
+                  {wallet.error && <p role="alert">{wallet.error}</p>}
+                  {useWalletPayment && <>{wallet.data && wallet.data.balance >= walletCost ? <p>Después de pagar: {(wallet.data.balance-walletCost).toLocaleString("es-MX")} pavos. El envío se inicia automáticamente, sin aprobar otro pago.</p> : <p>No alcanza el saldo para todo el pedido. Recarga tus pavos o elige el pago habitual.</p>}
+                    {wallet.data && !wallet.data.automaticDelivery && <p>La entrega automática está temporalmente deshabilitada. No se descontará saldo.</p>}
+                    {wallet.data?.frozen && <p>Tu saldo está en revisión y no se puede usar por ahora. Elige el pago habitual o escríbenos.</p>}
+                    {wallet.data?.paused && !wallet.data.frozen && <p>El pago con pavos está pausado unos minutos mientras revisamos las entregas. Tu saldo está seguro; usa el pago habitual o intenta más tarde.</p>}<Link href="/pavos">Comprar pavos</Link></>}
+                  <small>Se paga el pedido completo con un solo método.</small>
+                </fieldset>}
+                {!useWalletPayment && <div className="transfer-only">
                   <span aria-hidden="true">▣</span>
                   <div>
                     <strong>{region === "us" ? "Pago por PayPal" : "Transferencia bancaria"}</strong>
@@ -392,7 +424,7 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                       Después podrás subir tu comprobante o continuar por WhatsApp.
                     </small>
                   </div>
-                </div>
+                </div>}
               </>
             )}
           </section>
@@ -434,8 +466,8 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                   })}
                 </em>
               </span>
-              <button className="primary-button" disabled={loading}>
-                {loading ? "Creando pedido…" : "Confirmar pedido"}
+              <button className="primary-button" disabled={loading || (useWalletPayment && insufficientWallet)}>
+                {loading ? "Creando pedido…" : useWalletPayment ? "Pagar con mis pavos y enviar" : "Confirmar pedido"}
               </button>
             </SystemActionBar>
           )}
@@ -487,10 +519,10 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
               {activeQuote.lines.map((line) => (
                 <p key={line.itemMainId}>
                   <span>{line.name}</span>
-                  <strong>{activeQuote.currency === "USD" && line.amountUsdCents !== null ? `${formatUsdCents(line.amountUsdCents)} USD` : formatRegionalAmount(line.vbucksPrice, line.amountMxnCents)}</strong>
+                  <strong>{useWalletPayment ? `${line.vbucksPrice} pavos` : activeQuote.currency === "USD" && line.amountUsdCents !== null ? `${formatUsdCents(line.amountUsdCents)} USD` : formatRegionalAmount(line.vbucksPrice, line.amountMxnCents)}</strong>
                 </p>
               ))}
-              {activeQuote.currency === "USD" && <p><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
+              {!useWalletPayment && activeQuote.currency === "USD" && <p><span>Comisión PayPal</span><strong>{formatUsdCents(activeQuote.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
             </div>
             <div className="quote-sheet-total">
               <span>Total confirmado</span>

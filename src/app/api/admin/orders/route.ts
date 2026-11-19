@@ -39,7 +39,7 @@ export async function GET(request: Request) {
   const dateColumn = closed ? "updated_at" : "created_at";
   let query = staff.database
     .from("orders")
-    .select("id,created_at,updated_at,customer_email,epic_display_name,recipient_platform,contact_whatsapp,amount_mxn_cents,currency,amount_usd_cents,status,order_items(item_name,item_image_url,quantity),transfer_receipts(id)")
+    .select("id,created_at,updated_at,customer_email,epic_display_name,recipient_platform,contact_whatsapp,amount_mxn_cents,currency,amount_usd_cents,payment_source,wallet_vbucks,status,order_items(item_name,item_image_url,quantity),transfer_receipts(id)")
     .in("status", statuses)
     .order(dateColumn, { ascending: !closed });
   if (from.data) query = query.gte(dateColumn, `${from.data}T00:00:00-06:00`);

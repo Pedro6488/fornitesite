@@ -61,10 +61,12 @@ export function AccountHeaderMenu() {
         <div className="account-menu-divider" />
         {commerce.authenticated ? <>
           <Link href="/cuenta"><LayoutDashboard aria-hidden="true" size={16} /><span>Mi cuenta</span></Link>
+          <Link href="/pavos"><BadgeCheck aria-hidden="true" size={16} /><span>Mis pavos · comprar saldo</span></Link>
           <button className="account-menu-signout" type="button" disabled={signingOut} onClick={() => void signOut()}><LogOut aria-hidden="true" size={16} /><span>{signingOut ? "Saliendo…" : "Cerrar sesión"}</span></button>
         </> : <>
           <Link className="account-menu-primary" href="/cuenta?mode=register"><UserPlus aria-hidden="true" size={16} /><span>Crear cuenta</span></Link>
           <Link href="/cuenta"><LogIn aria-hidden="true" size={16} /><span>Iniciar sesión</span></Link>
+          <Link href="/pavos"><BadgeCheck aria-hidden="true" size={16} /><span>Pavos de la tienda · qué son</span></Link>
         </>}
       </>}
     </div>

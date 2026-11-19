@@ -1,0 +1,47 @@
+{
+  "devName": "[VIRTUAL]1 x Blank for 400 MtxCurrency",
+  "offerId": "v2:/3529188ada7f0d81a3ec7c0f8766d2d27a8ce82aff58f531f01570fa45708c56",
+  "finalPrice": 400,
+  "regularPrice": 400,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": null,
+  "banner": null,
+  "layout": null,
+  "offerTag": null,
+  "tileSize": "Size_3_x_1",
+  "colors": {
+    "color1": "e0b8ceff",
+    "color3": "975876ff",
+    "textBackgroundColor": "975876ff"
+  },
+  "newDisplayAsset": null,
+  "brItems": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "id": "Wheel_DubT1",
+      "name": "Volkswagen Golf II GTI",
+      "type": {
+        "value": "wheel",
+        "displayValue": "Rueda",
+        "backendValue": "VehicleCosmetics_Wheel"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_dubt1/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_dubt1/large.png"
+      },
+      "vehicle": "VCID_Wheel_DubT1"
+    }
+  ],
+  "instruments": null
+}

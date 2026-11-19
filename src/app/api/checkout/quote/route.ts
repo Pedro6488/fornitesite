@@ -95,6 +95,9 @@ export async function POST(request: Request) {
       await database.from("checkout_quotes").delete().eq("id", quote.id);
       throw lineError;
     }
+    // Objetos con precio especial que el admin marcó como no pagables con pavos.
+    const { data: blockedRows } = await database.rpc("wallet_blocked_items", { p_main_ids: lines.map((line) => line.item_main_id) });
+    const walletBlocked = new Set(Array.isArray(blockedRows) ? blockedRows.map(String) : []);
     return attachCommerceCookie(NextResponse.json({
       quote: {
         id: quote.id,
@@ -105,7 +108,9 @@ export async function POST(request: Request) {
         paypalFeeUsdCents,
         amountUsdCents,
         totalVbucks,
+        walletAllowed: walletBlocked.size === 0,
         lines: lines.map((line) => ({
+          walletAllowed: !walletBlocked.has(line.item_main_id),
           itemMainId: line.item_main_id,
           name: line.item_name,
           imageUrl: line.item_image_url,

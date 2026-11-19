@@ -4,13 +4,14 @@ export function formatMoney(cents: number): string {
   return (cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: cents % 100 === 0 ? 0 : 2 });
 }
 
-export type OrderMoney = { currency?: "MXN" | "USD" | null; amount_mxn_cents: number; amount_usd_cents?: number | null };
+export type OrderMoney = { payment_source?: string; wallet_vbucks?: number | null; currency?: "MXN" | "USD" | null; amount_mxn_cents: number; amount_usd_cents?: number | null };
 
 /**
  * Importe de un pedido en la moneda en que se cobró: los pedidos en dólares muestran
  * el monto guardado en USD, nunca una conversión. Sin monto en USD, cae a pesos.
  */
 export function formatOrderMoney(order: OrderMoney, quantity = 1): string {
+  if (order.payment_source === "wallet") return `${((order.wallet_vbucks ?? 0)*quantity).toLocaleString("es-MX")} pavos`;
   if (order.currency === "USD" && order.amount_usd_cents && order.amount_usd_cents > 0) {
     const cents = order.amount_usd_cents * quantity;
     return `${(cents / 100).toLocaleString("es-MX", { style: "currency", currency: "USD", maximumFractionDigits: cents % 100 === 0 ? 0 : 2 })} USD`;

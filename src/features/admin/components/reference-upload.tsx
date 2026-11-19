@@ -8,16 +8,12 @@ type Order = { id: string; epic_display_name: string; order_items: { item_name: 
 export function ReferenceUpload({ onPublished }: { onPublished: () => Promise<void> }) {
   const request = useAdminRequest();
   const { data, error } = useAdminData<{ orders: Order[] }>("/api/admin/orders?queue=closed&result=delivered&limit=500");
-  const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   useEffect(() => {
-    if (!file) { setPreview(""); return; }
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
+    return () => { if (preview) URL.revokeObjectURL(preview); };
+  }, [preview]);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -26,7 +22,7 @@ export function ReferenceUpload({ onPublished }: { onPublished: () => Promise<vo
     try {
       await request("/api/admin/references", { method: "POST", body: new FormData(form) });
       form.reset();
-      setFile(null);
+      setPreview("");
       setMessage("Referencia publicada. Ya aparece en el inicio y en Referencias.");
       await onPublished();
     } catch (cause) { setMessage(cause instanceof Error ? cause.message : "No fue posible publicar."); }
@@ -40,7 +36,7 @@ export function ReferenceUpload({ onPublished }: { onPublished: () => Promise<vo
       <datalist id="reference-orders">{data?.orders.map((order) => <option key={order.id} value={order.id}>{order.epic_display_name} · {order.order_items.map((item) => item.item_name).join(", ")}</option>)}</datalist>
       <small>Se sugieren los últimos 500 pedidos entregados. También puedes pegar el ID de un pedido anterior. Se cuenta una referencia por pedido.</small>
       {error && <p role="alert">{error}</p>}
-      <label>Captura de confirmación<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required onChange={(event) => setFile(event.target.files?.[0] ?? null)} /></label>
+      <label>Captura de confirmación<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required onChange={(event) => { const file = event.target.files?.[0]; setPreview(file ? URL.createObjectURL(file) : ""); }} /></label>
       <small>JPG, PNG o WEBP, máximo 5 MB.</small>
       {preview && <img src={preview} alt="Vista previa de la captura que se publicará" style={{ maxWidth: "100%", maxHeight: 360, objectFit: "contain" }} />}
       <label>Comentario opcional<textarea name="comment" maxLength={1000} rows={3} /></label>

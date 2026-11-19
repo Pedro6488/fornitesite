@@ -11,12 +11,12 @@ import styles from "./storefront-shell.module.css";
 
 export function StorefrontHeader({ contactUrl }: { contactUrl: string }) {
   const pathname = usePathname();
-  const hasRegion = ["/fortnite", "/objetos", "/carrito", "/checkout", "/favoritos"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+  const hasRegion = ["/fortnite", "/objetos", "/carrito", "/checkout", "/favoritos", "/pavos", "/cuenta"].some((path) => pathname === path || pathname.startsWith(`${path}/`));
   return <header className={styles.header}>
     <a className={styles.skip} href="#main-content">Saltar al contenido</a>
     <div className={styles.headerInner}>
       <Link className={styles.brand} href="/" aria-label="SigfriedLootBox, inicio"><Image src="/games/logofin.png" width={42} height={42} alt="" className={styles.brandMark} /><span>Sigfried<span>LootBox</span></span></Link>
-      <nav className={styles.navigation} aria-label="Navegación principal"><Link href="/fortnite#catalogo">Fortnite</Link><Link href="/#como-comprar">Cómo comprar</Link><Link href="/referencias">Referencias</Link></nav>
+      <nav className={styles.navigation} aria-label="Navegación principal"><Link href="/fortnite#catalogo">Fortnite</Link><Link href="/pavos">Pavos</Link><Link href="/#como-comprar">Cómo comprar</Link><Link href="/referencias">Referencias</Link></nav>
       <div className={styles.actions}>
         {hasRegion && <div className={styles.region}><RegionSelector /></div>}
         <div className={styles.cart}><CartLink label="Carrito Fortnite" /></div>
