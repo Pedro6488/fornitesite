@@ -8,6 +8,19 @@ En `/cuenta`, pestaña **Mis pavos**, y en `/pavos` se consulta el saldo, se eli
 
 Al confirmar objetos, se elige pago habitual o pavos; no se aceptan pagos combinados. El costo en pavos es el total de las líneas de la cotización, calculado en el servidor. No se añade comisión PayPal al gasto de saldo.
 
+### Cómo se le explica al cliente
+
+- **Portada** (sección `#pavos`, `HomeWalletSection`): "Recarga una vez. Compra al instante.", el precio real de la región y una calculadora. El botón "Quiero N pavos" lleva a `/pavos?cantidad=N#recargar`.
+- **Menú:** "Pavos" en la navegación principal y en el acceso rápido móvil. El menú de cuenta lo muestra también a visitantes.
+- **`/pavos`:**
+  - Encabezado y calculadora: cuánto pagas, cuánto recibes, el regalo, el precio por 100, "alcanza para", escalones y "agrega X y recibe…".
+  - "¿Qué pasa después de comprar?", con lo que hace el cliente y lo que hace la tienda.
+  - Comparación del pago habitual contra los pavos, lo que necesitas y lo que nunca pedimos, y preguntas frecuentes.
+  - Con sesión, el avance del cliente (elegir, pagar y subir el comprobante, revisión, comprar) y la recarga pendiente arriba, con la referencia y el formulario del comprobante.
+- **Checkout:** al visitante se le invita a crear cuenta y tener saldo. Al cliente sin saldo, a recargar.
+
+Los precios públicos salen de `getPublicWalletOffers()` (`wallet_offers(null)` y las tarifas activas). Si una región no tiene tarifa, no se anuncia ningún precio y la calculadora muestra "Precio por definir". "Alcanza para" usa 1 pavo de la tienda = 1 pavo del precio en Fortnite.
+
 ## Administración
 
 `/admin/pavos` permite configurar el precio por 100 pavos para México y USA, revisar comprobantes de recargas y consultar saldo, total comprado, utilizado, devuelto e historial de pedidos de cada cliente. Las tarifas comienzan deshabilitadas y sin precio. No se puede cobrar una recarga hasta configurar su región.
