@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { marginBp, nextOffer, topupQuote, type WalletBonus, type WalletTier } from "./wallet-offers";
+import { marginBp, nextOffer, offerHighlights, parseWalletAmount, topupQuote, type WalletBonus, type WalletTier } from "./wallet-offers";
 
 const rate = { region: "mx" as const, cents_per_100: 750, active: true };
 const tiers: WalletTier[] = [{ id: "t5", region: "mx", min_vbucks: 5000, cents_per_100: 700 }];
@@ -40,5 +40,29 @@ describe("tarifa por volumen y bonos (mismo cálculo que la base)", () => {
   it("calcula el margen sobre el costo", () => {
     expect(marginBp(666.67, 500)).toBe(3333);
     expect(marginBp(700, null)).toBeNull();
+  });
+});
+
+describe("offerHighlights", () => {
+  const rates = [{ region: "mx" as const, active: true, cents_per_100: 750 }, { region: "us" as const, active: false, cents_per_100: 50 }];
+  it("anuncia la tarifa, el tramo más barato y el mayor regalo de la región", () => {
+    const tiers = [{ id: "a", region: "mx" as const, min_vbucks: 5000, cents_per_100: 700 }, { id: "b", region: "mx" as const, min_vbucks: 13500, cents_per_100: 650 }];
+    const bonuses = [{ id: "x", region: "mx" as const, label: "A", min_vbucks: 5000, bonus_bp: 300, bonus_cap: null, first_topup_only: false, ends_at: "2099-01-01T00:00:00Z" }, { id: "y", region: "mx" as const, label: "B", min_vbucks: 5000, bonus_bp: 500, bonus_cap: null, first_topup_only: false, ends_at: "2099-01-01T00:00:00Z" }];
+    const result = offerHighlights("mx", { rates, tiers, bonuses });
+    expect(result?.basePer100).toBe(750);
+    expect(result?.cheapest?.id).toBe("b");
+    expect(result?.bonus?.id).toBe("y");
+  });
+  it("no anuncia nada si la región no cobra recargas o no hay datos", () => {
+    expect(offerHighlights("us", { rates, tiers: [], bonuses: [] })).toBeNull();
+    expect(offerHighlights("mx", null)).toBeNull();
+  });
+});
+
+describe("parseWalletAmount", () => {
+  it("acepta solo múltiplos de 100 dentro del rango", () => {
+    expect(parseWalletAmount("5000")).toBe(5000);
+    expect(parseWalletAmount(["2800", "1"])).toBe(2800);
+    for (const raw of ["50", "5050", "60000", "abc", undefined, null]) expect(parseWalletAmount(raw)).toBeNull();
   });
 });

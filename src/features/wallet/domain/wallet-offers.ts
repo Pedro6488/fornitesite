@@ -13,7 +13,15 @@ export type WalletBonus = {
 };
 export type TopupQuote = { cents: number; centsPer100: number; tier: WalletTier | null; bonus: number; bonusRule: WalletBonus | null; credited: number; effectivePer100: number };
 
-const MIN = 100, MAX = 50_000;
+export const WALLET_MIN = 100;
+export const WALLET_MAX = 50_000;
+const MIN = WALLET_MIN, MAX = WALLET_MAX;
+
+/** Valida `?cantidad=` de la URL: múltiplo de 100 dentro del rango, o null. */
+export function parseWalletAmount(raw: string | string[] | undefined | null) {
+  const value = Number(Array.isArray(raw) ? raw[0] : raw);
+  return Number.isInteger(value) && value >= MIN && value <= MAX && value % 100 === 0 ? value : null;
+}
 const validAmount = (vbucks: number) => Number.isInteger(vbucks) && vbucks >= MIN && vbucks <= MAX && vbucks % 100 === 0;
 const bonusFor = (vbucks: number, rule: WalletBonus) => Math.min(Math.floor(vbucks * rule.bonus_bp / 10_000), rule.bonus_cap ?? Number.MAX_SAFE_INTEGER);
 
@@ -49,3 +57,20 @@ export function marginBp(effectiveCentsPer100: number, costCentsPer100: number |
 
 /** Precio efectivo por 100 en el peor caso de un bono: el tramo dado con el bono completo. */
 export const effectiveWithBonus = (centsPer100: number, bonusBp: number) => centsPer100 * 10_000 / (10_000 + bonusBp);
+
+/** Lo que se puede mostrar sin sesión: tarifas activas y ofertas vigentes. */
+export type PublicWalletOffers = { rates: WalletRate[]; tiers: WalletTier[]; bonuses: WalletBonus[] };
+
+/**
+ * Resumen para anunciar los pavos de una región: la tarifa base, el precio por 100 más bajo
+ * que se alcanza con volumen (con su mínimo) y el mayor regalo vigente. Null si la región aún
+ * no cobra recargas, para no anunciar un precio que no existe.
+ */
+export function offerHighlights(region: "mx" | "us", offers: Pick<PublicWalletOffers, "rates" | "tiers" | "bonuses"> | null | undefined) {
+  const rate = offers?.rates.find((item) => item.region === region && item.active && item.cents_per_100);
+  if (!rate?.cents_per_100) return null;
+  const tiers = offers!.tiers.filter((tier) => tier.region === region).toSorted((a, b) => a.cents_per_100 - b.cents_per_100);
+  const cheapest = tiers[0] && tiers[0].cents_per_100 < rate.cents_per_100 ? tiers[0] : null;
+  const bonus = offers!.bonuses.filter((item) => item.region === region).toSorted((a, b) => b.bonus_bp - a.bonus_bp)[0] ?? null;
+  return { rate, basePer100: rate.cents_per_100, cheapest, bonus };
+}
