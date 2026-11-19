@@ -25,8 +25,8 @@ export function trackingUrl(appUrl: string, order: { id: string; public_token?: 
 
 /** Mensajes que el admin manda al cliente. */
 export const toCustomer = {
-  topupApproved: (input: { reference: string; vbucks: number; balance: number; appUrl: string }) =>
-    `Hola, ya acreditamos tu recarga ${input.reference}: +${pavos(input.vbucks)}.\nTu saldo es de ${pavos(input.balance)}.\n\nÚsalos en ${input.appUrl}/pavos. Al pagar con pavos, el envío a tu ID de Fortnite es automático.`,
+  topupApproved: (input: { reference: string; vbucks: number; bonus?: number; balance: number; appUrl: string }) =>
+    `Hola, ya acreditamos tu recarga ${input.reference}: +${pavos(input.vbucks)}${input.bonus ? ` y +${pavos(input.bonus)} de regalo` : ""}.\nTu saldo es de ${pavos(input.balance)}.\n\nÚsalos en ${input.appUrl}/pavos. Al pagar con pavos, el envío a tu ID de Fortnite es automático.`,
   topupRejected: (input: { reference: string; vbucks: number; reason: string }) =>
     `Hola, revisamos tu recarga ${input.reference} de ${pavos(input.vbucks)} y no pudimos confirmar el pago.\nMotivo: ${input.reason}\n\nNo se agregó saldo. Si ya pagaste, respóndenos con tu comprobante y lo revisamos.`,
   delivered: (input: { orderId: string; items: readonly string[]; displayName: string; url: string }) =>

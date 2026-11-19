@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { sendOperationsAlert } from "@/features/fnshop/server/get-fnshop-client";
+import { topupSubmittedAlert } from "@/features/wallet/domain/wallet-alerts";
 import { walletContext } from "@/features/wallet/server/context";
 import { consumeCommerceRateLimit } from "@/shared/server/commerce-rate-limit";
 const EXPIRED = "Esta recarga venció a las 48 horas. Crea una nueva; si ya pagaste, escríbenos con tu comprobante.";
@@ -9,7 +11,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ top
   if (!ctx) return NextResponse.json({ error: "Inicia sesión." }, { status: 401 });
   const { topupId } = await params;
   if (!z.uuid().safeParse(topupId).success) return NextResponse.json({ error: "Recarga inválida." }, { status: 400 });
-  const { data: topup, error: lookupError } = await ctx.database.from("wallet_topups").select("id,status,expires_at").eq("id", topupId).eq("user_id", ctx.user.id).maybeSingle();
+  const { data: topup, error: lookupError } = await ctx.database.from("wallet_topups").select("id,status,expires_at,vbucks,bonus_vbucks,amount_cents,region,reference_code").eq("id", topupId).eq("user_id", ctx.user.id).maybeSingle();
   if (lookupError || !topup) return NextResponse.json({ error: "Recarga no encontrada." }, { status: 404 });
   if (topup.status === "awaiting_payment" && Date.parse(topup.expires_at) <= Date.now()) {
     await ctx.database.from("wallet_topups").update({ status: "expired" }).eq("id", topup.id).eq("status", "awaiting_payment");
@@ -33,5 +35,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ top
     await ctx.database.storage.from("wallet-receipts").remove([path]);
     return NextResponse.json({ error: error?.code === "23505" ? "Este comprobante ya se utilizó en otra recarga." : error?.message?.includes("topup_expired") ? EXPIRED : "La recarga cambió o no pudo guardarse." }, { status: 409 });
   }
+  // Sin este aviso nadie se entera de que hay pavos por liberar. Si Telegram falla, la cola lo reintenta;
+  // el comprobante ya quedó guardado, así que el cliente recibe éxito de todos modos.
+  try { await sendOperationsAlert(ctx.database, topupSubmittedAlert(topup, ctx.user.email), `wallet:topup:submitted:${topup.id}`, "/admin/pavos"); }
+  catch (alertError) { console.error("wallet.topup.alert.failed", { topupId: topup.id, alertError }); }
   return NextResponse.json({ ok: true });
 }

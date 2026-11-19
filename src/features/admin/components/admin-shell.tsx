@@ -9,7 +9,7 @@ import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import type { DeliveryMode } from "../application/order-queues";
 import { useAdminData } from "./use-admin-request";
 
-type Counts = { receipts: number; deliver: number; problem: number; recipients: number };
+type Counts = { receipts: number; deliver: number; problem: number; recipients: number; topups?: number };
 type Quota = { used: number; limit: number; simulated: boolean } | null;
 
 const DeliveryModeContext = createContext<DeliveryMode>("manual");
@@ -26,7 +26,7 @@ const OPERATION: readonly NavItem[] = [
 const FNSHOP_ITEM: NavItem = { href: "/admin/fnshop", label: "FN Shop", icon: Gift };
 
 const STORE: readonly NavItem[] = [
-  { href: "/admin/pavos", label: "Clientes con pavos", icon: Tags },
+  { href: "/admin/pavos", label: "Clientes con pavos", icon: Tags, badge: (counts) => counts.topups ?? 0 },
   { href: "/admin/precios", label: "Precios", icon: Tags },
   { href: "/admin/carritos", label: "Carritos", icon: ShoppingCart },
   { href: "/admin/favoritos", label: "Favoritos", icon: Heart },
