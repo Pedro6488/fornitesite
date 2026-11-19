@@ -1,0 +1,29 @@
+/* Saldo antes y después de un pedido: "13,500 − 2,800 = 10,700" con una barra. */
+.meter { --lime: var(--loot-lime, #d6ff45); --short: #ff7a7a; display: grid; gap: 10px; min-width: 0; }
+.meter dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.meter dl > div { display: grid; gap: 2px; min-width: 0; padding: 10px 12px; background: #ffffff08; border: 1px solid #ffffff14; }
+.meter dt { color: #9aa2bd; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.meter dd { margin: 0; color: #fff; font-family: var(--loot-display, 'Loot Display', Impact, sans-serif); font-size: clamp(20px, 2.4vw, 28px); line-height: 1.05; font-variant-numeric: tabular-nums; }
+.minus dd { color: #ffb4a8; }
+.after { background: var(--lime) !important; border-color: var(--lime) !important; }
+.after dt { color: #2b3510; }
+.after dd { color: #0c0f1e; }
+.meter[data-short] .after { background: #3a1620 !important; border-color: var(--short) !important; }
+.meter[data-short] .after dt, .meter[data-short] .after dd { color: var(--short); }
+
+/* La barra entera es tu saldo: verde lo que queda, rayado lo que se descuenta. Sin saldo suficiente: verde lo cubierto, rojo lo que falta. */
+.bar { position: relative; height: 10px; overflow: hidden; background: repeating-linear-gradient(135deg, #ffb4a8 0 6px, #ffb4a855 6px 12px); }
+.meter[data-short] .bar { background: #ff7a7a55; }
+.fill { position: absolute; inset: 0 auto 0 0; background: var(--lime); transition: width .3s ease; }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: #9aa2bd; font-size: 12px; }
+.legend strong { color: #fff; }
+.keepDot, .useDot { display: inline-block; width: 10px; height: 10px; background: var(--lime); }
+.useDot { margin-left: 8px; background: repeating-linear-gradient(135deg, #ffb4a8 0 3px, #ffb4a855 3px 6px); }
+.topup { justify-self: start; display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; background: var(--lime); color: #0c0f1e; font-weight: 800; text-decoration: none; }
+.topup:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+
+@media (max-width: 420px) {
+  .meter dl > div { padding: 8px; }
+  .meter dt { font-size: 10px; letter-spacing: .04em; }
+}
+@media (prefers-reduced-motion: reduce) { .fill { transition: none; } }

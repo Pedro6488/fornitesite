@@ -53,3 +53,5 @@
 .after strong { color:white; }
 .afterDetails { border-top:1px solid #ffffff1a; padding-top:10px; }
 .afterDetails summary { cursor:pointer; color:var(--loot-lime,#d6ff38); font-weight:800; font-size:14px; margin-bottom:8px; }
+.detailHead { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.detailHead h2 { margin:0; }

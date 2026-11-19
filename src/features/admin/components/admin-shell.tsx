@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, Ellipsis, ExternalLink, Gift, Hand, Heart, LayoutDashboard, LogOut, ShoppingCart, Star, Tags, UserRoundCheck, Users, Zap, type LucideIcon } from "lucide-react";
+import { ClipboardList, Coins, Ellipsis, ExternalLink, Gift, Hand, Heart, LayoutDashboard, LogOut, ShoppingCart, SlidersHorizontal, Star, Tags, UserRoundCheck, Users, Wallet, Zap, type LucideIcon } from "lucide-react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import type { DeliveryMode } from "../application/order-queues";
 import { useAdminData } from "./use-admin-request";
@@ -15,18 +15,22 @@ type Quota = { used: number; limit: number; simulated: boolean } | null;
 const DeliveryModeContext = createContext<DeliveryMode>("manual");
 /** Entrega manual o automática (FN Shop). Decide qué botón principal lleva cada pedido. */
 export function useDeliveryMode() { return useContext(DeliveryModeContext); }
-type NavItem = { href: string; label: string; icon: LucideIcon; badge?: (counts: Counts) => number };
+/** `short` es la etiqueta de la barra inferior en móvil; `exact` no marca la sección cuando se está en una subruta hermana. */
+type NavItem = { href: string; label: string; short?: string; exact?: boolean; icon: LucideIcon; badge?: (counts: Counts) => number };
 
 const OPERATION: readonly NavItem[] = [
   { href: "/admin", label: "Inicio", icon: LayoutDashboard },
   { href: "/admin/pedidos", label: "Pedidos", icon: ClipboardList, badge: (counts) => counts.receipts + counts.deliver + counts.problem },
   { href: "/admin/destinatarios", label: "Destinatarios", icon: UserRoundCheck, badge: (counts) => counts.recipients },
+  // Liberar recargas es trabajo diario, como revisar comprobantes de pedidos: va en Operación, no en Tienda.
+  { href: "/admin/pavos", label: "Recargas de pavos", short: "Recargas", exact: true, icon: Coins, badge: (counts) => counts.topups ?? 0 },
 ];
 
 const FNSHOP_ITEM: NavItem = { href: "/admin/fnshop", label: "FN Shop", icon: Gift };
 
 const STORE: readonly NavItem[] = [
-  { href: "/admin/pavos", label: "Clientes con pavos", icon: Tags, badge: (counts) => counts.topups ?? 0 },
+  { href: "/admin/pavos/clientes", label: "Clientes con pavos", icon: Wallet },
+  { href: "/admin/pavos/configuracion", label: "Precios de pavos", icon: SlidersHorizontal },
   { href: "/admin/precios", label: "Precios", icon: Tags },
   { href: "/admin/carritos", label: "Carritos", icon: ShoppingCart },
   { href: "/admin/favoritos", label: "Favoritos", icon: Heart },
@@ -40,16 +44,16 @@ const REFRESH_MS = 60_000;
 const AdminCountsContext = createContext<{ refreshCounts: () => void }>({ refreshCounts: () => undefined });
 export function useAdminCounts() { return useContext(AdminCountsContext); }
 
-function isCurrent(pathname: string, href: string) {
-  return href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
+function isCurrent(pathname: string, href: string, exact = false) {
+  return href === "/admin" || exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function NavLink({ item, pathname, counts, onNavigate }: { item: NavItem; pathname: string; counts: Counts | null; onNavigate?: () => void }) {
+function NavLink({ item, pathname, counts, onNavigate, compact = false }: { item: NavItem; pathname: string; counts: Counts | null; onNavigate?: () => void; compact?: boolean }) {
   const Icon = item.icon;
   const badge = counts && item.badge ? item.badge(counts) : 0;
-  return <Link href={item.href} aria-current={isCurrent(pathname, item.href) ? "page" : undefined} onClick={onNavigate}>
+  return <Link href={item.href} aria-current={isCurrent(pathname, item.href, item.exact) ? "page" : undefined} onClick={onNavigate}>
     <Icon aria-hidden="true" size={18} />
-    <span>{item.label}</span>
+    <span>{compact ? item.short ?? item.label : item.label}</span>
     {badge > 0 && <b aria-label={`${badge} por atender`}>{badge}</b>}
   </Link>;
 }
@@ -82,6 +86,7 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryM
     { href: "/admin/pedidos?cola=payment", label: "comprobantes por revisar", short: "comprobantes", count: counts?.receipts ?? 0 },
     { href: "/admin/pedidos?cola=deliver", label: "pagados por entregar", short: "por entregar", count: counts?.deliver ?? 0 },
     { href: "/admin/pedidos?cola=problem", label: "con problema", short: "con problema", count: counts?.problem ?? 0 },
+    { href: "/admin/pavos", label: "recargas de pavos por liberar", short: "recargas", count: counts?.topups ?? 0 },
   ];
 
   return <DeliveryModeContext.Provider value={deliveryMode}><AdminCountsContext.Provider value={{ refreshCounts: () => void reload() }}>
@@ -119,8 +124,8 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryM
       </div>
 
       <nav className="ac-tabbar" aria-label="Secciones">
-        {OPERATION.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} />)}
-        <button type="button" aria-expanded={moreOpen} aria-controls="ac-more" className={[...STORE, FNSHOP_ITEM].some((item) => isCurrent(pathname, item.href)) ? "is-current" : ""} onClick={() => setMoreOpen((open) => !open)}><Ellipsis aria-hidden="true" size={18} /><span>Más</span></button>
+        {OPERATION.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} compact />)}
+        <button type="button" aria-expanded={moreOpen} aria-controls="ac-more" className={[...STORE, FNSHOP_ITEM].some((item) => isCurrent(pathname, item.href, item.exact)) ? "is-current" : ""} onClick={() => setMoreOpen((open) => !open)}><Ellipsis aria-hidden="true" size={18} /><span>Más</span></button>
       </nav>
       {moreOpen && <div className="ac-more" id="ac-more">
         <button type="button" className="ac-more-backdrop" aria-label="Cerrar menú" onClick={() => setMoreOpen(false)} />

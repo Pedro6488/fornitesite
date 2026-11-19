@@ -6,6 +6,16 @@ export async function GET(request: Request) {
   const ctx = await walletContext(request);
   if (!ctx) return NextResponse.json({ error: "Inicia sesión para consultar tus pavos." }, { status: 401 });
   const { database, user } = ctx;
+  // Consulta ligera para el encabezado y el carrito: solo el saldo, sin historial ni ofertas.
+  if (new URL(request.url).searchParams.get("view") === "balance") {
+    const [account, review] = await Promise.all([
+      database.from("wallet_accounts").select("balance,frozen").eq("user_id", user.id).maybeSingle(),
+      database.from("wallet_topups").select("vbucks,bonus_vbucks").eq("user_id", user.id).eq("status", "submitted"),
+    ]);
+    if (account.error || review.error) return NextResponse.json({ error: "El saldo de pavos aún no está disponible." }, { status: 503 });
+    const inReview = (review.data ?? []).reduce((sum, topup) => sum + topup.vbucks + (topup.bonus_vbucks ?? 0), 0);
+    return NextResponse.json({ balance: account.data?.balance ?? 0, frozen: account.data?.frozen ?? false, inReview });
+  }
   const [account, rates, topups, movements, paused, offers] = await Promise.all([
     database.from("wallet_accounts").select("balance,frozen").eq("user_id", user.id).maybeSingle(),
     database.from("wallet_rates").select("region,cents_per_100,active"),
