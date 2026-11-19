@@ -7,6 +7,7 @@ import { ArrowUpRight } from "lucide-react";
 import { AccountHeaderMenu } from "@/features/auth/components/account-header-menu";
 import { CartLink } from "@/features/cart/components/cart-link";
 import { RegionSelector } from "@/features/pricing/components/region-selector";
+import { WalletBalanceChip } from "@/features/wallet/components/wallet-balance-chip";
 import styles from "./storefront-shell.module.css";
 
 export function StorefrontHeader({ contactUrl }: { contactUrl: string }) {
@@ -19,6 +20,7 @@ export function StorefrontHeader({ contactUrl }: { contactUrl: string }) {
       <nav className={styles.navigation} aria-label="Navegación principal"><Link href="/fortnite#catalogo">Fortnite</Link><Link href="/pavos">Pavos</Link><Link href="/#como-comprar">Cómo comprar</Link><Link href="/referencias">Referencias</Link></nav>
       <div className={styles.actions}>
         {hasRegion && <div className={styles.region}><RegionSelector /></div>}
+        <WalletBalanceChip className={styles.wallet} />
         <div className={styles.cart}><CartLink label="Carrito Fortnite" /></div>
         <a className={styles.help} href={contactUrl} target="_blank" rel="noopener noreferrer">Hablemos <ArrowUpRight size={15} aria-hidden="true" /></a>
         <AccountHeaderMenu />

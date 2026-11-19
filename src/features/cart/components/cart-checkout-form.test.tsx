@@ -59,28 +59,47 @@ describe("CartCheckoutForm", () => {
   it("no permite pagar ni enviar si los pavos no cubren todo el pedido", async () => {
     wallet.balance=100;
     render(<CartCheckoutForm items={[item]} />); await openContact();
-    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
-    expect(screen.getByText(/No alcanza el saldo para todo el pedido/)).toBeInTheDocument();
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).toHaveAccessibleName(/Necesitas 500 pavos.*tienes 100.*Te faltan 400 pavos/);
+    expect(screen.getByText("Te faltan").parentElement).toHaveTextContent("400");
+    expect(screen.getByRole("link",{ name:"Recargar 400 pavos" })).toHaveAttribute("href","/pavos?cantidad=400#recargar");
+  });
+
+  it("si el saldo alcanza, propone pagar con pavos y dice qué se descuenta y cuánto queda", async () => {
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).toBeChecked();
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).toHaveAccessibleName(/Se descuentan 500 pavos de tus 1,000/);
+    expect(screen.getByRole("radio",{ name:/Transferencia bancaria/ })).toHaveAccessibleName(/Pagas \$40 .*No toca tu saldo/);
+    expect(screen.getByText("Te quedan").parentElement).toHaveTextContent("500");
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeEnabled();
+  });
+
+  it("si el saldo no alcanza, propone el pago habitual", async () => {
+    wallet.balance=100;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByRole("radio",{ name:/Transferencia bancaria/ })).toBeChecked();
+    expect(screen.getByRole("button",{ name:"Confirmar pedido" })).toBeEnabled();
   });
 
   it("bloquea el pago con pavos si la cuenta está congelada aunque alcance el saldo", async () => {
     wallet.frozen=true;
     render(<CartCheckoutForm items={[item]} />); await openContact();
-    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
-    expect(screen.getByText(/Tu saldo está en revisión/)).toBeInTheDocument();
+    expect(screen.getByText(/no se puede usar por ahora/)).toBeInTheDocument();
   });
 
   it("bloquea el pago con pavos mientras está pausado por una falla de la cuenta emisora", async () => {
     wallet.paused=true;
     render(<CartCheckoutForm items={[item]} />); await openContact();
-    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
     expect(screen.getByText(/está pausado unos minutos/)).toBeInTheDocument();
   });
 
-  it("anuncia la promoción vigente de pavos en el checkout", async () => {
+  it("anuncia la promoción vigente de pavos a quien no le alcanza el saldo", async () => {
+    wallet.balance=100;
     wallet.bonuses=[{ id:"b1",region:"mx",label:"Noviembre",min_vbucks:5000,bonus_bp:500,bonus_cap:null,first_topup_only:false,ends_at:"2099-11-30T23:00:00Z" }];
     render(<CartCheckoutForm items={[item]} />); await openContact();
     expect(screen.getByText(/recarga desde 5,000 pavos y recibe \+5% de regalo/)).toBeInTheDocument();
@@ -102,20 +121,20 @@ describe("CartCheckoutForm", () => {
   it("bloquea pavos si un objeto tiene precio especial sin pavos", async () => {
     quoteExtras.walletAllowed=false;
     render(<CartCheckoutForm items={[item]} />); await openContact();
-    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
     expect(screen.getByText(/tiene precio especial y no se puede pagar con pavos/)).toBeInTheDocument();
   });
 
   it("envía únicamente el método pavos y permite volver al pago habitual",async () => {
     render(<CartCheckoutForm items={[item]} />); await openContact();
-    const external=screen.getByRole("radio",{ name:"Transferencia bancaria" });
-    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    const external=screen.getByRole("radio",{ name:/Transferencia bancaria/ });
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
     expect(external).not.toBeChecked();
     expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeEnabled();
     fireEvent.click(external);
-    expect(screen.getByRole("radio",{ name:"Mis pavos de la tienda" })).not.toBeChecked();
-    fireEvent.click(screen.getByRole("radio",{ name:"Mis pavos de la tienda" }));
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).not.toBeChecked();
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
     fireEvent.click(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" }));
     await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/cart-orders",expect.objectContaining({ body:expect.stringContaining('"paymentSource":"wallet"') })));
   });

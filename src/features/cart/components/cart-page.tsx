@@ -19,6 +19,8 @@ import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import { PurchaseSteps } from "./purchase-steps";
 import { resolveCartAvailability } from "../application/cart-availability";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
+import { useWalletBalance } from "@/features/wallet/components/use-wallet-balance";
+import { WalletMeter } from "@/features/wallet/components/wallet-meter";
 
 export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   const router = useRouter();
@@ -33,6 +35,8 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
   const [savingEmail, setSavingEmail] = useState(false);
   const lines =useMemo(() => resolveCartAvailability(commerce.cartItemIds, items), [commerce.cartItemIds, items]);
   const unavailableLines = lines.filter((line) => !line.available);
+  const wallet = useWalletBalance(commerce.authenticated, commerce.sessionId);
+  const vbucksTotal = lines.reduce((sum, line) => sum + (line.available && line.item ? line.item.finalPriceVbucks : 0), 0);
   const total = lines.reduce((sum, line) => sum + (line.available && line.item ? getRegionalPrice(region, line.item.finalPriceVbucks, line.item.priceMxn).amount ?? 0 : 0), 0);
   const currency = region === "us" ? "USD" : "MXN";
   const totalWithFee = region === "us" ? total + PAYPAL_FEE_USD_CENTS / 100 : total;
@@ -128,6 +132,7 @@ export function CartPage({ items }: { items: readonly CatalogItem[] }) {
         <div className="cart-summary-row"><span>Recibe</span><strong>{commerce.validation?.display_name ?? "Por definir"}</strong></div>
         {region === "us" && <div className="cart-summary-row"><span>Comisión PayPal</span><strong>{formatUsdCents(PAYPAL_FEE_USD_CENTS)} USD</strong></div>}
         <div className="cart-summary-total"><span>Total estimado</span><strong>{formatTotal} {region === "mx" && <small>{currency}</small>}</strong></div>
+        {wallet && wallet.balance > 0 && vbucksTotal > 0 && <div className="cart-summary-wallet"><p><strong>O págalo con tus pavos</strong> · envío automático, sin comprobante</p><WalletMeter balance={wallet.balance} cost={vbucksTotal} label="Carrito" /></div>}
         <p className="cart-summary-note"><ShieldCheck aria-hidden="true" size={17} />{nextStep}</p>
         {canContinue ? <button type="button" className="primary-button" disabled={openingCheckout} onClick={() => void continueToCheckout()}>{openingCheckout ? "Abriendo compra…" : <>Continuar compra <ArrowRight aria-hidden="true" size={17} /></>}</button> : <button className="primary-button" disabled>Hay objetos no disponibles</button>}
         <section className="cart-trust-panel" aria-label="Compra protegida">

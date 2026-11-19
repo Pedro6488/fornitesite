@@ -23,7 +23,11 @@ Los precios públicos salen de `getPublicWalletOffers()` (`wallet_offers(null)` 
 
 ## Administración
 
-`/admin/pavos` permite configurar el precio por 100 pavos para México y USA, revisar comprobantes de recargas y consultar saldo, total comprado, utilizado, devuelto e historial de pedidos de cada cliente. Las tarifas comienzan deshabilitadas y sin precio. No se puede cobrar una recarga hasta configurar su región.
+El admin de pavos tiene tres vistas, una por trabajo, con pestañas entre ellas:
+
+- **Recargas de pavos** (`/admin/pavos`, en Operación, con contador): comprobantes por liberar primero, entregas con pavos atoradas, la pausa y el resumen del día.
+- **Clientes con pavos** (`/admin/pavos/clientes`, en Tienda): saldo, comprados, utilizados, devueltos, historial, ajustes y congelamiento. `?cliente=<id>` abre directo el historial; así enlaza «Ver cliente» desde una recarga.
+- **Precios de pavos** (`/admin/pavos/configuracion`, en Tienda): tarifa, costo y margen por región, tramos y promociones. Las tarifas comienzan deshabilitadas y sin precio. No se puede cobrar una recarga hasta configurar su región.
 
 Las recargas mexicanas muestran transferencia; las de USA muestran PayPal. Aprobar una recarga registra un crédito una sola vez. Rechazarla requiere un motivo y no aumenta el saldo. La acreditación y el movimiento se guardan en la misma transacción.
 
@@ -37,7 +41,7 @@ Política: 1 pavo de la tienda equivale a 1 pavo del precio de Fortnite. El pago
 
 ### Incentivos: precio por volumen y promociones
 
-Se configuran en **Admin → Clientes con pavos**:
+Se configuran en **Admin → Precios de pavos**:
 
 1. **Costo y margen** (por región, en el formulario de la tarifa): cuánto le cuesta a la tienda entregar 100 pavos y el margen mínimo aceptado. **Sin costo capturado no se puede activar ningún tramo ni promoción**, y los que ya existan no se aplican.
 2. **Precio por volumen** (`wallet_rate_tiers`): "desde X pavos, $Y por 100". Se aplica el tramo más alto que alcanza la recarga; debajo del primero se cobra la tarifa base.
@@ -67,13 +71,13 @@ Ejemplo:
 Cuando el cliente sube el comprobante, el equipo se entera de dos formas, igual que con el comprobante de un pedido habitual:
 
 - Llega a Telegram **"🧾 Recarga de pavos por liberar"**, con la referencia, los pavos, el regalo, el monto, el correo del cliente y el botón al panel (`telegram.operations.alert`, una vez por recarga). Si Telegram falla, la cola lo reintenta; el comprobante queda guardado de todos modos.
-- En el menú del admin, **Clientes con pavos** muestra cuántas recargas esperan revisión.
+- En el menú del admin, **Recargas de pavos** y la franja superior muestran cuántas recargas esperan revisión.
 
 Cada recarga tiene una referencia `RECARGA-XXXXXXXX` (`wallet_topups.reference_code`) que el cliente escribe en el concepto de la transferencia o en la nota de PayPal. Antes de aprobar, el admin busca esa referencia y el importe en el banco o en PayPal. La imagen del comprobante no es prueba suficiente: se puede editar, y el checksum solo detecta archivos idénticos.
 
 ### Congelar cuentas y ajustar saldos
 
-En el detalle del cliente (`/admin/pavos`):
+En el detalle del cliente (`/admin/pavos/clientes`):
 
 - **Congelar cuenta** (`set_wallet_frozen`): bloquea las compras con pavos y conserva el saldo. Pide un motivo. Se usa ante un contracargo, una disputa de PayPal o la sospecha de una cuenta robada. El cliente ve que su saldo está en revisión y el checkout desactiva el pago con pavos. La base también rechaza la compra (`account_frozen`).
 - **Ajustar saldo** (`adjust_wallet`): agrega o quita pavos con motivo obligatorio. Queda en el ledger como `adjustment`, con el admin que lo hizo, y en `audit_log`. El saldo nunca queda en negativo: si el cliente ya gastó los pavos, se congela la cuenta en lugar de dejar deuda.
@@ -124,7 +128,7 @@ Los rechazos definitivos conocidos se devuelven por objeto una sola vez. Un obje
 1. Aplicar `supabase/migrations/20261117000100_store_wallet.sql` y las migraciones `20261118…` de pavos antes de desplegar el código. Son aditivas: conservan los pedidos externos existentes.
 2. Mantener `FULFILLMENT_MODE=fnshop` y un proveedor listo. En QA usar `FNSHOP_SIMULATE=true`; las protecciones existentes evitan llamadas reales fuera de producción.
 3. Configurar `CRON_SECRET` y los secrets del workflow `.github/workflows/wallet-cron.yml`, que llama a `/api/internal/wallet` cada cinco minutos (ver «Cola de pavos» en `docs/deployment.md`). Vercel Hobby no admite esa frecuencia, por eso no está en `vercel.json`.
-4. Desde Admin → Clientes con pavos, definir las tarifas de MXN y USD y activar únicamente las regiones listas para cobrar.
+4. Desde Admin → Precios de pavos, definir las tarifas de MXN y USD y activar únicamente las regiones listas para cobrar.
 5. Ejecutar completo el guion [docs/qa-pavos.md](qa-pavos.md) en QA, incluida la regresión del pedido habitual, y llenar su tabla de resultado. Sin esa tabla el cambio no cuenta como verificado.
 
 Las tablas de saldo, recargas y movimientos no aceptan acceso directo desde roles `anon` o `authenticated`; las rutas autenticadas usan operaciones de servidor. Los comprobantes se guardan en un bucket privado y el admin recibe enlaces temporales.

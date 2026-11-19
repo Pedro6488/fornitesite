@@ -15,7 +15,7 @@ Cada paso dice **quién** lo hace y **qué debe pasar**. Si el resultado no es e
   - `TELEGRAM_ADMIN_CHAT_IDS`
   - `CRON_SECRET`
   - `WHATSAPP_BUSINESS_NUMBER`
-- [ ] En Admin → Clientes con pavos, México está activo con tarifa, costo por 100 y margen mínimo.
+- [ ] En Admin → Precios de pavos, México está activo con tarifa, costo por 100 y margen mínimo.
 - [ ] Tres ventanas abiertas:
   - **Cliente**: una cuenta normal.
   - **Admin**: una cuenta admin, en otro navegador o en incógnito.
@@ -37,7 +37,7 @@ curl -H "Authorization: Bearer <CRON_SECRET>" https://<dominio-qa>/api/internal/
 | A2 | Cliente | Comprar la recarga. | Arriba, en "Tu avance", aparecen: "Paga y sube tu comprobante", los datos de pago, el monto exacto y la referencia `RECARGA-XXXXXXXX`. |
 | A3 | Cliente | Subir un comprobante (JPG, PNG o PDF). | Aparece "Comprobante recibido" y el paso cambia a "Estamos revisando tu pago". |
 | A4 | Telegram | Esperar menos de un minuto. | Llega **"🧾 Recarga de pavos por liberar · RECARGA-…"** con los pavos, el regalo, el monto, el correo del cliente y el botón "Abrir en el panel". |
-| A5 | Admin | Mirar el menú. | "Clientes con pavos" muestra un contador con la recarga pendiente. La recarga aparece en "Comprobantes de recargas por revisar". |
+| A5 | Admin | Mirar el menú. | "Recargas de pavos" (en Operación) y la franja superior ("recargas") muestran el contador. La recarga aparece primero en `/admin/pavos`, en "Comprobantes por revisar". |
 | A6 | Admin | "Confirmar pago y acreditar pavos". | La recarga sale de la lista y el contador baja. El botón de WhatsApp abre un mensaje con la referencia, los pavos, **el regalo** y el saldo correcto. |
 | A7 | Cliente | Recargar `/pavos`. | El saldo subió en pavos más regalo y el paso dice "Listo para comprar". |
 | A8 | Admin | Repetir A2–A5 con otra recarga y rechazarla con motivo. | El cliente ve "Recarga rechazada" y el motivo. El WhatsApp del rechazo lleva el motivo. |
@@ -46,11 +46,15 @@ curl -H "Authorization: Bearer <CRON_SECRET>" https://<dominio-qa>/api/internal/
 
 | # | Quién | Acción | Debe pasar |
 |---|---|---|---|
-| B1 | Cliente | Comprar un objeto con "Mis pavos de la tienda" al ID `listo`. | El saldo baja al instante y el pedido queda pagado sin pedir comprobante. Telegram recibe "🛒 Nuevo pedido … pavos de la tienda". |
+| B0a | Cliente | Mirar el encabezado con sesión iniciada. | Junto al carrito aparece el saldo (por ejemplo "13,500 pavos") y lleva a `/pavos`. El menú de la cuenta dice "Mis pavos · 13,500 disponibles". |
+| B0b | Cliente | Agregar objetos y abrir el carrito. | Bajo el total aparece "O págalo con tus pavos" con Tienes / Carrito / Te quedan y la barra. |
+| B0c | Cliente | En el checkout, confirmar el precio. | Si el saldo alcanza, "Mis pavos de la tienda" viene marcado y dice "Se descuentan N pavos de tus M". La transferencia dice "Pagas $X". Debajo están Tienes / Este pedido / Te quedan, y el botón final dice "Te quedan N pavos". |
+| B0d | Cliente | Repetir con un carrito más caro que el saldo. | Viene marcada la transferencia. La tarjeta de pavos dice "Te faltan N pavos" y, al elegirla, aparece "Recargar N pavos", que abre `/pavos` con esa cantidad. |
+| B1 | Cliente | Comprar un objeto con "Mis pavos de la tienda" al ID `listo`. | El saldo baja al instante, también el del encabezado, y el pedido queda pagado sin pedir comprobante. Telegram recibe "🛒 Nuevo pedido … pavos de la tienda". |
 | B2 | Quien prueba | Abrir el pedido. La entrega se intenta en el momento de la compra; si sigue "En cola", correr la cola (curl de arriba). | El pedido pasa a entregado. El admin, en el detalle del cliente, ve "Avisar entrega por WhatsApp". |
 | B3 | Cliente | Comprar al ID `rechazo`. | Los pavos del objeto vuelven al saldo. El pedido muestra "Pavos devueltos". |
 | B4 | Cliente | Comprar al ID `sinsaldo`. | Devolución inmediata. Telegram recibe "⏸️ Pausé el pago con pavos". El checkout ya no deja pagar con pavos y `/admin/pavos` muestra "Reanudar ahora". |
-| B5 | Admin | Congelar la cuenta del cliente con motivo. | El cliente ve "Tu saldo está en revisión" y el checkout no deja pagar con pavos. |
+| B5 | Admin | En Clientes con pavos, abrir al cliente y congelar su cuenta con motivo. | El cliente ve "Tu saldo está en revisión" y el checkout no deja pagar con pavos. |
 | B6 | Admin | Ajustar el saldo −100 con motivo y después descongelar. | El movimiento aparece con su motivo. Un ajuste mayor que el saldo se rechaza. |
 
 ## C. Regresión: pedido habitual (regalos sin pavos)
