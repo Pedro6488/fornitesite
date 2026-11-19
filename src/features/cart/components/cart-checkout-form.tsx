@@ -397,12 +397,14 @@ export function CartCheckoutForm({ items }: { items: readonly CatalogItem[] }) {
                     placeholder="tu@correo.com"
                   />
                 </label>
+                {!commerce.authenticated && <p className="wallet-comparison">⚡ ¿Compras seguido? Con una cuenta y saldo de pavos, tus próximas compras se envían al instante, sin subir comprobante. <Link href="/pavos">Conoce los pavos</Link></p>}
                 {commerce.authenticated && <fieldset className="wallet-payment-options" disabled={loading}>
                   <legend>Elige un método de pago</legend>
                   <label><span><input type="radio" name="payment-source" checked={!useWalletPayment} onChange={() => setPaymentSource("external")} /> {region === "us" ? "PayPal" : "Transferencia bancaria"}</span></label>
                   <label><span><input type="radio" name="payment-source" checked={useWalletPayment} onChange={() => setPaymentSource("wallet")} /> Mis pavos de la tienda</span></label>
                   <p>Saldo: {wallet.data ? `${wallet.data.balance.toLocaleString("es-MX")} pavos` : "No disponible"}. Costo: {walletCost.toLocaleString("es-MX")} pavos.</p>
                   <small>Los pavos de la tienda son tu saldo en SigfriedLootBox, no paVos de tu cuenta de Epic.</small>
+                  {wallet.data && wallet.data.balance === 0 && !useWalletPayment && <p className="wallet-comparison">⚡ Recarga pavos una vez y tus próximas compras se envían al instante, sin subir comprobante. <Link href="/pavos">Ver cómo funciona</Link></p>}
                   {walletPromo && <p className="wallet-comparison is-savings">🎁 {walletPromo.label}: recarga desde {walletPromo.min_vbucks.toLocaleString("es-MX")} pavos y recibe +{(walletPromo.bonus_bp / 100).toLocaleString("es-MX")}% de regalo, hasta el {new Date(walletPromo.ends_at).toLocaleDateString("es-MX", { day: "numeric", month: "long" })}. <Link href="/pavos">Comprar pavos</Link></p>}
                   {walletComparison && walletComparison.savingsCents > 0 && <p className="wallet-comparison is-savings">Con pavos ahorras <strong>{walletMoney(walletComparison.savingsCents, region)}</strong>: pago habitual {walletMoney(walletComparison.regularCents, region)}, con pavos {walletCost.toLocaleString("es-MX")} pavos ≈ {walletMoney(walletComparison.equivalentCents, region)} a la tarifa de recarga actual.</p>}
                   {walletComparison && walletComparison.savingsCents < 0 && <p className="wallet-comparison">Para este pedido el pago habitual sale más barato: {walletMoney(walletComparison.regularCents, region)}, contra ≈ {walletMoney(walletComparison.equivalentCents, region)} en pavos a la tarifa de recarga actual.</p>}

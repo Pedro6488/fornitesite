@@ -66,6 +66,7 @@ export function AccountHeaderMenu() {
         </> : <>
           <Link className="account-menu-primary" href="/cuenta?mode=register"><UserPlus aria-hidden="true" size={16} /><span>Crear cuenta</span></Link>
           <Link href="/cuenta"><LogIn aria-hidden="true" size={16} /><span>Iniciar sesión</span></Link>
+          <Link href="/pavos"><BadgeCheck aria-hidden="true" size={16} /><span>Pavos de la tienda · qué son</span></Link>
         </>}
       </>}
     </div>
