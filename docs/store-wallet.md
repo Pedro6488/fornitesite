@@ -64,6 +64,11 @@ Ejemplo:
 
 ### Revisar una recarga
 
+Cuando el cliente sube el comprobante, el equipo se entera de dos formas, igual que con el comprobante de un pedido habitual:
+
+- Llega a Telegram **"🧾 Recarga de pavos por liberar"**, con la referencia, los pavos, el regalo, el monto, el correo del cliente y el botón al panel (`telegram.operations.alert`, una vez por recarga). Si Telegram falla, la cola lo reintenta; el comprobante queda guardado de todos modos.
+- En el menú del admin, **Clientes con pavos** muestra cuántas recargas esperan revisión.
+
 Cada recarga tiene una referencia `RECARGA-XXXXXXXX` (`wallet_topups.reference_code`) que el cliente escribe en el concepto de la transferencia o en la nota de PayPal. Antes de aprobar, el admin busca esa referencia y el importe en el banco o en PayPal. La imagen del comprobante no es prueba suficiente: se puede editar, y el checksum solo detecta archivos idénticos.
 
 ### Congelar cuentas y ajustar saldos
@@ -120,7 +125,7 @@ Los rechazos definitivos conocidos se devuelven por objeto una sola vez. Un obje
 2. Mantener `FULFILLMENT_MODE=fnshop` y un proveedor listo. En QA usar `FNSHOP_SIMULATE=true`; las protecciones existentes evitan llamadas reales fuera de producción.
 3. Configurar `CRON_SECRET` y los secrets del workflow `.github/workflows/wallet-cron.yml`, que llama a `/api/internal/wallet` cada cinco minutos (ver «Cola de pavos» en `docs/deployment.md`). Vercel Hobby no admite esa frecuencia, por eso no está en `vercel.json`.
 4. Desde Admin → Clientes con pavos, definir las tarifas de MXN y USD y activar únicamente las regiones listas para cobrar.
-5. Probar una recarga, aprobación duplicada, compra con saldo, saldo insuficiente y devolución de un rechazo definitivo en QA.
+5. Ejecutar completo el guion [docs/qa-pavos.md](qa-pavos.md) en QA, incluida la regresión del pedido habitual, y llenar su tabla de resultado. Sin esa tabla el cambio no cuenta como verificado.
 
 Las tablas de saldo, recargas y movimientos no aceptan acceso directo desde roles `anon` o `authenticated`; las rutas autenticadas usan operaciones de servidor. Los comprobantes se guardan en un bucket privado y el admin recibe enlaces temporales.
 
