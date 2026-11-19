@@ -1102,7 +1102,7 @@ body:has(.ac-shell) {
   scrollbar-width: none;
 }
 
-.ac-queue-tabs button {
+.ac-queue-tabs :is(button, a) {
   align-items: center;
   background: transparent;
   border: 0;
@@ -1116,7 +1116,11 @@ body:has(.ac-shell) {
   padding: .4rem .8rem;
 }
 
-.ac-queue-tabs button[aria-selected="true"] {
+.ac-queue-tabs a {
+  text-decoration: none;
+}
+
+.ac-queue-tabs :is(button[aria-selected="true"], a[aria-current="page"]) {
   border-bottom-color: var(--ac-accent);
   color: var(--ac-ink);
 }
@@ -1572,7 +1576,8 @@ body:has(.ac-shell) {
     border-top: 1px solid var(--ac-line);
     bottom: 0;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
     left: 0;
     padding-bottom: env(safe-area-inset-bottom);
     position: fixed;
