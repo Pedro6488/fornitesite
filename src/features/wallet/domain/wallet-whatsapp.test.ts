@@ -28,6 +28,7 @@ describe("avisos de pavos por WhatsApp", () => {
 
   it("los avisos de recarga llevan la referencia y, al rechazar, el motivo", () => {
     expect(toCustomer.topupApproved({ reference: "RECARGA-1A2B3C4D", vbucks: 5000, balance: 5250, appUrl: "https://t.example" })).toMatch(/RECARGA-1A2B3C4D[\s\S]*5,250 pavos/);
+    expect(toCustomer.topupApproved({ reference: "RECARGA-1A2B3C4D", vbucks: 5000, bonus: 250, balance: 5250, appUrl: "https://t.example" })).toContain("+5,000 pavos y +250 pavos de regalo");
     expect(toCustomer.topupRejected({ reference: "RECARGA-1A2B3C4D", vbucks: 5000, reason: "El importe no coincide" })).toContain("El importe no coincide");
     expect(toStore.topupExpired({ reference: "RECARGA-1A2B3C4D", vbucks: 1000 })).toContain("RECARGA-1A2B3C4D");
   });

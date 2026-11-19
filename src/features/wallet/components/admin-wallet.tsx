@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
-import { AdminPageHeader } from "@/features/admin/components/admin-shell";
+import { AdminPageHeader, useAdminCounts } from "@/features/admin/components/admin-shell";
 import { useAdminData, useAdminRequest } from "@/features/admin/components/use-admin-request";
 import { PAYPAL_FIXED_CENTS, PAYPAL_PERCENT_BP, movementLabels, paypalNetCents, topupLabels, topupReference, topupStatus, walletMoney, type WalletMovement, type WalletRate, type WalletTopup } from "../domain/wallet";
 import { toCustomer, trackingUrl, whatsappLink, type WhatsappRegion } from "../domain/wallet-whatsapp";
@@ -33,7 +33,7 @@ function orderNotice(order: WalletOrder, phone: string | null | undefined): Noti
 
 function topupNotice(topup: WalletTopup, account: Account | undefined, balance: number): Notice | null {
   const reference = topupReference(topup);
-  if (topup.status === "approved") return { label: "Avisar acreditación por WhatsApp", href: whatsappLink(account?.whatsapp, toCustomer.topupApproved({ reference, vbucks: topup.vbucks, balance, appUrl: appUrl() }), topup.region) };
+  if (topup.status === "approved") return { label: "Avisar acreditación por WhatsApp", href: whatsappLink(account?.whatsapp, toCustomer.topupApproved({ reference, vbucks: topup.vbucks, bonus: topup.bonus_vbucks ?? 0, balance, appUrl: appUrl() }), topup.region) };
   if (topup.status === "rejected") return { label: "Avisar rechazo por WhatsApp", href: whatsappLink(account?.whatsapp, toCustomer.topupRejected({ reference, vbucks: topup.vbucks, reason: topup.review_note ?? "sin detalle" }), topup.region) };
   return null;
 }
@@ -42,6 +42,7 @@ type AttentionJob = { id: string; aggregate_id: string; status: string; attempts
 const orderLabels: Record<string,string> = { paid:"Pagado", ready_to_send:"En cola", validating_delivery:"Validando entrega", delivering:"Enviando", reconciling:"Confirmando envío", manual_review:"Requiere atención", delivered:"Entregado / resuelto", refunded:"Pavos devueltos", canceled:"Cancelado" };
 export function AdminWallet() {
   const request = useAdminRequest();
+  const { refreshCounts } = useAdminCounts();
   const { data,error,reload } = useAdminData<{ accounts: Account[]; pending: WalletTopup[]; rates: WalletRate[]; summary: Summary | null; attention: AttentionJob[]; tiers: WalletTier[]; bonuses: WalletBonus[] }>("/api/admin/wallet", { refreshMs: 30000 });
   const [selected,setSelected] = useState<string | null>(null);
   const details = useAdminData<{ movements: WalletMovement[]; orders: WalletOrder[]; topups: WalletTopup[] }>(selected ? `/api/admin/wallet?userId=${selected}` : null);
@@ -55,7 +56,8 @@ export function AdminWallet() {
     const note = (notes[topup.id] ?? "").trim();
     if (!await action({ action:"review", id:topup.id, approve, note })) return;
     // Tras revisar, la recarga sale de la lista: el aviso queda a la mano para mandarlo al cliente.
-    setNotice(topupNotice({ ...topup, status: approve ? "approved" : "rejected", review_note: note || null }, account, (account?.balance ?? 0) + (approve ? topup.vbucks : 0)));
+    setNotice(topupNotice({ ...topup, status: approve ? "approved" : "rejected", review_note: note || null }, account, (account?.balance ?? 0) + (approve ? topup.vbucks + (topup.bonus_vbucks ?? 0) : 0)));
+    refreshCounts();
   }
   async function action(body: unknown): Promise<boolean> {
     setBusy(true); setMessage("");
