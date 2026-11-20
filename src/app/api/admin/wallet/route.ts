@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
+import { walletMoney } from "@/features/wallet/domain/wallet";
+import { minAllowedPer100 } from "@/features/wallet/domain/wallet-offers";
 export async function GET(request: Request) {
   const staff = await authorizeStaff(request);
   if (!staff) return NextResponse.json({ error: "No autorizado." }, { status: 401 });
@@ -58,7 +60,20 @@ export async function POST(request: Request) {
   if (!body.success) return NextResponse.json({ error: "Datos inválidos." }, { status: 400 });
   const data = body.data;
   if (data.action === "rate") {
-    const { error } = await staff.database.from("wallet_rates").update({ cents_per_100: data.centsPer100, active: data.active, updated_at: new Date().toISOString(),
+    // La tarifa base tampoco puede venderse debajo de costo + margen (los escalones y promociones ya lo revisa la base).
+    if (data.active) {
+      const current = data.costCentsPer100 === undefined || data.minMarginBp === undefined
+        ? (await staff.database.from("wallet_rates").select("cost_cents_per_100,min_margin_bp").eq("region", data.region).maybeSingle()).data
+        : null;
+      const cost = data.costCentsPer100 !== undefined ? data.costCentsPer100 : current?.cost_cents_per_100 ?? null;
+      const margin = data.minMarginBp ?? current?.min_margin_bp ?? 0;
+      const floor = minAllowedPer100({ cost_cents_per_100: cost, min_margin_bp: margin });
+      if (floor !== null && data.centsPer100 < floor) {
+        const money = (cents: number) => walletMoney(cents, data.region);
+        return NextResponse.json({ error: `Con ${money(data.centsPer100)} por 100 vendes debajo de tu costo (${money(cost!)}) más el margen mínimo (${margin / 100}%). El mínimo es ${money(floor)}. Sube la tarifa o revisa el costo.` }, { status: 409 });
+      }
+    }
+    const { error } =await staff.database.from("wallet_rates").update({ cents_per_100: data.centsPer100, active: data.active, updated_at: new Date().toISOString(),
       ...(data.costCentsPer100 !== undefined ? { cost_cents_per_100: data.costCentsPer100 } : {}), ...(data.minMarginBp !== undefined ? { min_margin_bp: data.minMarginBp } : {}) }).eq("region",data.region);
     if (error) return NextResponse.json({ error: "No fue posible guardar la tarifa." }, { status: 503 });
     await staff.database.from("audit_log").insert({ actor_id: staff.user.id, action: "wallet.rate", entity_type: "wallet_rate", entity_id: data.region, after_data: data });

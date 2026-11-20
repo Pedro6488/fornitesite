@@ -73,3 +73,32 @@
 .another { border:1px solid #ffffff1a; padding:12px 16px; }
 .another > summary { cursor:pointer; color:var(--loot-lime,#d6ff38); font-weight:800; }
 .another[open] > summary { margin-bottom:14px; }
+/* Escalera de precio por volumen (admin): base + escalones editados juntos. */
+.ladder { display:grid; gap:12px; }
+.ladderBase { margin:0; padding:10px 12px; background:#11162c; border-left:3px solid var(--loot-lime,#d6ff38); }
+.ladderBase strong { color:#fff; }
+.ladderHead, .ladderRow { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto minmax(0,1.3fr); gap:12px; align-items:center; }
+.ladderHead { font-size:.78rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#9aa2bd; }
+.panel .ladderRow label { gap:6px; }
+.ladderRow input[type=number] { width:100%; min-width:0; }
+.ladderRow[data-invalid] input[type=number] { border-color:#ff7a84; }
+.ladderLabel { display:none; font-size:.8rem; font-weight:700; color:#9aa2bd; }
+.ladderCheck { white-space:nowrap; }
+.ladderInfo { display:grid; gap:2px; font-size:.9rem; min-width:0; }
+.ladderInfo strong { color:#fff; }
+.ladderError { grid-column:1 / -1; margin:0; color:#ff9aa1; font-size:.9rem; }
+.ladderOk { margin:0; color:#5ccf8f; font-size:.9rem; }
+.ladderPreview { display:grid; gap:8px; padding-top:6px; border-top:1px solid #ffffff1a; }
+.ladderPreview h3 { margin:0; font-size:1rem; }
+.ladderPreview table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:.92rem; }
+.ladderPreview th, .ladderPreview td { padding:6px 8px; text-align:left; border-bottom:1px solid #ffffff12; }
+.ladderPreview thead th { color:#9aa2bd; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; }
+.ladderPreview tbody th { color:#fff; font-weight:700; }
+.ladderPreview small { color:#9aa2bd; }
+@media (max-width:640px) {
+  .ladderHead { display:none; }
+  .ladderRow { grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding-bottom:12px; border-bottom:1px solid #ffffff12; }
+  .ladderLabel { display:block; }
+  .ladderInfo { grid-column:1 / -1; }
+  .ladderPreview th, .ladderPreview td { padding:6px 4px; font-size:.85rem; }
+}

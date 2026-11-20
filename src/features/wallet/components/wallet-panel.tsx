@@ -52,7 +52,7 @@ export function WalletPanel({ offers = null, variant = "page", initialAmount = n
   const step = pending.length > 0 ? 1 : reviewing.length > 0 ? 2 : balance > 0 ? 3 : 0;
   const pickAmount = (value: number) => { setAmount(value); setKey(null); };
 
-  const showProgress = () => window.requestAnimationFrame(() => document.getElementById("siguiente-paso")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  const showProgress = () => window.requestAnimationFrame(() => document.getElementById("siguiente-paso")?.scrollIntoView?.({ behavior: "smooth", block: "start" }));
   async function createTopup() {
     if (cents === null || busy) return;
     setBusy(true); setMessage(""); setFlash(null);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { marginBp, nextOffer, offerHighlights, parseWalletAmount, topupQuote, type WalletBonus, type WalletTier } from "./wallet-offers";
+import { checkLadder, marginBp, minAllowedPer100, nextOffer, offerHighlights, parseWalletAmount, topupQuote, type WalletBonus, type WalletTier } from "./wallet-offers";
 
 const rate = { region: "mx" as const, cents_per_100: 750, active: true };
 const tiers: WalletTier[] = [{ id: "t5", region: "mx", min_vbucks: 5000, cents_per_100: 700 }];
@@ -64,5 +64,47 @@ describe("parseWalletAmount", () => {
     expect(parseWalletAmount("5000")).toBe(5000);
     expect(parseWalletAmount(["2800", "1"])).toBe(2800);
     for (const raw of ["50", "5050", "60000", "abc", undefined, null]) expect(parseWalletAmount(raw)).toBeNull();
+  });
+});
+
+describe("escalera de precios del admin", () => {
+  const money = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+  const row = (key: string, min: string, price: string, active = true) => ({ key, id: null, min, price, active });
+  const priced = { region: "mx" as const, cents_per_100: 900, active: true, cost_cents_per_100: 600, min_margin_bp: 1000 };
+
+  it("el mínimo permitido es costo + margen, redondeado hacia arriba como en la base", () => {
+    expect(minAllowedPer100(priced)).toBe(660);
+    expect(minAllowedPer100({ cost_cents_per_100: 1000, min_margin_bp: 100 })).toBe(1010);
+    expect(minAllowedPer100({ cost_cents_per_100: null })).toBeNull();
+  });
+
+  it("acepta 4 escalones que bajan de precio y omite las filas vacías", () => {
+    const { problems, steps } = checkLadder([row("a", "1000", "8.5"), row("b", "2800", "8"), row("c", "5000", "7.5"), row("d", "13500", "7"), row("e", "", "")], priced, money);
+    expect(problems).toEqual({});
+    expect(steps.map((step) => step.cents)).toEqual([850, 800, 750, 700]);
+  });
+
+  it("caso de Pedro: con costo $10 y margen 1 %, $8 explica el mínimo permitido", () => {
+    const { problems } = checkLadder([row("a", "600", "8")], { ...priced, cents_per_100: 1000, cost_cents_per_100: 1000, min_margin_bp: 100 }, money);
+    expect(problems.a).toBe("Mínimo permitido: $10.10 (tu costo $10.00 + margen 1%).");
+  });
+
+  it("exige que cada escalón cueste menos que la base y que el anterior", () => {
+    const { problems } = checkLadder([row("a", "1000", "9"), row("b", "5000", "8"), row("c", "2800", "8")], priced, money);
+    expect(problems.a).toBe("Debe costar menos que la tarifa base ($9.00).");
+    expect(problems.b).toBe("Debe costar menos que el escalón desde 2,800 ($8.00).");
+    expect(problems.c).toBeUndefined();
+  });
+
+  it("señala filas incompletas, cantidades inválidas y repetidas; los inactivos no se comparan", () => {
+    const { problems } = checkLadder([row("a", "1000", ""), row("b", "150", "8"), row("c", "2800", "8"), row("d", "2800", "7.5"), row("e", "5000", "50", false)], priced, money);
+    expect(problems.a).toBe("Completa «desde» y el precio.");
+    expect(problems.b).toMatch(/múltiplos de 100/);
+    expect(problems.d).toBe("Ya hay un escalón desde 2,800 pavos.");
+    expect(problems.e).toBeUndefined();
+  });
+
+  it("sin costo capturado no deja activar escalones", () => {
+    expect(checkLadder([row("a", "1000", "8")], { ...priced, cost_cents_per_100: null }, money).problems.a).toMatch(/Captura tu costo/);
   });
 });

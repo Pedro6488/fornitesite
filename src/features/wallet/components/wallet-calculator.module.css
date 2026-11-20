@@ -61,3 +61,4 @@
   .chips { grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
 }
 @media (prefers-reduced-motion: reduce) { .pay strong, .get strong { animation: none; } }
+.terms { margin: 0; font-size: 12px; line-height: 1.45; color: #9aa2bd; }
