@@ -1643,11 +1643,193 @@ main#main-content .identity-heading h2,
 }
 
 .recipient-id-notice p,
+.canonical-order-status p,
 .delivery-feedback-submitted p {
   color: var(--loot-body);
   font-size: .82rem;
   line-height: 1.45;
   margin: 0;
+}
+
+/* Método de pago: dos tarjetas que dicen qué se toma de ti con cada opción. */
+.payment-choice {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: .75rem;
+  min-width: 0;
+}
+
+.payment-choice legend {
+  padding: 0;
+  margin-bottom: .2rem;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.payment-choice-hint,
+.payment-choice > small {
+  margin: 0;
+  color: var(--loot-body);
+  font-size: .8rem;
+}
+
+.payment-choice-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .6rem;
+}
+
+.payment-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: .35rem;
+  min-width: 0;
+  padding: .9rem .9rem .9rem 2.6rem;
+  background: #ffffff08;
+  border: 1px solid var(--loot-line);
+  color: var(--loot-body);
+  cursor: pointer;
+  font-weight: 400;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+
+.payment-card:hover {
+  border-color: #d6ff4580;
+}
+
+.payment-card[data-selected] {
+  background: #d6ff4512;
+  border-color: var(--loot-lime);
+  box-shadow: inset 0 0 0 1px var(--loot-lime);
+}
+
+.payment-card[data-unavailable]:not([data-selected]) {
+  opacity: .75;
+}
+
+.payment-card input[type="radio"] {
+  position: absolute;
+  top: 1rem;
+  left: .9rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  min-height: 0;
+  margin: 0;
+  /* Usa la casilla cuadrada propia del sitio (ver «Casillas propias»). */
+}
+
+.payment-card input[type="radio"]:focus-visible {
+  outline: 3px solid var(--loot-lime);
+  outline-offset: 3px;
+}
+
+.payment-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .4rem;
+  color: #fff;
+}
+
+.payment-card-head svg {
+  color: var(--loot-lime);
+}
+
+.payment-card-head em {
+  font-style: normal;
+  font-size: .72rem;
+  font-weight: 800;
+  padding: .1rem .45rem;
+  background: var(--loot-lime);
+  color: #0c0f1e;
+}
+
+.payment-card-take {
+  color: #fff;
+  font-size: .92rem;
+  line-height: 1.35;
+}
+
+.payment-card-take b {
+  color: var(--loot-lime);
+}
+
+.payment-card-note {
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
+.payment-choice-detail {
+  display: grid;
+  gap: .7rem;
+  padding: .9rem;
+  border: 1px solid var(--loot-line);
+  background: #090c19;
+}
+
+.payment-choice-detail p {
+  margin: 0;
+}
+
+.payment-choice-next {
+  color: #fff;
+  font-size: .88rem;
+}
+
+.cart-summary-wallet {
+  display: grid;
+  gap: .6rem;
+  padding: .8rem;
+  border: 1px solid #d6ff4540;
+  background: #d6ff450a;
+}
+
+.cart-summary-wallet p {
+  margin: 0;
+  font-size: .82rem;
+  color: var(--loot-body);
+}
+
+.cart-summary-wallet p strong {
+  color: #fff;
+}
+
+.checkout-wallet-after {
+  margin: .4rem 0 0;
+  color: var(--loot-body);
+  font-size: .82rem;
+  text-align: right;
+}
+
+.checkout-wallet-after b {
+  color: var(--loot-lime);
+}
+
+@media (max-width: 520px) {
+  .payment-choice-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .payment-card {
+    transition: none;
+  }
+}
+
+.wallet-comparison {
+  margin: 0;
+  padding: .6rem .8rem;
+  border-left: 3px solid var(--loot-line);
+  line-height: 1.45;
+}
+
+.wallet-comparison.is-savings {
+  border-left-color: var(--loot-lime);
 }
 
 .canonical-order-status.status-delivered,

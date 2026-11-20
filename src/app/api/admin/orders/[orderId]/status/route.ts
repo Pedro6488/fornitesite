@@ -17,6 +17,9 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ or
   const orders = new SupabaseOrderRepository(staff.database);
   const order = await orders.findById(orderId);
   if (!order) return NextResponse.json({ error: "Pedido no encontrado." }, { status: 404 });
+  if (order.paymentSource === "wallet" && ["awaiting_transfer","information_required","receipt_submitted","transfer_review","payment_pending","refund_pending","refunded","canceled","rejected"].includes(parsed.data.status)) {
+    return NextResponse.json({ error: "Este pedido se pagó con pavos. Sus devoluciones deben corresponder a objetos cuyo rechazo de envío esté confirmado." }, { status: 409 });
+  }
   try {
     const changed = await orders.transition(order.id, order.status, parsed.data.status, { actor_id: staff.user.id, notes: parsed.data.notes });
     return changed ? NextResponse.json({ ok: true }) : NextResponse.json({ error: "El pedido cambió; actualiza antes de continuar." }, { status: 409 });

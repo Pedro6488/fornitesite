@@ -1,9 +1,12 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { CartCheckoutForm } from "./cart-checkout-form";
 
 const commerce = vi.hoisted(() => ({
+  sessionId: "session-a",
+  whatsapp: "525512345678" as string | null,
+  email: "cliente@example.com" as string | null,
   ready: true,
   authenticated: true,
   syncing: false,
@@ -21,7 +24,11 @@ const commerce = vi.hoisted(() => ({
   openIdentity: vi.fn(),
   removeCartItem: vi.fn().mockResolvedValue(null),
   clearCart: vi.fn(),
+  refresh: vi.fn().mockResolvedValue(undefined),
 }));
+const wallet = vi.hoisted(() => ({ balance:1000, frozen:false, paused:false, rate:null as number | null, bonuses:[] as unknown[] }));
+const quoteExtras = vi.hoisted(() => ({ walletAllowed: true }));
+vi.mock("@/features/wallet/components/use-wallet", () => ({ useWallet:() => ({ data:{ balance:wallet.balance,frozen:wallet.frozen,paused:wallet.paused,automaticDelivery:true,bonuses:wallet.bonuses,rates:[{ region:"mx",active:true,cents_per_100:wallet.rate }] },error:null }) }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/features/commerce/components/commerce-state-provider", () => ({ useCommerceState: () => commerce }));
@@ -33,7 +40,136 @@ const item: CatalogItem = {
 };
 
 describe("CartCheckoutForm", () => {
-  beforeEach(() => { commerce.authenticated = true; });
+  beforeEach(() => {
+    commerce.authenticated = true;
+    wallet.balance=1000; wallet.frozen=false; wallet.paused=false; wallet.rate=null; wallet.bonuses=[]; quoteExtras.walletAllowed=true;
+    commerce.sessionId = "session-a";
+    commerce.whatsapp = "525512345678";
+    commerce.email = "cliente@example.com";
+    vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () => url === "/api/cart-orders" ? { order:{ id:"order-a",publicToken:"public-token" } } : url === "/api/customer-email" ? {} : { quote: {
+      id: "quote-a", currency: "MXN", amountMxnCents: 4000, expiresAt: "2099-01-01T00:00:00Z", lines: [{ itemMainId: "item-a", name: "Objeto vigente", vbucksPrice: 500, amountMxnCents: 4000, walletAllowed: quoteExtras.walletAllowed }],
+    } } })));
+  });
+
+  async function openContact() {
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar precio y continuar" }));
+    return screen.findByLabelText("WhatsApp de contacto");
+  }
+
+  it("no permite pagar ni enviar si los pavos no cubren todo el pedido", async () => {
+    wallet.balance=100;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).toHaveAccessibleName(/Necesitas 500 pavos.*tienes 100.*Te faltan 400 pavos/);
+    expect(screen.getByText("Te faltan").parentElement).toHaveTextContent("400");
+    expect(screen.getByRole("link",{ name:"Recargar 400 pavos" })).toHaveAttribute("href","/pavos?cantidad=400#recargar");
+  });
+
+  it("si el saldo alcanza, propone pagar con pavos y dice qué se descuenta y cuánto queda", async () => {
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).toBeChecked();
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).toHaveAccessibleName(/Se descuentan 500 pavos de tus 1,000/);
+    expect(screen.getByRole("radio",{ name:/Transferencia bancaria/ })).toHaveAccessibleName(/Pagas \$40 .*No toca tu saldo/);
+    expect(screen.getByText("Te quedan").parentElement).toHaveTextContent("500");
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeEnabled();
+  });
+
+  it("si el saldo no alcanza, propone el pago habitual", async () => {
+    wallet.balance=100;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByRole("radio",{ name:/Transferencia bancaria/ })).toBeChecked();
+    expect(screen.getByRole("button",{ name:"Confirmar pedido" })).toBeEnabled();
+  });
+
+  it("bloquea el pago con pavos si la cuenta está congelada aunque alcance el saldo", async () => {
+    wallet.frozen=true;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
+    expect(screen.getByText(/no se puede usar por ahora/)).toBeInTheDocument();
+  });
+
+  it("bloquea el pago con pavos mientras está pausado por una falla de la cuenta emisora", async () => {
+    wallet.paused=true;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
+    expect(screen.getByText(/está pausado unos minutos/)).toBeInTheDocument();
+  });
+
+  it("anuncia la promoción vigente de pavos a quien no le alcanza el saldo", async () => {
+    wallet.balance=100;
+    wallet.bonuses=[{ id:"b1",region:"mx",label:"Noviembre",min_vbucks:5000,bonus_bp:500,bonus_cap:null,first_topup_only:false,ends_at:"2099-11-30T23:00:00Z" }];
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByText(/recarga desde 5,000 pavos y recibe \+5% de regalo/)).toBeInTheDocument();
+  });
+
+  it("muestra cuánto ahorra con pavos solo cuando de verdad conviene", async () => {
+    wallet.rate=500;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByText(/Con pavos ahorras/)).toHaveTextContent("$15.00 MXN");
+  });
+
+  it("avisa cuando el pago habitual sale más barato que los pavos", async () => {
+    wallet.rate=1000;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    expect(screen.getByText(/el pago habitual sale más barato/)).toBeInTheDocument();
+    expect(screen.queryByText(/Con pavos ahorras/)).not.toBeInTheDocument();
+  });
+
+  it("bloquea pavos si un objeto tiene precio especial sin pavos", async () => {
+    quoteExtras.walletAllowed=false;
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeDisabled();
+    expect(screen.getByText(/tiene precio especial y no se puede pagar con pavos/)).toBeInTheDocument();
+  });
+
+  it("envía únicamente el método pavos y permite volver al pago habitual",async () => {
+    render(<CartCheckoutForm items={[item]} />); await openContact();
+    const external=screen.getByRole("radio",{ name:/Transferencia bancaria/ });
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
+    expect(external).not.toBeChecked();
+    expect(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" })).toBeEnabled();
+    fireEvent.click(external);
+    expect(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ })).not.toBeChecked();
+    fireEvent.click(screen.getByRole("radio",{ name:/Mis pavos de la tienda/ }));
+    fireEvent.click(screen.getByRole("button",{ name:"Pagar con mis pavos y enviar" }));
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/cart-orders",expect.objectContaining({ body:expect.stringContaining('"paymentSource":"wallet"') })));
+  });
+
+  it("autocompleta el correo y permite editarlo sin trasladarlo a otra sesión", async () => {
+    const { rerender } = render(<CartCheckoutForm items={[item]} />);
+    await openContact();
+    const input = screen.getByRole("textbox", { name: /Correo electrónico/ });
+    expect(input).toHaveValue("cliente@example.com");
+    fireEvent.change(input, { target: { value: "nuevo@example.com" } });
+    expect(input).toHaveValue("nuevo@example.com");
+    commerce.sessionId = "session-b";
+    commerce.email = null;
+    rerender(<CartCheckoutForm items={[item]} />);
+    expect(input).toHaveValue("");
+  });
+
+  it("recupera el teléfono guardado y limita las modificaciones a doce dígitos", async () => {
+    render(<CartCheckoutForm items={[item]} />);
+    const input = await openContact();
+    expect(input).toHaveValue("525512345678");
+    expect(input).toHaveAttribute("maxlength", "12");
+    fireEvent.change(input, { target: { value: "+52 (55) 9876-5432 999" } });
+    expect(input).toHaveValue("525598765432");
+  });
+
+  it("no reutiliza un teléfono editado al cambiar de sesión", async () => {
+    const { rerender } = render(<CartCheckoutForm items={[item]} />);
+    const input = await openContact();
+    fireEvent.change(input, { target: { value: "5512345678" } });
+    commerce.sessionId = "session-b";
+    commerce.whatsapp = null;
+    rerender(<CartCheckoutForm items={[item]} />);
+    expect(input).toHaveValue("");
+  });
 
   it("mantiene la sesión activa fuera del contenido del checkout", () => {
     render(<CartCheckoutForm items={[item]} />);

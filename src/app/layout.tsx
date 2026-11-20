@@ -11,7 +11,7 @@ import "./site-system.css";
 export const metadata: Metadata = {
   title: "SigfriedLootBox",
   icons: { icon: "/games/logofin.png", apple: "/games/logofin.png" },
-  description: "Objetos de Fortnite, diamantes de Free Fire y códigos de Robux. Elige tu juego y encuentra tu próximo loot en SigfriedLootBox.",
+  description: "Objetos de Fortnite. Encuentra tu loot en SigfriedLootBox.",
 };
 export const viewport: Viewport = {
   width: "device-width",

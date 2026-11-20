@@ -1,0 +1,48 @@
+{
+  "devName": "[VIRTUAL]1 x Rivian R1S for 400 MtxCurrency",
+  "offerId": "v2:/ecab8d09be3ee9d091800014dfc35d8e1999eebb62ec91a6dd84fbeeb6ba6f83",
+  "finalPrice": 400,
+  "regularPrice": 400,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "banner": null,
+  "layout": null,
+  "offerTag": null,
+  "tileSize": "Size_3_x_1",
+  "colors": {
+    "color1": "767aa9ff",
+    "color3": "2d2e42ff",
+    "textBackgroundColor": "2d2e42ff"
+  },
+  "newDisplayAsset": null,
+  "brItems": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Wheel_Sheepbolt01",
+      "name": "Rivian R1S",
+      "type": {
+        "value": "wheel",
+        "displayValue": "Rueda",
+        "backendValue": "VehicleCosmetics_Wheel"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_sheepbolt01/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_sheepbolt01/large.png"
+      },
+      "vehicle": "VCID_Wheel_Sheepbolt01"
+    }
+  ],
+  "instruments": null
+}

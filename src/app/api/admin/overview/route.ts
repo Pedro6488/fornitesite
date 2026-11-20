@@ -65,14 +65,16 @@ export async function GET(request: Request) {
 /** Contadores ligeros para la barra de navegación. */
 async function counts(database: SupabaseClient) {
   const open = [...statusesOf("payment"), ...statusesOf("deliver"), ...statusesOf("problem")];
-  const [orders, validations] = await Promise.all([
+  const [orders, validations, topups] = await Promise.all([
     fetchAll<Pick<OrderRow, "status">>((from, to) => database.from("orders").select("status").in("status", open).range(from, to)),
     pendingValidations(database),
+    // Recargas de pavos con comprobante, esperando que el admin las libere. Sin la migración de pavos cuenta 0.
+    database.from("wallet_topups").select("id", { count: "exact", head: true }).eq("status", "submitted"),
   ]);
   const count = (statuses: readonly OrderStatus[]) => orders.filter((order) => statuses.includes(order.status)).length;
   const recipients = buildOperationsOverview({ orders: [], validations: validations.map(toValidation), now: new Date(), days: 7 }).queues.recipients.count;
   return NextResponse.json({
-    counts: { receipts: count(RECEIPT_REVIEW_STATUSES), deliver: count(statusesOf("deliver")), problem: count(statusesOf("problem")), recipients },
+    counts: { receipts: count(RECEIPT_REVIEW_STATUSES), deliver: count(statusesOf("deliver")), problem: count(statusesOf("problem")), recipients, topups: topups.error ? 0 : topups.count ?? 0 },
     fnshop: await fnShopQuota(database),
   });
 }

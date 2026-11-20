@@ -3,20 +3,18 @@
 import Image from "next/image";
 import { ArrowDown, ArrowRight, ShieldCheck } from "lucide-react";
 import type { CSSProperties } from "react";
-import { FREE_FIRE_STARTING_PRICE, ROBLOX_STARTING_PRICE, formatStoreMxn } from "../games";
-import { ContinueGameLink } from "./continue-game-link";
+
 import { GameStageBackdrop, StageRail, useStageRotation } from "./game-stage";
 import stage from "./game-stage.module.css";
 import { StorefrontLink as Link } from "./storefront-link";
 import styles from "./home-hero.module.css";
 
-const SLIDES = [
+const FALLBACK_SLIDES = [
   { id: "fortnite", name: "Fortnite", word: "FORTNITE", accent: "#a855f7", image: "/games/fortnite.jpg", artClass: stage.artFortnite, href: "/fortnite#catalogo", kicker: "Tu estilo salta del bus", detail: "Objetos de la tienda", action: "Explorar objetos" },
-  { id: "free-fire", name: "Free Fire", word: "FREE FIRE", accent: "#f97316", image: "/games/free-fire.jpg", artClass: stage.artFreeFire, href: "/free-fire", kicker: "Listo para el Booyah", detail: `Diamantes desde ${formatStoreMxn(FREE_FIRE_STARTING_PRICE)} MXN`, action: "Ver diamantes" },
-  { id: "roblox", name: "Roblox", word: "ROBLOX", accent: "#e8b94a", image: "/games/robux.png", artClass: stage.artRoblox, href: "/roblox", kicker: "Imagina lo que sigue", detail: `Robux desde ${formatStoreMxn(ROBLOX_STARTING_PRICE)} MXN`, action: "Ver Robux" }
 ] as const;
 
-export function HomeHero() {
+export function HomeHero({ items }: { items: readonly { id: string; name: string; image: string }[] }) {
+  const SLIDES = items.length ? items.map((item) => ({ ...FALLBACK_SLIDES[0], ...item, artClass: styles.catalogArt, href: `/objetos/${encodeURIComponent(item.id)}`, detail: "Objeto del catalogo", action: "Ver objeto" })) : FALLBACK_SLIDES;
   const { activeIndex, rotating, select, interactionProps } = useStageRotation(SLIDES.length);
   const active = SLIDES[activeIndex];
 
@@ -30,8 +28,8 @@ export function HomeHero() {
           <h1 id="home-title" className={`${stage.title} ${styles.title}`}>Tu próximo<br /><span>drop</span> está<br className={styles.titleBreak} /> aquí<span>.</span></h1>
           <p className={`${stage.lead} ${styles.lead}`}>Tu squad reconoce tu nombre. <strong>Que también reconozca tu estilo.</strong></p>
           <div className={styles.actions}>
-            <ContinueGameLink className={stage.cta} />
-            <a href="#juegos" className={styles.secondary}>Todos los juegos <ArrowDown size={17} aria-hidden="true" /></a>
+            <Link href="/fortnite#catalogo" className={stage.cta}>Explorar Fortnite <ArrowRight size={19} aria-hidden="true" /></Link>
+            <a href="#referencias" className={styles.secondary}>Ver referencias <ArrowDown size={17} aria-hidden="true" /></a>
           </div>
           <p className={styles.reassurance}><ShieldCheck size={15} aria-hidden="true" /> Tu contraseña se queda contigo.</p>
         </div>

@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { LineDelivery, Order, OrderLine, OrderRepository, OrderStatus, SupervisorStatus } from "../domain/order";
 
 type OrderRow = {
+  payment_source?: "external" | "wallet"; wallet_vbucks?: number | null;
   id: string; public_token: string; status: OrderStatus; customer_email: string | null; epic_account_id: string;
   epic_display_name: string; item_main_id: string; offer_id: string; item_name: string; item_image_url: string | null;
   vbucks_price: number; amount_mxn_cents: number; currency?: "MXN" | "USD"; subtotal_usd_cents?: number | null; paypal_fee_usd_cents?: number | null; amount_usd_cents?: number | null; payment_method: "mercado_pago" | "bank_transfer"; created_at: string;
@@ -10,7 +11,7 @@ type OrderRow = {
   contact_whatsapp?: string | null;
   metadata?: { notes?: string | null } | null;
   delivery_feedback?: { created_at: string } | { created_at: string }[] | null;
-  order_items?: { id?: string; item_name: string; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null; vbucks_price: number }[];
+  order_items?: { id?: string; item_name: string; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null; vbucks_price: number; wallet_refunded?: boolean }[];
   fulfillments?: { order_item_id: string | null; status: string }[] | null;
 };
 
@@ -21,7 +22,7 @@ function lineDelivery(status: string | undefined): LineDelivery | null {
   return "pending";
 }
 
-const ORDER_WITH_ITEMS = "*,order_items(id,item_name,quantity,unit_amount_mxn_cents,unit_amount_usd_cents,vbucks_price),delivery_feedback(created_at),fulfillments(order_item_id,status)";
+const ORDER_WITH_ITEMS = "*,order_items(id,item_name,quantity,unit_amount_mxn_cents,unit_amount_usd_cents,vbucks_price,wallet_refunded),delivery_feedback(created_at),fulfillments(order_item_id,status)";
 
 export class SupabaseOrderRepository implements OrderRepository {
   constructor(private readonly database: SupabaseClient) {}
@@ -56,11 +57,11 @@ export class SupabaseOrderRepository implements OrderRepository {
 function mapRow(row: OrderRow): Order {
   const deliveryFeedback = Array.isArray(row.delivery_feedback) ? row.delivery_feedback[0] : row.delivery_feedback;
   const deliveryByItem = new Map((row.fulfillments ?? []).filter((entry) => entry.order_item_id).map((entry) => [entry.order_item_id!, entry.status]));
-  return { id: row.id, publicToken: row.public_token, status: row.status, customerEmail: row.customer_email,
+  return { paymentSource: row.payment_source ?? "external", walletVbucks: row.wallet_vbucks ?? null, id: row.id, publicToken: row.public_token, status: row.status, customerEmail: row.customer_email,
     epicAccountId: row.epic_account_id, epicDisplayName: row.epic_display_name, itemMainId: row.item_main_id,
     offerId: row.offer_id, itemName: row.item_name, itemImageUrl: row.item_image_url, vbucksPrice: row.vbucks_price,
     amountMxnCents: row.amount_mxn_cents, currency: row.currency ?? "MXN", subtotalUsdCents: row.subtotal_usd_cents ?? null, paypalFeeUsdCents: row.paypal_fee_usd_cents ?? null, amountUsdCents: row.amount_usd_cents ?? null, paymentMethod: row.payment_method, recipientPlatform: row.recipient_platform,
     contactWhatsapp: row.contact_whatsapp, supervisorStatus: row.supervisor_status ?? "pending_confirmation",
     statusNote: row.metadata?.notes ?? null, deliveryFeedbackSubmittedAt: deliveryFeedback?.created_at ?? null,
-    items: (row.order_items?.map((item): OrderLine => ({ itemName: item.item_name, quantity: item.quantity, unitAmountMxnCents: item.unit_amount_mxn_cents, unitAmountUsdCents: item.unit_amount_usd_cents ?? null, vbucksPrice: item.vbucks_price, delivery: item.id ? lineDelivery(deliveryByItem.get(item.id)) : null })) ?? [{ itemName: row.item_name, quantity: 1, unitAmountMxnCents: row.amount_mxn_cents, vbucksPrice: row.vbucks_price }]), createdAt: row.created_at };
+    items: (row.order_items?.map((item): OrderLine => ({ itemName: item.item_name, quantity: item.quantity, unitAmountMxnCents: item.unit_amount_mxn_cents, unitAmountUsdCents: item.unit_amount_usd_cents ?? null, vbucksPrice: item.vbucks_price, delivery: item.wallet_refunded ? "refunded" : item.id ? lineDelivery(deliveryByItem.get(item.id)) : null })) ?? [{ itemName: row.item_name, quantity: 1, unitAmountMxnCents: row.amount_mxn_cents, vbucksPrice: row.vbucks_price }]), createdAt: row.created_at };
 }

@@ -135,8 +135,19 @@ async function mergeUserCommerce(database: SupabaseClient, currentSessionId: str
   }
 
   const { data: sessionStates } = await database.from("commerce_sessions")
-    .select("id,active_game_id_validation_id")
-    .in("id", [canonicalSessionId, ...sourceIds]) as { data: { id: string; active_game_id_validation_id: string | null }[] | null };
+    .select("id,active_game_id_validation_id,whatsapp,last_seen_at")
+    .in("id", [canonicalSessionId, ...sourceIds]) as { data: { id: string; active_game_id_validation_id: string | null; whatsapp: string | null; last_seen_at: string }[] | null };
+
+  // Keep the saved contact when sign-in merges devices or an anonymous session.
+  const canonicalPhone = sessionStates?.find((entry) => entry.id === canonicalSessionId)?.whatsapp;
+  if (!canonicalPhone) {
+    const savedPhone = sessionStates?.filter((entry) => entry.whatsapp)
+      .sort((left, right) => Date.parse(right.last_seen_at) - Date.parse(left.last_seen_at))[0]?.whatsapp;
+    if (savedPhone) {
+      const { error } = await database.from("commerce_sessions").update({ whatsapp: savedPhone }).eq("id", canonicalSessionId);
+      if (error) throw error;
+    }
+  }
 
   const { data: sourceFavorites } = await database.from("customer_favorites").select("item_main_id").in("commerce_session_id", sourceIds);
   if (sourceFavorites?.length) {

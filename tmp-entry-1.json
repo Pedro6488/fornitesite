@@ -1,0 +1,190 @@
+{
+  "devName": "[VIRTUAL]1 x Cap'n Hatsune Miku, 1 x Miku's Treasure, 1 x Miku's Anchor Floatie, 1 x Miku Miku ni Shite Ageru♪, 1 x Miku's Mic, 1 x Miku's Mic, 1 x Miku's Mic, 1 x TBD (SID_Placeholder_991) for -1 MtxCurrency",
+  "offerId": "v2:/8f114946b8d166af6a3f7ae3ed7b1ae75c6a1e9c1d9508c258080c01d88a2365",
+  "finalPrice": 2200,
+  "regularPrice": 4100,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": null,
+  "banner": {
+    "value": "Nuevo",
+    "intensity": "High",
+    "backendValue": "New"
+  },
+  "layout": {
+    "id": "PirateCactus1",
+    "name": "Hatsune Miku",
+    "index": 10,
+    "rank": 198,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "billboard",
+    "textureMetadata": [
+      {
+        "key": "background",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_BG-51b2afe6.png"
+      },
+      {
+        "key": "foreground",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_Character-b5b3f6cd.png"
+      },
+      {
+        "key": "foreground_juno",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_Figure-6a0123ce.png"
+      },
+      {
+        "key": "bodyImage",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_Itemstack-84b2a468.png"
+      }
+    ],
+    "stringMetadata": [
+      {
+        "key": "alignment",
+        "value": "left"
+      },
+      {
+        "key": "highlightEnabled",
+        "value": "true"
+      },
+      {
+        "key": "parallaxEnabled",
+        "value": "true"
+      },
+      {
+        "key": "titleColorA",
+        "value": "FFFFFF"
+      },
+      {
+        "key": "titleColorB",
+        "value": "FFFFFF"
+      }
+    ],
+    "textMetadata": [
+      {
+        "key": "cta",
+        "value": "Ver oferta"
+      },
+      {
+        "key": "subtitle",
+        "value": "Lote de 6 objetos"
+      },
+      {
+        "key": "title",
+        "value": "Capitana Hatsune Miku"
+      }
+    ]
+  },
+  "offerTag": null,
+  "tileSize": "Size_4_x_1",
+  "colors": {
+    "color1": "10d8e0ff",
+    "color2": "93f9ffff",
+    "color3": "0ab8d0ff",
+    "textBackgroundColor": "35c0b9ff"
+  },
+  "newDisplayAsset": null,
+  "brItems": [
+    {
+      "id": "Character_PeonyPizza",
+      "name": "Capitana Hatsune Miku",
+      "type": "Atuendo",
+      "rarity": "Serie de ídolos",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/character_peonypizza/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/character_peonypizza/icon.png",
+        "featured": "https://fortnite-api.com/images/cosmetics/br/character_peonypizza/featured.png",
+        "lego": {
+          "small": "https://fortnite-api.com/images/cosmetics/lego/character_peonypizza/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/lego/character_peonypizza/large.png",
+          "wide": "https://fortnite-api.com/images/cosmetics/lego/character_peonypizza/wide.png"
+        }
+      }
+    },
+    {
+      "id": "Backpack_PeonyPizza",
+      "name": "Tesoro de Miku",
+      "type": "Mochila retro",
+      "rarity": "Serie de ídolos",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/backpack_peonypizza/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/backpack_peonypizza/icon.png",
+        "featured": "https://fortnite-api.com/images/cosmetics/br/backpack_peonypizza/featured.png"
+      }
+    },
+    {
+      "id": "Pickaxe_PeonyPizza",
+      "name": "Flotador de ancla de Miku",
+      "type": "Pico",
+      "rarity": "Serie de ídolos",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_peonypizza/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_peonypizza/icon.png",
+        "featured": "https://fortnite-api.com/images/cosmetics/br/pickaxe_peonypizza/featured.png"
+      }
+    },
+    {
+      "id": "EID_PeonyPizza",
+      "name": "Miku Miku ni Shite Ageru♪",
+      "type": "Gesto",
+      "rarity": "Serie de ídolos",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/eid_peonypizza/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/eid_peonypizza/icon.png"
+      }
+    },
+    {
+      "id": "Backpack_PeonyPizza_Mic",
+      "name": "Voz de Miku",
+      "type": "Mochila retro",
+      "rarity": "Serie de ídolos",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/backpack_peonypizza_mic/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/backpack_peonypizza_mic/icon.png",
+        "featured": "https://fortnite-api.com/images/cosmetics/br/backpack_peonypizza_mic/featured.png"
+      }
+    },
+    {
+      "id": "Pickaxe_PeonyPizza_Mic",
+      "name": "Voz de Miku",
+      "type": "Pico",
+      "rarity": "Serie de ídolos",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_peonypizza_mic/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_peonypizza_mic/icon.png",
+        "featured": "https://fortnite-api.com/images/cosmetics/br/pickaxe_peonypizza_mic/featured.png"
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "id": "sid_placeholder_991",
+      "title": "CONNECT:COMMUNE",
+      "albumArt": "https://cdn.fortnite-api.com/tracks/b0a043a9cc2b61f9.jpg"
+    }
+  ],
+  "cars": null,
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_PeonyPizza_Mic",
+      "name": "Voz de Miku",
+      "type": {
+        "value": "mic",
+        "displayValue": "Micrófono",
+        "backendValue": "SparksMic"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_peonypizza_mic/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_peonypizza_mic/large.png"
+      }
+    }
+  ]
+}

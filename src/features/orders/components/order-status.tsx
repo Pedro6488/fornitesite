@@ -6,6 +6,7 @@ import { formatMxn, formatUsdCents, PAYPAL_FEE_USD_CENTS } from "@/features/pric
 import { PurchaseConfetti } from "@/shared/components/purchase-confetti";
 import { SystemActionBar } from "@/shared/components/system-action-bar";
 import { BackButton } from "@/shared/components/back-button";
+import { toStore } from "@/features/wallet/domain/wallet-whatsapp";
 
 const statusCopy: Record<OrderState, string> = {
   draft: "Preparando pedido",
@@ -51,19 +52,23 @@ export function OrderStatus({
   const [deliveryFeedbackMessage, setDeliveryFeedbackMessage] = useState<string | null>(null);
   const [submittingDeliveryFeedback, setSubmittingDeliveryFeedback] = useState(false);
   const [deliveryFeedbackSubmitted, setDeliveryFeedbackSubmitted] = useState(Boolean(initialOrder.deliveryFeedbackSubmittedAt));
-  const isUsdOrder = order.currency === "USD";
-  const totalLabel = isUsdOrder
+  const isWalletOrder = order.paymentSource === "wallet";
+  const isUsdOrder = order.currency === "USD" && !isWalletOrder;
+  const refundedVbucks = isWalletOrder ? (order.items ?? []).filter((item) => item.delivery === "refunded").reduce((sum, item) => sum + (item.vbucksPrice ?? 0), 0) : 0;
+  const totalLabel = isWalletOrder ? `${order.walletVbucks?.toLocaleString("es-MX")} pavos` : isUsdOrder
     ? `${formatUsdCents(order.amountUsdCents ?? 0)} USD`
     : formatMxn(order.amountMxnCents / 100);
   const canUpload =
-    order.status === "awaiting_transfer" ||
-    order.status === "information_required";
+    !isWalletOrder && (order.status === "awaiting_transfer" ||
+    order.status === "information_required");
   const whatsappHref = useMemo(() => {
     if (!whatsappNumber) return null;
     const tracking = `${appUrl}/pedidos/${order.id}?access=${order.publicToken}`;
-    const copy = `Hola, necesito ayuda con el pedido ${order.id.slice(0, 8).toUpperCase()}. Seguimiento: ${tracking}`;
+    const copy = refundedVbucks > 0
+      ? toStore.refunded({ orderId: order.id, vbucks: refundedVbucks, url: tracking })
+      : `Hola, necesito ayuda con el pedido ${order.id.slice(0, 8).toUpperCase()}. Seguimiento: ${tracking}`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(copy)}`;
-  }, [appUrl, order.id, order.publicToken, whatsappNumber]);
+  }, [appUrl, order.id, order.publicToken, refundedVbucks, whatsappNumber]);
   async function refresh(showLoading = false) {
     if (showLoading) setLoading(true);
     try {
@@ -161,12 +166,13 @@ export function OrderStatus({
       <div className="order-items-summary">
         {(order.items ?? []).map((item, index) => (
           <p key={`${item.itemName}-${index}`}>
-            <span>{item.itemName}{item.delivery && order.status !== "delivered" && <small className={`order-item-delivery is-${item.delivery}`}>{item.delivery === "sent" ? "✓ Enviado" : item.delivery === "sending" ? "Enviando…" : "Pendiente"}</small>}</span>
-            <strong>{isUsdOrder ? `${formatUsdCents(item.unitAmountUsdCents ?? 0)} USD` : formatMxn(item.unitAmountMxnCents / 100)}</strong>
+            <span>{item.itemName}{item.delivery && (order.status !== "delivered" || item.delivery === "refunded") && <small className={`order-item-delivery is-${item.delivery}`}>{item.delivery === "refunded" ? "Pavos devueltos" : item.delivery === "sent" ? "✓ Enviado" : item.delivery === "sending" ? "Enviando…" : "Pendiente"}</small>}</span>
+            <strong>{isWalletOrder ? `${item.vbucksPrice} pavos` : isUsdOrder ? `${formatUsdCents(item.unitAmountUsdCents ?? 0)} USD` : formatMxn(item.unitAmountMxnCents / 100)}</strong>
           </p>
         ))}
         {isUsdOrder && <p><span>Comisión PayPal</span><strong>{formatUsdCents(order.paypalFeeUsdCents ?? PAYPAL_FEE_USD_CENTS)} USD</strong></p>}
       </div>
+      {refundedVbucks > 0 && <p className="notice" role="status">No pudimos enviar algunos objetos, así que devolvimos <strong>{refundedVbucks.toLocaleString("es-MX")} pavos</strong> a tu saldo. Ya puedes usarlos en tu próxima compra desde <a href="/pavos">Mis pavos</a>.{whatsappHref && <> Si necesitas ayuda, <a href={whatsappHref} target="_blank" rel="noreferrer" onClick={() => void trackWhatsapp()}>escríbenos por WhatsApp</a>.</>}</p>}
       <div className="recipient-id-notice">
         <span>
           {order.status === "manual_review"
@@ -184,7 +190,10 @@ export function OrderStatus({
       <div className="order-status-side">
       <div className={`canonical-order-status status-${order.status}`}>
         <span>ESTADO DEL PEDIDO</span>
-        <strong>{statusCopy[order.status]}</strong>
+        <strong>{isUsdOrder && order.status === "awaiting_transfer" ? "Pendiente de pago por PayPal" : statusCopy[order.status]}</strong>
+        {isWalletOrder && <p>Pagado con tus pavos de la tienda. El envío se procesa automáticamente, sin revisión de transferencia.</p>}
+        {isWalletOrder && order.statusNote && <p>{order.statusNote}</p>}
+        {(order.status === "receipt_submitted" || order.status === "transfer_review") && <p>Tu pago está en revisión. Una vez que se vea reflejado, enviaremos tu pedido en un plazo de 1 a 10 minutos. Gracias por tu paciencia.</p>}
       </div>
       {order.status === "canceled" && (
         <div className="order-cancellation-note" role="status">
@@ -216,10 +225,10 @@ export function OrderStatus({
                 <strong>{bank.concept}</strong>
               </p>
             </>}
-            <p>
+            {isUsdOrder && <p>
               <span>PayPal</span>
               <strong>{bank.paypal}</strong>
-            </p>
+            </p>}
             <small>
               Usa el folio PEDIDO-{order.id.slice(0, 8).toUpperCase()} en la
               nota o comprobante.

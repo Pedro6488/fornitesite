@@ -1,0 +1,25 @@
+.section { max-width: 1400px; margin: auto; padding: 2.5rem clamp(20px, 4vw, 60px) 3rem; scroll-margin-top: 100px; }
+.header { display: flex; justify-content: space-between; align-items: end; gap: 1.5rem; margin-bottom: 1.5rem; }
+.header p { color: #d6ff45; font-weight: 800; font-size: .8rem; letter-spacing: .15em; }
+.header h2 { font-family: 'Loot Display', Impact, sans-serif; font-size: clamp(2rem, 4vw, 4rem); line-height: 1; margin: 0; }
+.header a { display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; }
+.track { --card-width: clamp(260px, 28vw, 340px); display: flex; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; position: relative; padding: .25rem max(0px, calc(100% - var(--card-width))) 1rem 0; scrollbar-width: thin; scrollbar-color: #a855f7 #191526; }
+.card { flex: 0 0 var(--card-width); min-width: 0; scroll-snap-align: start; background: linear-gradient(130deg, #21163a, #101425); border: 1px solid #a855f766; border-radius: 1.25rem; overflow: hidden; }
+.card :global(.reference-stage) { height: 380px; aspect-ratio: auto; border-radius: 0; }
+.card :global(.reference-stage-image) { object-fit: contain; }
+.card :global(.reference-thumbs) { display: none; }
+.card > div:first-child { min-width: 0; }
+.body { padding: 1.25rem; display: flex; flex-direction: column; align-items: start; min-width: 0; overflow-wrap: anywhere; }
+.verified { display: inline-flex; align-items: center; gap: .5rem; color: #d6ff45; font-size: .85rem; }
+.body blockquote { margin: 1rem 0; font-size: 1rem; line-height: 1.5; white-space: pre-wrap; }
+.body ul { padding-left: 1.2rem; color: #b9c3dd; line-height: 1.7; }
+.body strong { margin-top: 1rem; }
+.body time { color: #a9b4cf; margin-top: .4rem; font-size: .85rem; }
+.placeholder { min-height: 300px; display: grid; place-items: center; background: radial-gradient(ellipse, #7133b477, transparent); color: #d6ff45; }
+.controls { display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin-top: 1.25rem; color: #b9c3dd; }
+.controls button { display: grid; place-items: center; padding: .75rem; background: #d6ff45; color: #101425; border: 0; cursor: pointer; }
+.section a:focus-visible, .controls button:focus-visible { outline: 3px solid #d6ff45; outline-offset: 5px; }
+.empty { text-align: center; padding: 3rem 1rem; border: 1px solid #a855f755; background: #151326; }
+.empty svg { color: #d6ff45; }
+.empty p { color: #b9c3dd; }
+@media(max-width: 760px) { .header { align-items: start; flex-direction: column; } .card { grid-template-columns: 1fr; } }

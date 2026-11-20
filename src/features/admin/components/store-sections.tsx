@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ReferenceUpload } from "./reference-upload";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
 import { AdminPageHeader } from "./admin-shell";
@@ -9,8 +10,9 @@ import { useAdminData, useAdminRequest } from "./use-admin-request";
 type Cart = { id: string; status: string; updated_at: string; abandoned: boolean; estimatedAmountMxnCents: number; shopping_cart_items: { item_main_id: string }[]; validation: null | { display_name: string; platform: string; status: string }; commerce_sessions: null | { whatsapp: string | null; user_id: string | null; merged_into: string | null } };
 type FavoriteDetail = { item_main_id: string; itemName: string; commerce_session_id: string; created_at: string; commerce_sessions: null | { user_id: string | null } };
 type PriceRule = { id: string; min_vbucks: number; max_vbucks: number | null; mxn_per_hundred: number | string; active: boolean; effective_from: string; effective_until: string | null };
-type PriceOverride = { id: string; main_id: string; amount_mxn_cents: number; active: boolean; effective_from: string; effective_until: string | null };
-type CatalogOption = { mainId: string; name: string; type: string; imageUrl?: string | null; collaboration?: string | null };
+type PriceOverride = { id: string; main_id: string; amount_mxn_cents: number; active: boolean; effective_from: string; effective_until: string | null; wallet_allowed?: boolean };
+type WalletRateInfo = { cents_per_100: number | null; active: boolean } | null;
+type CatalogOption = { mainId: string; name: string; type: string; imageUrl?: string | null; collaboration?: string | null; finalPriceVbucks?: number };
 type CustomerRankingEntry = { recipientName: string; customerEmail: string | null; deliveredOrders: number };
 type DeliveryReference = { id: string; recipientName: string; recipientId: string; comment: string | null; createdAt: string; imageUrls: string[]; items: { item_name: string; item_image_url: string | null; quantity: number }[] };
 
@@ -44,9 +46,9 @@ export function AdminFavorites() {
 
 export function AdminPrices() {
   const request = useAdminRequest();
-  const { data, error, loading, reload } = useAdminData<{ rules?: PriceRule[]; overrides?: PriceOverride[] }>("/api/admin/prices");
+  const { data, error, loading, reload } = useAdminData<{ rules?: PriceRule[]; overrides?: PriceOverride[]; walletRate?: WalletRateInfo }>("/api/admin/prices");
   return <StoreSection title="Precios" lead="Tarifa por rango de paVos y precios especiales por objeto." error={error} loading={loading} ready={Boolean(data)} loadingText="Cargando precios…" reload={reload}>
-    <Prices data={{ rules: data?.rules ?? [], overrides: data?.overrides ?? [] }} request={request} reload={reload} />
+    <Prices data={{ rules: data?.rules ?? [], overrides: data?.overrides ?? [], walletRate: data?.walletRate ?? null }} request={request} reload={reload} />
   </StoreSection>;
 }
 
@@ -66,7 +68,8 @@ export function AdminCustomers() {
 
 export function AdminReferences() {
   const { data, error, loading, reload } = useAdminData<{ references?: DeliveryReference[] }>("/api/admin/references");
-  return <StoreSection title="Referencias" lead="Evidencias que envían los clientes después de recibir su regalo." error={error} loading={loading} ready loadingText="" reload={reload}>
+  return <StoreSection title="Referencias" lead="Publica capturas de confirmación en el inicio y en Referencias." error={error} loading={loading} ready loadingText="" reload={reload}>
+    <ReferenceUpload onPublished={reload} />
     <References references={data ? data.references ?? [] : null} />
   </StoreSection>;
 }
@@ -115,7 +118,7 @@ function Favorites({ ranking, favorites }: { ranking: { itemMainId: string; item
   return <div className="admin-data-list"><section className="admin-favorites-panel"><header><div><p className="eyebrow">POPULARIDAD</p><h2>Objetos más guardados</h2></div><span>{ranking.reduce((total, item) => total + item.count, 0)} favoritos</span></header>{ranking.length === 0 ? <p className="notice">Todavía no hay favoritos.</p> : <div className="favorite-ranking-list">{ranking.map((item, index) => <article key={item.itemMainId}><span className="favorite-rank">#{index + 1}</span><span><strong title={item.itemMainId}>{item.itemName}</strong><small>{item.itemMainId}</small></span><b>{item.count}</b></article>)}</div>}</section>{favorites.length > 0 && <section className="admin-favorites-panel"><header><div><p className="eyebrow">ACTIVIDAD</p><h2>Detalle reciente</h2></div><span>{Math.min(favorites.length, 100)} recientes</span></header><div className="favorite-detail-list">{favorites.slice(0, 100).map((favorite) => <article key={`${favorite.commerce_session_id}-${favorite.item_main_id}`}><div><small>Usuario o sesión</small><strong>{favorite.commerce_sessions?.user_id ? `Usuario ${favorite.commerce_sessions.user_id.slice(0, 8)}` : `Visitante ${favorite.commerce_session_id.slice(0, 8)}`}</strong></div><div><small>Objeto guardado</small><strong title={favorite.item_main_id}>{favorite.itemName}</strong><em>{favorite.item_main_id}</em></div></article>)}</div></section>}</div>;
 }
 
-function Prices({ data, request, reload }: { data: { rules: PriceRule[]; overrides: PriceOverride[] }; request: (url: string, init?: RequestInit) => Promise<Record<string, unknown>>; reload: () => Promise<void> }) {
+function Prices({ data, request, reload }: { data: { rules: PriceRule[]; overrides: PriceOverride[]; walletRate: WalletRateInfo }; request: (url: string, init?: RequestInit) => Promise<Record<string, unknown>>; reload: () => Promise<void> }) {
   const [kind, setKind] = useState<"rule" | "override">("rule");
   const [message, setMessage] = useState<string | null>(null);
   const [editingRule, setEditingRule] = useState<PriceRule | null>(null);
@@ -124,14 +127,16 @@ function Prices({ data, request, reload }: { data: { rules: PriceRule[]; overrid
   const [catalogMessage, setCatalogMessage] = useState<string | null>(null);
   const [collection, setCollection] = useState("");
   const [selectedItemId, setSelectedItemId] = useState("");
+  const hasOverrides = data.overrides.length > 0;
   useEffect(() => {
-    if (kind !== "override" || catalogItems) return;
+    // Se carga también con excepciones guardadas: la lista necesita los pavos de cada objeto.
+    if (catalogItems || (kind !== "override" && !hasOverrides)) return;
     let cancelled = false;
     void request("/api/catalog").then((response) => {
       if (!cancelled) setCatalogItems(Array.isArray(response.data) ? response.data as CatalogOption[] : []);
     }).catch(() => { if (!cancelled) setCatalogMessage("No fue posible cargar los objetos de la tienda."); });
     return () => { cancelled = true; };
-  }, [catalogItems, kind, request]);
+  }, [catalogItems, hasOverrides, kind, request]);
   const collections = useMemo(() => [...new Set((catalogItems ?? []).map((item) => item.collaboration?.trim() || "Sin colección"))].sort((left, right) => left.localeCompare(right, "es")), [catalogItems]);
   const visibleItems = useMemo(() => (catalogItems ?? []).filter((item) => !collection || (item.collaboration?.trim() || "Sin colección") === collection).sort((left, right) => left.name.localeCompare(right.name, "es")), [catalogItems, collection]);
   const overrideItemIds = useMemo(() => new Set(data.overrides.map((override) => override.main_id)), [data.overrides]);
@@ -154,6 +159,10 @@ function Prices({ data, request, reload }: { data: { rules: PriceRule[]; overrid
     const method = editingRule || editingOverride ? "PATCH" : "POST";
     try { await request("/api/admin/prices", { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); formElement.reset(); setEditingRule(null); setEditingOverride(null); setSelectedItemId(""); setMessage(editingRule ? "Regla actualizada." : editingOverride ? "Excepción actualizada." : "Precio guardado."); await reload(); }
     catch (error) { setMessage(error instanceof Error ? error.message : "No fue posible guardar."); }
+  }
+  async function toggleWallet(id: string, walletAllowed: boolean) {
+    try { await request("/api/admin/prices", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "walletAllowed", type: "override", id, walletAllowed }) }); await reload(); }
+    catch (error) { setMessage(error instanceof Error ? error.message : "No fue posible actualizar."); }
   }
   async function toggle(type: "rule" | "override", id: string, active: boolean) {
     try { await request("/api/admin/prices", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "toggle", type, id, active }) }); await reload(); }
@@ -228,11 +237,20 @@ function Prices({ data, request, reload }: { data: { rules: PriceRule[]; overrid
 <span>
 <b>{item?.name ?? override.main_id}</b>
 <small>{item ? `${item.type} · ` : ""}{formatValidity(override.effective_from, override.effective_until)}</small>
+{(() => {
+  if (override.wallet_allowed === false) return <small>No se puede pagar con pavos.</small>;
+  const equivalent = item?.finalPriceVbucks && data.walletRate?.cents_per_100 ? Math.round(item.finalPriceVbucks / 100 * data.walletRate.cents_per_100) : null;
+  if (equivalent === null) return <small>Se puede pagar con pavos{item?.finalPriceVbucks ? ` (${item.finalPriceVbucks.toLocaleString("es-MX")} pavos)` : ""}.</small>;
+  return equivalent < override.amount_mxn_cents
+    ? <small className="price-wallet-warning">⚠️ Con pavos sale en ≈ ${(equivalent / 100).toFixed(0)} ({item!.finalPriceVbucks!.toLocaleString("es-MX")} pavos), más barato que este precio especial. Bloquea los pavos si no quieres perder margen.</small>
+    : <small>Con pavos: {item!.finalPriceVbucks!.toLocaleString("es-MX")} pavos ≈ ${(equivalent / 100).toFixed(0)}.</small>;
+})()}
 </span>
 <strong>${(override.amount_mxn_cents / 100).toFixed(0)}</strong>
 <div className="price-rule-actions">
 <button type="button" onClick={() => { setKind("override"); setEditingRule(null); setEditingOverride(override); setCollection(""); setSelectedItemId(override.main_id); }}>Editar</button>
 <button type="button" onClick={() => void toggle("override", override.id, !override.active)}>{override.active ? "Desactivar" : "Activar"}</button>
+<button type="button" onClick={() => void toggleWallet(override.id, override.wallet_allowed === false)}>{override.wallet_allowed === false ? "Permitir pavos" : "Bloquear pavos"}</button>
 </div>
 </article>; })}</div>
 </div>;

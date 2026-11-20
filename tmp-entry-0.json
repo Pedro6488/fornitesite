@@ -1,0 +1,85 @@
+{
+  "devName": "[VIRTUAL]1 x Hesper King, 1 x Lucky Talon for -1 MtxCurrency",
+  "offerId": "v2:/0ecd8ae8b8e5f54f8e9ea18d4d3cc87cd94e39fd58659c77ebc75c15746fbdf8",
+  "finalPrice": 1300,
+  "regularPrice": 1700,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": {
+    "name": "Lote Reina Héspero",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/f1f73a3f3eeb271c/renderimage_0.png"
+  },
+  "banner": {
+    "value": "400 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "offerTag": null,
+  "tileSize": "Size_2_x_1",
+  "colors": {
+    "color1": "290f07ff",
+    "color3": "824100ff",
+    "textBackgroundColor": "824100ff"
+  },
+  "newDisplayAsset": {
+    "id": "DAv2_Bundle_Featured_NeonGlow",
+    "materialInstances": [],
+    "renderImages": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__f1f73a3f3eeb271c_bf2ce1b95047f229.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/f1f73a3f3eeb271c/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__f1f73a3f3eeb271c_a15cbbeaae5e471b.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/f1f73a3f3eeb271c/renderimage_1.png"
+      }
+    ]
+  },
+  "brItems": [
+    {
+      "id": "Character_NeonGlow",
+      "name": "Reina Héspero",
+      "type": "Atuendo",
+      "rarity": "Épico",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/character_neonglow/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/character_neonglow/icon.png",
+        "featured": "https://fortnite-api.com/images/cosmetics/br/character_neonglow/featured.png",
+        "lego": {
+          "small": "https://fortnite-api.com/images/cosmetics/lego/character_neonglow/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/lego/character_neonglow/large.png",
+          "wide": "https://fortnite-api.com/images/cosmetics/lego/character_neonglow/wide.png"
+        },
+        "bean": {
+          "small": "https://fortnite-api.com/images/cosmetics/beans/bean_neonglow/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/beans/bean_neonglow/large.png"
+        }
+      }
+    },
+    {
+      "id": "Pickaxe_NeonGlow",
+      "name": "Daga de la fortuna",
+      "type": "Pico",
+      "rarity": "Raro",
+      "images": {
+        "smallIcon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_neonglow/smallicon.png",
+        "icon": "https://fortnite-api.com/images/cosmetics/br/pickaxe_neonglow/icon.png",
+        "featured": "https://fortnite-api.com/images/cosmetics/br/pickaxe_neonglow/featured.png"
+      }
+    }
+  ],
+  "tracks": [],
+  "cars": null,
+  "instruments": null
+}

@@ -1,0 +1,5263 @@
+interesting 67
+
+==== [VIRTUAL]1 x Monkey D. Luffy, 1 x Luffy's Straw Hat, 1 x Gum-Gum Pistol, 1 x Multi-Punches Flex for -1 MtxCurrency
+{
+  "offerId": "v2:/caccb6ef5e08efaf83a8c744abc3bbed1f22bddc5c7f99027b04b1d2c7024f8d",
+  "price": 1800,
+  "regular": 1800,
+  "inDate": "2026-11-01T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 4,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_CeleryStitch",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__9af63ea860febe11_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9af63ea860febe11/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__9af63ea860febe11_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9af63ea860febe11/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_CeleryStitch",
+      "name": "Monkey D. Luffy",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_CeleryStitchCud",
+      "name": "Sombrero de paja de Luffy",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_CeleryStitchCud",
+      "name": "Pistola goma goma",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x J Balvin, 1 x Real, 1 x Real, 1 x Balvin Cruiser, 1 x In Da Party for -1 MtxCurrency
+{
+  "offerId": "v2:/4615bc7d8857ca614220c892b3d20bc6b9c97c4150126ab87f259dc43c690b20",
+  "price": 2400,
+  "regular": 3300,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": {
+    "name": "Lote J Balvin",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/01b00ee12e5deb4f/renderimage_0.png"
+  },
+  "layout": {
+    "id": "LatinGram",
+    "name": "Lúcete en el escenario principal",
+    "index": 21,
+    "rank": 181,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "900 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 5,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Featured_VividBundle",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__01b00ee12e5deb4f_4859753cc4c80ffe.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/01b00ee12e5deb4f/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__01b00ee12e5deb4f_ee40182a6fe6a429.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/01b00ee12e5deb4f/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_A_182_Athena_Commando_M_Vivid_LZGQ3",
+      "name": "J Balvin",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_825_VividMale_7L9T0",
+      "name": "Real",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_ID_661_VividMale1H_ZN6Q0",
+      "name": "Real",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Dark Tricera Ops, 1 x Dark Hatchling for -1 MtxCurrency
+{
+  "offerId": "v2:/0c3a781f45c55ea6c46ef40ff55bef9ff567a24efb06eaf91f18450f401a5eb6",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-10T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_582_F_DarkDino",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__0702ef0acd6471b7_0c4ff27438dc5df9.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0702ef0acd6471b7/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__0702ef0acd6471b7_102eca4e59d3f9ed.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0702ef0acd6471b7/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_582_Athena_Commando_F_DarkDino",
+      "name": "Agente triceratops oscura",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_383_DarkDinoFemale",
+      "name": "Cascaroncito oscuro",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Twinzer, 1 x Motor Monster, 1 x Radium, 1 x Slimed, 1 x Stripes, 1 x AWD for -1 MtxCurrency
+{
+  "offerId": "v2:/a3f92ebb35765f7986528a9b44989b42828a50034a9408f459565dab97954600",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": {
+    "name": "Twinzer",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/1816cc89c9558517/renderimage_0.png"
+  },
+  "layout": {
+    "id": "Twinzer",
+    "name": "Twinzer",
+    "category": "Calienta los motores",
+    "index": 26,
+    "rank": 177,
+    "showIneligibleOffers": "always",
+    "useWidePreview": true,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 5,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_Twinzer",
+    "render": [
+      {
+        "productTag": "Product.DelMar",
+        "fileName": "cosmo__1816cc89c9558517_b919b68980f558ee.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/1816cc89c9558517/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "sample": {
+        "id": "CarSkin_TwinzerMonster",
+        "vehicleId": "VCID_Skin_TwinzerMonster",
+        "name": "Monstruo del motor",
+        "description": "Calcomanía personalizada de Twinzer.",
+        "type": {
+          "value": "skin",
+          "displayValue": "Aspecto",
+          "backendValue": "VehicleCosmetics_Skin"
+        },
+        "rarity": {
+          "value": "common",
+          "displayValue": "Común",
+          "backendValue": "EFortRarity::Common"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/carskin_twinzermonster/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/carskin_twinzermonster/large.png"
+        },
+        "added": "2025-08-07T08:15:39Z"
+      }
+    },
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "sample": {
+        "id": "CarSkin_TwinzerRockat",
+        "vehicleId": "VCID_Skin_TwinzerRockat",
+        "name": "Radium",
+        "description": "Calcomanía personalizada de Twinzer.",
+        "type": {
+          "value": "skin",
+          "displayValue": "Aspecto",
+          "backendValue": "VehicleCosmetics_Skin"
+        },
+
+==== [VIRTUAL]1 x Roronoa Zoro, 1 x Zoro's Swords, 1 x Zoro's Training Gear, 1 x Test of Will, 1 x Sanji, 1 x Sanji's Utensils, 1 x Sanji's Utensils, 1 x Tony Tony Chopper for -1 MtxCurrency
+{
+  "offerId": "v2:/4d0c03e4c5f8f1749971c2bdba2f71e9c71ebaa423836266e63a1cd1ba585084",
+  "price": 3200,
+  "regular": 4900,
+  "inDate": "2026-11-08T00:00:00Z",
+  "bundle": {
+    "name": "Lote Sombrero de paja",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/08e43d2736617a99/renderimage_0.png"
+  },
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "1700 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 8,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_BrandCreed",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__08e43d2736617a99_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/08e43d2736617a99/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__08e43d2736617a99_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/08e43d2736617a99/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_BrandCreed",
+      "name": "Roronoa Zoro",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_BrandCreed",
+      "name": "Espadas de Zoro",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_BrandCreed",
+      "name": "Pesas de Zoro",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x The Black Cat, 1 x The Black Cat, 1 x The Black Cat for 800 MtxCurrency
+{
+  "offerId": "v2:/37945206e83ec4b23a59448bd384751b4807acc8c418440d3b572fd5e9f391bb",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-12T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "FantasticSurfer",
+    "name": "Marvel",
+    "index": 31,
+    "rank": 185,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Sparks_Guitar_SweetLetter",
+    "render": [
+      {
+        "productTag": "Product.Sparks",
+        "fileName": "cosmo__87f6e1f57dbd1f60_888dac013c284688.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/87f6e1f57dbd1f60/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Backpack_SweetLetter_Guitar",
+      "name": "La Gata Negra",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_SweetLetter_Guitar",
+      "name": "La Gata Negra",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_Guitar_SweetLetter",
+      "name": "La Gata Negra",
+      "type": {
+        "value": "guitar",
+        "displayValue": "Guitarra",
+        "backendValue": "SparksGuitar"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_guitar_sweetletter/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_guitar_sweetletter/large.png"
+      }
+    }
+  ]
+}
+
+==== [VIRTUAL]1 x Lil Uzi Vert, 1 x Uzi's Wings, 1 x Pink Star Lil Uzi Vert, 1 x Lil Uzi Star, 1 x Picco-Axe, 1 x XO Tour Llif3, 1 x What You Saying, 1 x Uzi's Tour Guitar, 1 x Uzi's Tour Guitar, 1 x Uzi's Tour Guitar, 1 x Vans x Lil Uzi Vert LX Old Skool 36, 1 x Uzi On Tour, 1 x Cap'n Lil Uzi Vert for -1 MtxCurrency
+{
+  "offerId": "v2:/68cd6682741636a3ab0b9fae18d0823e04b5975570fc8a58c519e11af496c0f5",
+  "price": 3200,
+  "regular": 7100,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": {
+    "name": "Lote de Lil' Uzi Vert",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d561e5f2b0adcf56/renderimage_0.png"
+  },
+  "layout": {
+    "id": "LilRook",
+    "name": "Lil Uzi Vert ",
+    "index": 3,
+    "rank": 196,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "billboard",
+    "textureMetadata": [
+      {
+        "key": "background",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_RookGecko_BG-e67da5f6.png"
+      },
+      {
+        "key": "foreground",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_RookGecko_Characters-40cc0994.png"
+      },
+      {
+        "key": "bodyImage",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_RookGecko_ItemStack-a804c520.png"
+      },
+      {
+        "key": "titleImage",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_RookGecko_Logo-88573223.png"
+      }
+    ],
+    "stringMetadata": [
+      {
+        "key": "alignment",
+        "value": "left"
+      },
+      {
+        "key": "highlightEnabled",
+        "value": "true"
+      },
+      {
+        "key": "parallaxEnabled",
+        "value": "true"
+      },
+      {
+        "key": "titleColorA",
+        "value": "FFFFFF"
+      },
+      {
+        "key": "titleColorB",
+        "value": "FFFFFF"
+      }
+    ],
+    "textMetadata": [
+      {
+        "key": "cta",
+        "value": "Ver oferta"
+      },
+      {
+        "key": "subtitle",
+        "value": "Lote de 11 objetos"
+      }
+    ]
+  },
+  "banner": {
+    "value": "3900 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 12,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_RookGecko",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__d561e5f2b0adcf56_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d561e5f2b0adcf56/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__d561e5f2b0adcf56_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d561e5f2b0adcf56/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "
+
+==== [VIRTUAL]1 x Mega Man X, 1 x Buster Cannon Blades, 1 x E-Tank Power Pack for -1 MtxCurrency
+{
+  "offerId": "v2:/73235e9b73cccbf8d9b36884242040bc6125f956643b0f305e68712f6ba9beba",
+  "price": 1800,
+  "regular": 1800,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "Megaman",
+    "name": "Mega Man",
+    "index": 0,
+    "rank": 182,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_DuneBriefShift",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__eeac6cf236bb5715_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/eeac6cf236bb5715/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__eeac6cf236bb5715_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/eeac6cf236bb5715/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_DuneBriefShift",
+      "name": "Mega Man X",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_DuneBriefShift",
+      "name": "Sierra de Mega Buster",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_DuneBriefShift",
+      "name": "Tanque de energía portátil",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Miku Rider Beam, 1 x Miku Rider Lite, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Cyclone, 1 x Bat Boy, 1 x Flames, 1 x L-ita 99, 1 x Sliver, 1 x Stripes, 1 x Whiteout for -1 MtxCurrency
+{
+  "offerId": "v2:/0223cad967a4d8508bba20000771317102cc0982b062b80bdfb3bc165e4144dc",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": {
+    "name": "Lote Cyclone de Hatsune Miku",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/c1aa699f4fd0af7f/renderimage_0.png"
+  },
+  "layout": {
+    "id": "PirateCactus1",
+    "name": "Hatsune Miku",
+    "index": 10,
+    "rank": 198,
+    "showIneligibleOffers": "always",
+    "useWidePreview": true,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 8,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_Aventurine",
+    "render": [
+      {
+        "productTag": "Product.DelMar",
+        "fileName": "cosmo__c1aa699f4fd0af7f_76f86ceef76250b6.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/c1aa699f4fd0af7f/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "sample": {
+        "id": "CarSkin_SquashAventurine01",
+        "vehicleId": "VCID_Skin_SquashAventurine01",
+        "name": "Miku Rider rayo",
+        "description": "Conduce al estilo Miku. Calcomanía personalizada de Cyclone.",
+        "type": {
+          "value": "skin",
+          "displayValue": "Aspecto",
+          "backendValue": "VehicleCosmetics_Skin"
+        },
+        "rarity": {
+          "value": "icon",
+          "displayValue": "Serie de ídolos",
+          "backendValue": "EFortRarity::Uncommon"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/carskin_squashaventurine01/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/carskin_squashaventurine01/large.png"
+        },
+        "series": {
+          "value": "Serie de ídolos",
+          "image": "https://fortnite-api.com/images/cosmetics/series/creatorcollabseries.png",
+          "colors": [
+            "5cf2f3ff",
+            "2bc9caff",
+            "004c71ff",
+            "025253ff",
+            "000f2bff"
+          ],
+          "backendValue": "CreatorCollabSeries"
+        },
+        "added": "2025-01-30T00:00:00Z"
+      }
+    },
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "d
+
+==== [VIRTUAL]1 x Miku's Mic, 1 x Miku's Mic, 1 x Miku's Mic for 800 MtxCurrency
+{
+  "offerId": "v2:/92672fd36447669c68552ddee45125d59f22fc942104963dd52f9dca1387ebbd",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "PirateCactus1",
+    "name": "Hatsune Miku",
+    "index": 10,
+    "rank": 198,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "Nuevo",
+    "intensity": "High",
+    "backendValue": "New"
+  },
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": null,
+  "br": [
+    {
+      "id": "Pickaxe_PeonyPizza_Mic",
+      "name": "Voz de Miku",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_PeonyPizza_Mic",
+      "name": "Voz de Miku",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_PeonyPizza_Mic",
+      "name": "Voz de Miku",
+      "type": {
+        "value": "mic",
+        "displayValue": "Micrófono",
+        "backendValue": "SparksMic"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_peonypizza_mic/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_peonypizza_mic/large.png"
+      }
+    }
+  ]
+}
+
+==== [VIRTUAL]1 x Rally Raider, 1 x Weathered Wings for -1 MtxCurrency
+{
+  "offerId": "v2:/134cecc4a8c78642acd38909f7ecc7dfb92f0bbc9a143dd7d988531bd1396a85",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-10T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "NoSweat111026",
+    "name": "No te preocupes",
+    "index": 20,
+    "rank": 183,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_775_F_StreetRacerCobraGold",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__b2bdf3368802f93f_7633ee5ec978da4d.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/b2bdf3368802f93f/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__b2bdf3368802f93f_11cc192f494db3d8.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/b2bdf3368802f93f/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_775_Athena_Commando_F_StreetRacerCobraGold",
+      "name": "Asaltante automovilista",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_538_StreetRacerCobraGold",
+      "name": "Alas apañadas",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Monkey D. Luffy, 1 x Luffy's Straw Hat, 1 x Gum-Gum Pistol, 1 x Multi-Punches Flex, 1 x Nami, 1 x Nami's Tangerines, 1 x Climate Baton, 1 x Usopp, 1 x Usopp's Kit, 1 x 5 Ton Hammer, 1 x Going Merry, 1 x Roasted Meat, 1 x Giant Meat on the Bone, 1 x Straw Hat Guitar, 1 x Straw Hat Guitar, 1 x Straw Hat Guitar for -1 MtxCurrency
+{
+  "offerId": "v2:/d1494d827b8bb4c05bdf8c0d974c4a79129ab66baf6d85df762034b79f017f03",
+  "price": 4000,
+  "regular": 8200,
+  "inDate": "2026-11-01T00:00:00Z",
+  "bundle": {
+    "name": "Lote One Piece",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d5ad5f42d4062e78/renderimage_0.png"
+  },
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "4200 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 15,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_CeleryStitch",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__d5ad5f42d4062e78_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d5ad5f42d4062e78/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__d5ad5f42d4062e78_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d5ad5f42d4062e78/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_CeleryStitch",
+      "name": "Monkey D. Luffy",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_CeleryStitchCud",
+      "name": "Sombrero de paja de Luffy",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_CeleryStitchCud",
+      "name": "Pistola goma goma",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "id": "Sparks_CeleryStitch_Guitar",
+      "name": "Cuerdas de los Sombrero de paja",
+      "type": {
+        "value": "guitar",
+        "displayValue": "Guitarra",
+        "backendValue": "SparksGuitar"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/ins
+
+==== [VIRTUAL]1 x Razor Rae, 1 x Boom Bag for -1 MtxCurrency
+{
+  "offerId": "v2:/98a21e429cfc5808fad97b66b6cb7aa63be2f97172949a80612f9c672bd239fa",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-10T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "NoSweat111026",
+    "name": "No te preocupes",
+    "index": 20,
+    "rank": 183,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_FireWork",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__39de3471fbf927a9_0c797794d77a6a0f.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/39de3471fbf927a9/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__39de3471fbf927a9_77899e86b87ce9df.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/39de3471fbf927a9/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_Firework",
+      "name": "Rita dinamita",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_Firework",
+      "name": "Bolso bomba",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x R.A.D., 1 x Rivian R1S, 1 x Air Jordan 6 "Infrared", 1 x Air Jordan 4 "White Cement", 1 x Flames, 1 x Lightning, 1 x Stripes, 1 x Wings, 1 x Rivian R1S for -1 MtxCurrency
+{
+  "offerId": "v2:/f1a22849b54a908afce3a6ce555f9f3ef3919490dfd5c8af022a49e0f4a4f45a",
+  "price": 2000,
+  "regular": 2000,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": {
+    "name": "Rivian R1S",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/98cfc4525bfaf0fa/renderimage_0.png"
+  },
+  "layout": {
+    "id": "RivianR1SJordanWheel",
+    "name": "Rivian R1S",
+    "category": "Calienta los motores",
+    "index": 33,
+    "rank": 178,
+    "showIneligibleOffers": "always",
+    "useWidePreview": true,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 9,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_SheepBolt",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__98cfc4525bfaf0fa_ba69066b1bb63ce7.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/98cfc4525bfaf0fa/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "sample": {
+        "id": "CarSkin_SheepBoltLivery01",
+        "vehicleId": "VCID_CarSkinSheepBoltLivery01",
+        "name": "R.A.D.",
+        "description": "Aprobada para aventuras. Calcomanía personalizada de Rivian R1S.",
+        "type": {
+          "value": "skin",
+          "displayValue": "Aspecto",
+          "backendValue": "VehicleCosmetics_Skin"
+        },
+        "rarity": {
+          "value": "uncommon",
+          "displayValue": "Poco común",
+          "backendValue": "EFortRarity::Uncommon"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/carskin_sheepboltlivery01/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/carskin_sheepboltlivery01/large.png"
+        },
+        "series": {
+          "value": "SERIE RIVIAN",
+          "colors": [
+            "ffffffff",
+            "feb201ff",
+            "feb201ff",
+            "feb201ff",
+            "feb201ff"
+          ],
+          "backendValue": "Series_Rivian"
+        },
+        "added": "2026-03-26T13:00:50Z"
+      }
+    },
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+       
+
+==== [VIRTUAL]1 x Pink Star Lil Uzi Vert, 1 x Lil Uzi Star for -1 MtxCurrency
+{
+  "offerId": "v2:/26f08b744f58ef13c0939c11f467de60498f568986a42b59eb7fcc02b8f17e34",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "LilRook",
+    "name": "Lil Uzi Vert ",
+    "index": 3,
+    "rank": 196,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_RookGeckoRye",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a6868bfd4b850983_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a6868bfd4b850983/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_RookGeckoRye",
+      "name": "Lil Uzi Vert de gira",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_RookGeckoRye",
+      "name": "Estrella de Lil Uzi",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Hesper King, 1 x Lucky Talon for -1 MtxCurrency
+{
+  "offerId": "v2:/0ecd8ae8b8e5f54f8e9ea18d4d3cc87cd94e39fd58659c77ebc75c15746fbdf8",
+  "price": 1300,
+  "regular": 1700,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": {
+    "name": "Lote Reina Héspero",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/f1f73a3f3eeb271c/renderimage_0.png"
+  },
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "400 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_NeonGlow",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__f1f73a3f3eeb271c_bf2ce1b95047f229.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/f1f73a3f3eeb271c/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__f1f73a3f3eeb271c_a15cbbeaae5e471b.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/f1f73a3f3eeb271c/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_NeonGlow",
+      "name": "Reina Héspero",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_NeonGlow",
+      "name": "Daga de la fortuna",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x PIRATE SPEEDY, 1 x Speed's Coin, 1 x Speed's Pirate Blade, 1 x IShowFlip for -1 MtxCurrency
+{
+  "offerId": "v2:/18087c92999824c4238cf291477c8bc11b955bd7ea015e7410d44543f9d51863",
+  "price": 1800,
+  "regular": 2700,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": {
+    "name": "Lote Speedy pirata",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a283979341ca2ae2/renderimage_0.png"
+  },
+  "layout": {
+    "id": "IShowPirate1",
+    "name": "iShowSpeed",
+    "index": 13,
+    "rank": 197,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "billboard",
+    "textureMetadata": [
+      {
+        "key": "background",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_LocketSnug_BG-2bd18d1c.png"
+      },
+      {
+        "key": "foreground",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_LocketSnug_Character-a64f8f82.png"
+      },
+      {
+        "key": "banner",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_LocketSnug_Logo-5a4149f4.png"
+      },
+      {
+        "key": "bodyImage",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_LocketSnug_ItemStack-bc620a64.png"
+      }
+    ],
+    "stringMetadata": [
+      {
+        "key": "alignment",
+        "value": "left"
+      },
+      {
+        "key": "highlightEnabled",
+        "value": "true"
+      },
+      {
+        "key": "parallaxEnabled",
+        "value": "true"
+      },
+      {
+        "key": "titleColorA",
+        "value": "FFFFFF"
+      },
+      {
+        "key": "titleColorB",
+        "value": "FFFFFF"
+      }
+    ],
+    "textMetadata": [
+      {
+        "key": "cta",
+        "value": "Ver oferta"
+      },
+      {
+        "key": "subtitle",
+        "value": "Lote de 4 objetos"
+      },
+      {
+        "key": "title",
+        "value": "Speedy pirata"
+      }
+    ]
+  },
+  "banner": {
+    "value": "900 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 4,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_LocketSnug",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a283979341ca2ae2_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a283979341ca2ae2/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a283979341ca2ae2_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a283979341ca2
+
+==== [VIRTUAL]1 x Jason , 1 x Jason's Blade Kit, 1 x Crystal Lake Life Preserver, 1 x Friday, 1 x Machete Paddle, 1 x Vengeance Seeker for -1 MtxCurrency
+{
+  "offerId": "v2:/319148d5d42734ba0a5a75185066359fb8d089e0d9f419e6cec4ada4396eebc4",
+  "price": 2500,
+  "regular": 3600,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": {
+    "name": "Lote Jason",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d18f93694cdc9afb/renderimage_0.png"
+  },
+  "layout": {
+    "id": "Friday",
+    "name": "Viernes 13",
+    "index": 49,
+    "rank": 188,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "1100 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 6,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_GnatGala",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__d18f93694cdc9afb_799229b929b11726.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d18f93694cdc9afb/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_GnatGala",
+      "name": "Jason ",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_GnatGala",
+      "name": "Armas de Jason",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_GnatGala",
+      "name": "Salvavidas de Crystal Lake",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x TBD (SID_Placeholder_947), 1 x TBD (SID_Placeholder_948), 1 x TBD (SID_Placeholder_950) for -1 MtxCurrency
+{
+  "offerId": "v2:/74e0b2774edf1e9c1fe9c16b72591fc902003482dadb50a4b588c8f440b603b1",
+  "price": 1100,
+  "regular": 1500,
+  "inDate": "2026-11-06T00:00:00Z",
+  "bundle": {
+    "name": "Lote de improvisación de A$AP Rocky",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/70430592f272d175/renderimage_0.png"
+  },
+  "layout": {
+    "id": "AsapRocky",
+    "name": "A$AP Rocky",
+    "index": 62,
+    "rank": 190,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "400 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 0,
+    "tracks": 3,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_Jam_TonicMail",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "image-bundle-featured-jam-tonicmail-0-br-2048x2048-a6620d42a58b.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/70430592f272d175/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [
+    {
+      "id": "sid_placeholder_947",
+      "name": "GRIM FREESTYLE",
+      "image": "https://cdn.fortnite-api.com/tracks/1b8dd9d74bf19843.jpg"
+    },
+    {
+      "id": "sid_placeholder_948",
+      "name": "RIOT (Rowdy Pipe’n)",
+      "image": "https://cdn.fortnite-api.com/tracks/cca24060815e192d.jpg"
+    }
+  ],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Rocky's BOOM Mic, 1 x Rocky's BOOM Mic, 1 x Rocky's BOOM Mic for 800 MtxCurrency
+{
+  "offerId": "v2:/7c6c82d544e8bec6111046ff79f362bb090bb636ce8c2f1264a6e0ca1101d031",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-06T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "AsapRocky",
+    "name": "A$AP Rocky",
+    "index": 62,
+    "rank": 190,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Sparks_TonicMailWeb_Mic",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__ba4a40bfd1870ec0_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/ba4a40bfd1870ec0/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Backpack_TonicMailWeb_Mic",
+      "name": "Melodía de Rocky",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_TonicMailWeb_Mic",
+      "name": "Melodía de Rocky",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_TonicMailWeb_Mic",
+      "name": "Melodía de Rocky",
+      "type": {
+        "value": "mic",
+        "displayValue": "Micrófono",
+        "backendValue": "SparksMic"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_tonicmailweb_mic/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_tonicmailweb_mic/large.png"
+      }
+    }
+  ]
+}
+
+==== [VIRTUAL]1 x Waveslasher, 1 x Waveslasher for 800 MtxCurrency
+{
+  "offerId": "v2:/6dab8f037c44b9dd84af19a9504d204d46f8c338bc905aa0d1988a9d68682cf0",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Pickaxe_VioletFare",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__336759c19eb4f3ca_a364af237f89e4fc.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/336759c19eb4f3ca/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Pickaxe_VioletFare",
+      "name": "Filo oleado",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_VioletFare",
+      "name": "Filo oleado",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Voyager Unleashed, 1 x Chaos Cluster for -1 MtxCurrency
+{
+  "offerId": "v2:/bb5bc4bb2e8352a8d34a1a1877cf73d1e7deb790436cafaed132b2e483fcdbba",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "FND111526",
+    "name": "Circuito de expectación",
+    "index": 38,
+    "rank": 189,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_VoyagerCuboid",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__1f747876c2ec733a_5e2a4110d3447bff.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/1f747876c2ec733a/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__1f747876c2ec733a_bb2ca2afb7cdc32d.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/1f747876c2ec733a/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_VoyagerCuboid",
+      "name": "Viajero desatado",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_VoyagerCuboid",
+      "name": "Cúmulo de caos",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Sanji, 1 x Sanji's Utensils, 1 x Sanji's Utensils for -1 MtxCurrency
+{
+  "offerId": "v2:/258c82518cff648c6989eb3d14a1c144ed27d7553882c5ca61979afa959cdc0b",
+  "price": 1600,
+  "regular": 1600,
+  "inDate": "2026-11-08T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_InsightBawl",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__0e6ada1f404630c6_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0e6ada1f404630c6/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__0e6ada1f404630c6_5aff8d0c456b1e98.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0e6ada1f404630c6/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_InsightBawl",
+      "name": "Sanji",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_InsightBawl",
+      "name": "Utensilios de Sanji",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_InsightBawl",
+      "name": "Utensilios de Sanji",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Rocky Rugahand, 1 x A$AP Rockets for -1 MtxCurrency
+{
+  "offerId": "v2:/07db242397afa95a9066601dff6b297d686556777d9b553d0c54177058758f13",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-06T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "AsapRocky",
+    "name": "A$AP Rocky",
+    "index": 62,
+    "rank": 190,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_TonicMailYam",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__9aff7963aad5eba6_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9aff7963aad5eba6/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__9aff7963aad5eba6_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9aff7963aad5eba6/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_TonicMailYam",
+      "name": "Rocky Rugahand",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_TonicMailYam",
+      "name": "Cohetes de A$AP",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Z-Saber, 1 x Z-Saber for 800 MtxCurrency
+{
+  "offerId": "v2:/2f8b4558eb574c8470c59f6421c66247af1a4de21a4b9c4e0afef1ea7730478e",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "Megaman",
+    "name": "Mega Man",
+    "index": 0,
+    "rank": 182,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Pickaxe_TackleShow",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__e0b19847e3ae17c7_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/e0b19847e3ae17c7/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__e0b19847e3ae17c7_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/e0b19847e3ae17c7/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Pickaxe_TackleShow",
+      "name": "Sable Z",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_TackleShow",
+      "name": "Sable Z",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Renegade Runner, 1 x Raider's Rucksack for -1 MtxCurrency
+{
+  "offerId": "v2:/685f0eb16624e0cb738fc378dbda9b8e0b0f22d43daa4ed94fb7b07d0e6ad2a0",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-10T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "NoSweat111026",
+    "name": "No te preocupes",
+    "index": 20,
+    "rank": 183,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_HeadhunterStar",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__c35c608c460b47ab_7ddce8503cd5aec2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/c35c608c460b47ab/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__c35c608c460b47ab_77aa5b602b380917.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/c35c608c460b47ab/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_HeadhunterStar",
+      "name": "Renegada robótica",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_HeadHunterStar",
+      "name": "Mochila de saqueo",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Roronoa Zoro, 1 x Zoro's Swords, 1 x Zoro's Training Gear, 1 x Test of Will for -1 MtxCurrency
+{
+  "offerId": "v2:/6718448ad7ce411a886042d8ed72c7ab6117df92ce7e74e0eb64bd17376b6e12",
+  "price": 1800,
+  "regular": 1800,
+  "inDate": "2026-11-08T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 4,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_BrandCreed",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__7dada1d37dd74140_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/7dada1d37dd74140/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__7dada1d37dd74140_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/7dada1d37dd74140/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_BrandCreed",
+      "name": "Roronoa Zoro",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_BrandCreed",
+      "name": "Espadas de Zoro",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_BrandCreed",
+      "name": "Pesas de Zoro",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Nami, 1 x Nami's Tangerines, 1 x Climate Baton for -1 MtxCurrency
+{
+  "offerId": "v2:/26b85553542f54a4b77f1c41979b7fb8450b6fe7a67c96f218e4340b2629e8da",
+  "price": 1600,
+  "regular": 1600,
+  "inDate": "2026-11-01T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_BoastJoint",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__764245f1c0535262_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/764245f1c0535262/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__764245f1c0535262_5aff8d0c456b1e98.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/764245f1c0535262/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_BoastJoint",
+      "name": "Nami",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_BoastJoint",
+      "name": "Mandarinas de Nami",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_BoastJoint",
+      "name": "Bastón del clima",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Dark Rex, 1 x Dark Scaly for -1 MtxCurrency
+{
+  "offerId": "v2:/8717cf3b936effb26c272e12b25da7550652ff39c4463bebd139c2edd6335e31",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-10T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_581_M_DarkDino",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__96384bb2879d9eab_a58b084dc4098e17.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/96384bb2879d9eab/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__96384bb2879d9eab_c4015b835cc30672.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/96384bb2879d9eab/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_581_Athena_Commando_M_DarkDino",
+      "name": "Rex oscuro",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_382_DarkDinoMale",
+      "name": "Escamoso oscuro",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Usopp, 1 x Usopp's Kit, 1 x 5 Ton Hammer for -1 MtxCurrency
+{
+  "offerId": "v2:/e3fae283d6d7a1c43fe04f919bb5f0f404517bfdf266fba2b0adfd86fd713589",
+  "price": 1600,
+  "regular": 1600,
+  "inDate": "2026-11-01T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_LoomRise",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__8d18a7d0a6c5be85_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/8d18a7d0a6c5be85/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__8d18a7d0a6c5be85_5aff8d0c456b1e98.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/8d18a7d0a6c5be85/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_LoomRise",
+      "name": "Usopp",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_LoomRise",
+      "name": "Kit de Usopp",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_LoomRise",
+      "name": "Martillo de 5 toneladas",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Black Cat, 1 x Cat's Pack, 1 x Bad Luck Claws, 1 x Cat's Tracks, 1 x The Black Cat, 1 x The Black Cat, 1 x The Black Cat for -1 MtxCurrency
+{
+  "offerId": "v2:/7869b6a415c0dd34ee464912ad71a85c4116621e7f9f0b5267f026049324b2a2",
+  "price": 2300,
+  "regular": 3600,
+  "inDate": "2026-11-12T00:00:00Z",
+  "bundle": {
+    "name": "Lote Gata Negra",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/32e1e9cd0b48165a/renderimage_0.png"
+  },
+  "layout": {
+    "id": "FantasticSurfer",
+    "name": "Marvel",
+    "index": 31,
+    "rank": 185,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "1300 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 6,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_SweetLetter",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__32e1e9cd0b48165a_18525ecfc9cb7f17.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/32e1e9cd0b48165a/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__32e1e9cd0b48165a_9c6cb7a45f8d9866.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/32e1e9cd0b48165a/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_SweetLetter",
+      "name": "Gata Negra",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_SweetLetter",
+      "name": "Mochila felina",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_SweetLetter",
+      "name": "Garras de calamidad",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_Guitar_SweetLetter",
+      "name": "La Gata Negra",
+      "type": {
+        "value": "guitar",
+        "displayValue": "Guitarra",
+        "backendValue": "SparksGuitar"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_guitar_sweetlet
+
+==== [VIRTUAL]1 x Platinum Bichota 4-String, 1 x Platinum Bichota 4-String, 1 x Platinum Bichota 4-String for 800 MtxCurrency
+{
+  "offerId": "v2:/5be0770b9f9e9854a4c05de943317c3a8d95dac16b7cdd934ec698eeffec0aa6",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": null,
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": null,
+  "br": [
+    {
+      "id": "Backpack_SourWire_Bass",
+      "name": "Bajo Bichota platino",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_SourWire_Bass",
+      "name": "Bajo Bichota platino",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_Bass_SourWire",
+      "name": "Bajo Bichota platino",
+      "type": {
+        "value": "bass",
+        "displayValue": "Bajo",
+        "backendValue": "SparksBass"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_bass_sourwire/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_bass_sourwire/large.png"
+      }
+    }
+  ]
+}
+
+==== [VIRTUAL]1 x Uzi's Tour Guitar, 1 x Uzi's Tour Guitar, 1 x Uzi's Tour Guitar for 800 MtxCurrency
+{
+  "offerId": "v2:/ad58972faf0cc5b44df8c26eb7459676f41473ea5bf208018b678cb16fe6745f",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "LilRook",
+    "name": "Lil Uzi Vert ",
+    "index": 3,
+    "rank": 196,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Sparks_RookGeckoRye_Guitar",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__2c987b41787cb312_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/2c987b41787cb312/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Pickaxe_RookGeckoRye_Guitar",
+      "name": "Cuerdas de gira de Uzi",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_RookGeckoRye_Guitar",
+      "name": "Cuerdas de gira de Uzi",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_RookGeckoRye_Guitar",
+      "name": "Cuerdas de gira de Uzi",
+      "type": {
+        "value": "guitar",
+        "displayValue": "Guitarra",
+        "backendValue": "SparksGuitar"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_rookgeckorye_guitar/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_rookgeckorye_guitar/large.png"
+      }
+    }
+  ]
+}
+
+==== [VIRTUAL]1 x Lil Uzi Vert, 1 x Uzi's Wings for -1 MtxCurrency
+{
+  "offerId": "v2:/c1c469b1cd292d375109466b840d0801b409897a9c59766ece261cb586a60a2d",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "LilRook",
+    "name": "Lil Uzi Vert ",
+    "index": 3,
+    "rank": 196,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_RookGeckoRod",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__b8b2128e580b14d1_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/b8b2128e580b14d1/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__b8b2128e580b14d1_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/b8b2128e580b14d1/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_RookGeckoRod",
+      "name": "Lil Uzi Vert",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_RookGeckoRod",
+      "name": "Alas de Uzi",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Cap'n Hatsune Miku, 1 x Miku's Treasure, 1 x Miku's Anchor Floatie, 1 x Miku Miku ni Shite Ageru♪, 1 x Miku's Mic, 1 x Miku's Mic, 1 x Miku's Mic, 1 x TBD (SID_Placeholder_991) for -1 MtxCurrency
+{
+  "offerId": "v2:/8f114946b8d166af6a3f7ae3ed7b1ae75c6a1e9c1d9508c258080c01d88a2365",
+  "price": 2200,
+  "regular": 4100,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "PirateCactus1",
+    "name": "Hatsune Miku",
+    "index": 10,
+    "rank": 198,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "billboard",
+    "textureMetadata": [
+      {
+        "key": "background",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_BG-51b2afe6.png"
+      },
+      {
+        "key": "foreground",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_Character-b5b3f6cd.png"
+      },
+      {
+        "key": "foreground_juno",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_Figure-6a0123ce.png"
+      },
+      {
+        "key": "bodyImage",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_CactusBait_Itemstack-84b2a468.png"
+      }
+    ],
+    "stringMetadata": [
+      {
+        "key": "alignment",
+        "value": "left"
+      },
+      {
+        "key": "highlightEnabled",
+        "value": "true"
+      },
+      {
+        "key": "parallaxEnabled",
+        "value": "true"
+      },
+      {
+        "key": "titleColorA",
+        "value": "FFFFFF"
+      },
+      {
+        "key": "titleColorB",
+        "value": "FFFFFF"
+      }
+    ],
+    "textMetadata": [
+      {
+        "key": "cta",
+        "value": "Ver oferta"
+      },
+      {
+        "key": "subtitle",
+        "value": "Lote de 6 objetos"
+      },
+      {
+        "key": "title",
+        "value": "Capitana Hatsune Miku"
+      }
+    ]
+  },
+  "banner": {
+    "value": "Nuevo",
+    "intensity": "High",
+    "backendValue": "New"
+  },
+  "arrays": {
+    "br": 6,
+    "tracks": 1,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": null,
+  "br": [
+    {
+      "id": "Character_PeonyPizza",
+      "name": "Capitana Hatsune Miku",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_PeonyPizza",
+      "name": "Tesoro de Miku",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_PeonyPizza",
+      "name": "Flotador de ancla de Miku",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  
+
+==== [VIRTUAL]1 x Arachne, 1 x Long Legs for -1 MtxCurrency
+{
+  "offerId": "v2:/16ff65a09c19a39155acbb66ef9201d4abe0c560713ebfbfae8a625f1b771840",
+  "price": 2000,
+  "regular": 2000,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_249_F_BlackWidow",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__25b74de90f04edde_32393e3192553a33.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/25b74de90f04edde/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__25b74de90f04edde_5b581ed0262220f9.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/25b74de90f04edde/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_249_Athena_Commando_F_BlackWidow",
+      "name": "Aracne",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_131_BlackWidowfemale",
+      "name": "Patas largas",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Sanji's Utensils, 1 x Sanji's Utensils for 800 MtxCurrency
+{
+  "offerId": "v2:/66dde7526492d31c9886dd3afb84b4ed5c88cc6bd3b7c4f64d3522da7149d607",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-08T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Pickaxe_InsightBawl",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__0cffae2d10c12c17_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0cffae2d10c12c17/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Pickaxe_InsightBawl",
+      "name": "Utensilios de Sanji",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_InsightBawl",
+      "name": "Utensilios de Sanji",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x PIRATE SPEEDY, 1 x Speed's Coin for -1 MtxCurrency
+{
+  "offerId": "v2:/8f3f0d549b18cabd14b41a8866f1b23c6d255cd4787392ddb2c11a5ad0863a52",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "IShowPirate1",
+    "name": "iShowSpeed",
+    "index": 13,
+    "rank": 197,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_LocketSnug",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__88f4f648f51342df_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/88f4f648f51342df/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_LocketSnug",
+      "name": "Speedy pirata",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_LocketSnug",
+      "name": "Moneda de IShowSpeed",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Overtaker, 1 x Lane Splitter for -1 MtxCurrency
+{
+  "offerId": "v2:/1a94bffb5706606213fbb6341ac39c79f17e0578bfef7594bc11261bd57f3951",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-10T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "FND111526",
+    "name": "Circuito de expectación",
+    "index": 38,
+    "rank": 189,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_190_M_StreetRacerWhite",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__7ccd2ae98e75250e_b7c535e2260f16d7.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/7ccd2ae98e75250e/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__7ccd2ae98e75250e_5a2beac63ba34b21.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/7ccd2ae98e75250e/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_190_Athena_Commando_M_StreetRacerWhite",
+      "name": "Superador",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_090_StreetRacerWhiteMale",
+      "name": "Dividecarriles",
+      "type": "Accesorio mochilero",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x J Balvin, 1 x Real, 1 x Real for -1 MtxCurrency
+{
+  "offerId": "v2:/b9ae2f77d6a83d4cc92f410585f941aa9f16a95daf5c154821355e884f233ed1",
+  "price": 2000,
+  "regular": 2000,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "LatinGram",
+    "name": "Lúcete en el escenario principal",
+    "index": 21,
+    "rank": 181,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_A_182_M_Vivid_LZGQ3",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__8b8daf5c53ce17a9_c77507c0dd3606d9.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/8b8daf5c53ce17a9/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__8b8daf5c53ce17a9_550d7fc59587a3c5.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/8b8daf5c53ce17a9/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_A_182_Athena_Commando_M_Vivid_LZGQ3",
+      "name": "J Balvin",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_ID_661_VividMale1H_ZN6Q0",
+      "name": "Real",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_825_VividMale_7L9T0",
+      "name": "Real",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Black Cat, 1 x Cat's Pack for -1 MtxCurrency
+{
+  "offerId": "v2:/78070439142ef3c948a6e61e8ce59ae53d30c90e3304f60bcc0083abd21ac671",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-12T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "FantasticSurfer",
+    "name": "Marvel",
+    "index": 31,
+    "rank": 185,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_SweetLetter",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a385192e1aefa050_03f78fcc6bc5477e.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a385192e1aefa050/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a385192e1aefa050_8ea41748fb692476.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a385192e1aefa050/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_SweetLetter",
+      "name": "Gata Negra",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_SweetLetter",
+      "name": "Mochila felina",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Shirthead Flacko, 1 x Hi-Fi Jets, 1 x Rocky Rugahand, 1 x A$AP ROCKY X PUMA Suede 94 ‘Black/White’, 1 x Flacko's Chopper, 1 x A$AP's Gauntlets, 1 x A$AP Rockets, 1 x Helicopter, 1 x RIOT (Rowdy Pipe'n), 1 x A$AP ROCKY X PUMA Straycat V6 ‘Red Flash/Black’, 1 x Message From Flacko, 1 x Rocky's BOOM Mic, 1 x Rocky's BOOM Mic, 1 x Rocky's BOOM Mic for -1 MtxCurrency
+{
+  "offerId": "v2:/ec90ad43e5988096783782d40bdb9acbcc89434bc8b19dc96f88623195ad1fd6",
+  "price": 3200,
+  "regular": 8800,
+  "inDate": "2026-11-06T00:00:00Z",
+  "bundle": {
+    "name": "Lote A$AP Rocky",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/71a72092e86a6f92/renderimage_0.png"
+  },
+  "layout": {
+    "id": "AsapRocky",
+    "name": "A$AP Rocky",
+    "index": 62,
+    "rank": 190,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "5600 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 13,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_TonicMail",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__71a72092e86a6f92_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/71a72092e86a6f92/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__71a72092e86a6f92_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/71a72092e86a6f92/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_TonicMailWeb",
+      "name": "Flacko Helicopter",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_TonicMailWeb",
+      "name": "Propulsores de alta fidelidad",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Character_TonicMailYam",
+      "name": "Rocky Rugahand",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_TonicMailWeb_Mic",
+      "name": "Melodía de Rocky",
+      "type": {
+        "value": "mic",
+        "displayValue": "Micrófono",
+        "backendValue": "SparksMic"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_tonicmailweb_
+
+==== [VIRTUAL]1 x Rivian R1S for 400 MtxCurrency
+{
+  "offerId": "v2:/ecab8d09be3ee9d091800014dfc35d8e1999eebb62ec91a6dd84fbeeb6ba6f83",
+  "price": 400,
+  "regular": 400,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "layout": null,
+  "banner": null,
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 1,
+    "instruments": 0
+  },
+  "display": null,
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "sample": {
+        "id": "Wheel_Sheepbolt01",
+        "vehicleId": "VCID_Wheel_Sheepbolt01",
+        "name": "Rivian R1S",
+        "description": "Reinventada.",
+        "type": {
+          "value": "wheel",
+          "displayValue": "Rueda",
+          "backendValue": "VehicleCosmetics_Wheel"
+        },
+        "rarity": {
+          "value": "uncommon",
+          "displayValue": "Poco común",
+          "backendValue": "EFortRarity::Uncommon"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_sheepbolt01/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_sheepbolt01/large.png"
+        },
+        "series": {
+          "value": "SERIE RIVIAN",
+          "colors": [
+            "ffffffff",
+            "feb201ff",
+            "feb201ff",
+            "feb201ff",
+            "feb201ff"
+          ],
+          "backendValue": "Series_Rivian"
+        },
+        "added": "2026-03-26T13:00:50Z"
+      }
+    }
+  ],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Jason's Blade Kit, 1 x Crystal Lake Life Preserver for 800 MtxCurrency
+{
+  "offerId": "v2:/68a99dcb3291fa7c9335d5156d8157837214c6c8d26d8557c67130ae707be0b3",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "Friday",
+    "name": "Viernes 13",
+    "index": 49,
+    "rank": 188,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Pickaxe_GnatGala",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a56cf75d31ad46b1_2730559cca1f797d.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a56cf75d31ad46b1/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Pickaxe_GnatGala",
+      "name": "Armas de Jason",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_GnatGala",
+      "name": "Salvavidas de Crystal Lake",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Mega Man (Dual Override), 1 x Buster Cannon Fire Sword, 1 x Mega Man X, 1 x Buster Cannon Blades, 1 x E-Tank Power Pack, 1 x Zero (Mega Man), 1 x Z-Saber, 1 x Z-Saber, 1 x Rush (Mega Man), 1 x Mega Buster Flex for -1 MtxCurrency
+{
+  "offerId": "v2:/5a7cb0aa715e1b8be77b2c76781747b1c922c8db44461855a10f4acb3801bace",
+  "price": 3800,
+  "regular": 7300,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": {
+    "name": "Lote Mega Man",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a5ab4d9b7c1fb4c2/renderimage_0.png"
+  },
+  "layout": {
+    "id": "Megaman",
+    "name": "Mega Man",
+    "index": 0,
+    "rank": 182,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "3500 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 10,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_DuneBrief",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a5ab4d9b7c1fb4c2_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a5ab4d9b7c1fb4c2/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__a5ab4d9b7c1fb4c2_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/a5ab4d9b7c1fb4c2/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_DuneBriefMerry",
+      "name": "Mega Man (Dual Override)",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_DuneBriefMerry",
+      "name": "Hoja ígnea de Mega Buster",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Character_DuneBriefShift",
+      "name": "Mega Man X",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Platinum Karol G, 1 x Platinum Bichota 4-String, 1 x Platinum Bichota 4-String, 1 x Platinum Bichota 4-String for -1 MtxCurrency
+{
+  "offerId": "v2:/cf07496b7316c49baa9987a449607136151fa931c2d701e242fea3439878ed2c",
+  "price": 1800,
+  "regular": 1800,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": {
+    "name": "Karol G platino",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/cf8f17908eae4afc/renderimage_0.png"
+  },
+  "layout": {
+    "id": "LatinGram",
+    "name": "Lúcete en el escenario principal",
+    "index": 21,
+    "rank": 181,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_SourWire_Static",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__cf8f17908eae4afc_229f4ce47161a576.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/cf8f17908eae4afc/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__cf8f17908eae4afc_3ada394bba7efe6b.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/cf8f17908eae4afc/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_SourWire",
+      "name": "Karol G platino",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_SourWire_Bass",
+      "name": "Bajo Bichota platino",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_SourWire_Bass",
+      "name": "Bajo Bichota platino",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "id": "Sparks_Bass_SourWire",
+      "name": "Bajo Bichota platino",
+      "type": {
+        "value": "bass",
+        "displayValue": "Bajo",
+        "backendValue": "SparksBass"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_bass_sourwire/small.png",
+        "large": "https://fortnite-api.com/images/cosmeti
+
+==== [VIRTUAL]1 x Miku's Beam for -1 MtxCurrency
+{
+  "offerId": "v2:/59117db7afa71835f310f20b7073c5fa838671fc78daee3c7a01e81408c14385",
+  "price": 700,
+  "regular": 700,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": {
+    "name": "Ruedas Rayo de Miku",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9c89d2c3642f36ad/renderimage_0.png"
+  },
+  "layout": {
+    "id": "PirateCactus1",
+    "name": "Hatsune Miku",
+    "index": 10,
+    "rank": 198,
+    "showIneligibleOffers": "always",
+    "useWidePreview": true,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "Animado",
+    "intensity": "High",
+    "backendValue": "Animated"
+  },
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 1,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_Wheel_AventurineAnimated",
+    "render": [
+      {
+        "productTag": "Product.DelMar",
+        "fileName": "cosmo__9c89d2c3642f36ad_e98b3a3158ec34ac.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/9c89d2c3642f36ad/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "sample": {
+        "id": "Wheel_AventurineAnimated",
+        "vehicleId": "VCID_Wheel_AventurineAnimated",
+        "name": "Rayo de Miku",
+        "description": "Quema ruedas con la energía Miku Miku.",
+        "type": {
+          "value": "wheel",
+          "displayValue": "Rueda",
+          "backendValue": "VehicleCosmetics_Wheel"
+        },
+        "rarity": {
+          "value": "icon",
+          "displayValue": "Serie de ídolos",
+          "backendValue": "EFortRarity::Common"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_aventurineanimated/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_aventurineanimated/large.png"
+        },
+        "series": {
+          "value": "Serie de ídolos",
+          "image": "https://fortnite-api.com/images/cosmetics/series/creatorcollabseries.png",
+          "colors": [
+            "5cf2f3ff",
+            "2bc9caff",
+            "004c71ff",
+            "025253ff",
+            "000f2bff"
+          ],
+          "backendValue": "CreatorCollabSeries"
+        },
+        "added": "2025-01-30T00:00:00Z"
+      }
+    }
+  ],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Zero (Mega Man), 1 x Z-Saber, 1 x Z-Saber for -1 MtxCurrency
+{
+  "offerId": "v2:/8512aaaea5469f802d4275d67bd785ca689fee90d20adf8928e77836d427add5",
+  "price": 1800,
+  "regular": 1800,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "Megaman",
+    "name": "Mega Man",
+    "index": 0,
+    "rank": 182,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_TackleShow",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__8972fd860b6e12d0_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/8972fd860b6e12d0/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__8972fd860b6e12d0_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/8972fd860b6e12d0/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_TackleShow",
+      "name": "Zero (Mega Man)",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_TackleShow",
+      "name": "Sable Z",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_TackleShow",
+      "name": "Sable Z",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Cap'n Hatsune Miku, 1 x Miku's Treasure for -1 MtxCurrency
+{
+  "offerId": "v2:/5ea51a4ed7e22ba02c8c0417c9bfde7a0feeff7a96711171f8dc1e4660641288",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "PirateCactus1",
+    "name": "Hatsune Miku",
+    "index": 10,
+    "rank": 198,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "Nuevo",
+    "intensity": "High",
+    "backendValue": "New"
+  },
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": null,
+  "br": [
+    {
+      "id": "Character_PeonyPizza",
+      "name": "Capitana Hatsune Miku",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_PeonyPizza",
+      "name": "Tesoro de Miku",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Shirthead Flacko, 1 x Hi-Fi Jets, 1 x A$AP ROCKY X PUMA Suede 94 ‘Black/White’ for -1 MtxCurrency
+{
+  "offerId": "v2:/c75218ac40c50bfd30eafaef6e94df890f8234dd42c709a1120401e2bbad2655",
+  "price": 2000,
+  "regular": 2000,
+  "inDate": "2026-11-06T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "AsapRocky",
+    "name": "A$AP Rocky",
+    "index": 62,
+    "rank": 190,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_TonicMailWeb",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__890d3f0a7bb7d959_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/890d3f0a7bb7d959/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__890d3f0a7bb7d959_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/890d3f0a7bb7d959/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_TonicMailWeb",
+      "name": "Flacko Helicopter",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_TonicMailWeb",
+      "name": "Propulsores de alta fidelidad",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Shoes_TonicMailNote",
+      "name": "A$AP ROCKY X PUMA Suede 94 \"Black/White\"",
+      "type": "Calzado",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Snorkel Ops, 1 x Fishy Flippers for -1 MtxCurrency
+{
+  "offerId": "v2:/a33cb5073c7a861d0fed43e26109bb2f11c3a268455b5f8ec50c3b32a18cd99c",
+  "price": 1600,
+  "regular": 1800,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": {
+    "name": "Lote Mantente a flote",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0fd338c62b79da41/renderimage_0.png"
+  },
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "200 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_SaltFin",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__0fd338c62b79da41_69531c126149a5b5.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0fd338c62b79da41/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__0fd338c62b79da41_ebac3ddfa28abddc.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0fd338c62b79da41/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_073_Athena_Commando_F_Scuba",
+      "name": "Operación submarina",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "Shoes_SaltFin",
+      "name": "Pezapatos",
+      "type": "Calzado",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Blank for 400 MtxCurrency
+{
+  "offerId": "v2:/3529188ada7f0d81a3ec7c0f8766d2d27a8ce82aff58f531f01570fa45708c56",
+  "price": 400,
+  "regular": 400,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": null,
+  "layout": null,
+  "banner": null,
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 1,
+    "instruments": 0
+  },
+  "display": null,
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "sample": {
+        "id": "Wheel_DubT1",
+        "vehicleId": "VCID_Wheel_DubT1",
+        "name": "Volkswagen Golf II GTI",
+        "description": "Mejorado hasta la perfección.",
+        "type": {
+          "value": "wheel",
+          "displayValue": "Rueda",
+          "backendValue": "VehicleCosmetics_Wheel"
+        },
+        "rarity": {
+          "value": "uncommon",
+          "displayValue": "Poco común",
+          "backendValue": "EFortRarity::Uncommon"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/wheel_dubt1/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/wheel_dubt1/large.png"
+        },
+        "added": "2026-11-12T13:09:30Z"
+      }
+    }
+  ],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Spider-Man Zero, 1 x Spider Drone, 1 x Web Slicer, 1 x Spidey Landing for -1 MtxCurrency
+{
+  "offerId": "v2:/d06e234bbb3f06c9f72a9fdcd9a76d589002cba8e45c067f63e1ff1e14dba348",
+  "price": 1800,
+  "regular": 2600,
+  "inDate": "2026-11-12T00:00:00Z",
+  "bundle": {
+    "name": "Lote Spider-Man Cero",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0fc2b6e3994dbd59/renderimage_0.png"
+  },
+  "layout": {
+    "id": "FantasticSurfer",
+    "name": "Marvel",
+    "index": 31,
+    "rank": 185,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "800 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 4,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Featured_SpectacleBundle",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "t-athenabundles-spectacleweb-1024x1024-5795bb9cd9ee.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0fc2b6e3994dbd59/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "t-figure-athenabundles-spectacleweb-1024x1024-627f9226bbe1.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/0fc2b6e3994dbd59/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_A_430_Athena_Commando_M_SpectacleWeb",
+      "name": "Spider-Man Cero",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_A_027_SpectacleWebMale",
+      "name": "Spider-Dron",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_ID_820_SpectacleWebMale",
+      "name": "Hacha de telarañas",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Scrapknight Jules, 1 x Ohm's Mantle for -1 MtxCurrency
+{
+  "offerId": "v2:/2411c227dc63c52795dcd9752d5eb0dd650876837e008bc778711951799347c8",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-10T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "NoSweat111026",
+    "name": "No te preocupes",
+    "index": 20,
+    "rank": 183,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_A_077_F_ArmoredEngineer",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__bbcad8de963d0496_baa3984bcdea1652.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/bbcad8de963d0496/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__bbcad8de963d0496_a489e238c44c3ba3.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/bbcad8de963d0496/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_A_077_Athena_Commando_F_ArmoredEngineer",
+      "name": "Jules la Caballero chatarra",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_746_ArmoredEngineer",
+      "name": "Manto de Ohm",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x TBD (SID_Placeholder_920), 1 x TBD (SID_Placeholder_967), 1 x TBD (SID_Placeholder_966) for -1 MtxCurrency
+{
+  "offerId": "v2:/d697dcfdb7dffae67f20d56bd06343f21515c3fe357476730e8b8b10944dc33a",
+  "price": 1100,
+  "regular": 1500,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": {
+    "name": "Lote de improvisación de Lil' Uzi Vert",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/b877e6058abc2171/renderimage_0.png"
+  },
+  "layout": {
+    "id": "LilRook",
+    "name": "Lil Uzi Vert ",
+    "index": 3,
+    "rank": 196,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "400 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 0,
+    "tracks": 3,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_Jam_RookGecko",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__b877e6058abc2171_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/b877e6058abc2171/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [
+    {
+      "id": "sid_placeholder_920",
+      "name": "What You Saying",
+      "image": "https://cdn.fortnite-api.com/tracks/70fc57162678c8e4.jpg"
+    },
+    {
+      "id": "sid_placeholder_967",
+      "name": "Say It Was",
+      "image": "https://cdn.fortnite-api.com/tracks/f7516c1efd0903bd.jpg"
+    }
+  ],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x J Balvin Redux, 1 x Electro Grin Charger, 1 x Electro Strikers, 1 x J Balvin Board, 1 x Click Click Flash, 1 x Zappy-Go-Lucky, 1 x Fossil Fury for -1 MtxCurrency
+{
+  "offerId": "v2:/7f6d6bfb5bfaa6f3ef7ed4d239049940f85213b5e387d3c659c2a7be1e4e2e92",
+  "price": 2500,
+  "regular": 3600,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": {
+    "name": "Lote J Jurásico",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/af5b42592666b607/renderimage_0.png"
+  },
+  "layout": {
+    "id": "LatinGram",
+    "name": "Lúcete en el escenario principal",
+    "index": 21,
+    "rank": 181,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "1100 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 7,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_GalaxyLevel",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__af5b42592666b607_80ef2fd32e7abc93.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/af5b42592666b607/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__af5b42592666b607_98b9ef7ffb0ece9a.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/af5b42592666b607/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_GalaxyLevel",
+      "name": "J Balvin recargado",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_GalaxyLevel",
+      "name": "Electrosonrisa sobrecargada",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_GalaxyLevel",
+      "name": "Rayos rítmicos",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank for -1 MtxCurrency
+{
+  "offerId": "v2:/256e46d49959d390dea66663adcb715c0fe5a48b4b2b2e2d9bf3f37401084590",
+  "price": 2800,
+  "regular": 2800,
+  "inDate": "2026-11-08T00:00:00Z",
+  "bundle": {
+    "name": "Lote Bugatti Centodieci",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/58aed21410d56a7b/renderimage_0.png"
+  },
+  "layout": {
+    "id": "BugCento2",
+    "name": "Bugatti Centodieci",
+    "category": "Calienta los motores",
+    "index": 32,
+    "rank": 176,
+    "showIneligibleOffers": "always",
+    "useWidePreview": true,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 8,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_Ten",
+    "render": [
+      {
+        "productTag": "Product.DelMar",
+        "fileName": "cosmo__58aed21410d56a7b_47f0729990683727.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/58aed21410d56a7b/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "sample": {
+        "id": "CarBody_Ten",
+        "vehicleId": "VCID_Body_Ten",
+        "name": "Bugatti Centodieci",
+        "description": "Recuerdo de un ícono.",
+        "type": {
+          "value": "body",
+          "displayValue": "Carrocería",
+          "backendValue": "VehicleCosmetics_Body"
+        },
+        "rarity": {
+          "value": "epic",
+          "displayValue": "Épico",
+          "backendValue": "EFortRarity::Epic"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/carbody_ten/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/carbody_ten/large.png"
+        },
+        "series": {
+          "value": "SERIE BUGATTI",
+          "colors": [
+            "ffffffff",
+            "db1c30ff",
+            "db1c30ff",
+            "db1c30ff",
+            "db1c30ff"
+          ],
+          "backendValue": "Series_Bugatti"
+        },
+        "added": "2025-10-02T12:09:47Z"
+      }
+    },
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "series",
+        "added"
+      ],
+      "sample": {
+        "id": "CarSkin_TenLivery01",
+        "vehicle
+
+==== [VIRTUAL]1 x J Balvin Redux, 1 x Electro Grin Charger for -1 MtxCurrency
+{
+  "offerId": "v2:/71e4ba8db2c9c668b9b9100f02f619186a9de37b1ed18507a13696bd4bfe3340",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "LatinGram",
+    "name": "Lúcete en el escenario principal",
+    "index": 21,
+    "rank": 181,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_GalaxyLevel",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__012503cfda425662_48bc03bd0f18a62b.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/012503cfda425662/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__012503cfda425662_454b065629f4e711.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/012503cfda425662/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_GalaxyLevel",
+      "name": "J Balvin recargado",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_GalaxyLevel",
+      "name": "Electrosonrisa sobrecargada",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Caspian, 1 x Waveslasher, 1 x Waveslasher, 1 x Ocean's Glow for -1 MtxCurrency
+{
+  "offerId": "v2:/927db486b830851dcb864fc7cab648528170947dd431620aac3c3cd02f743d54",
+  "price": 1200,
+  "regular": 2100,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": {
+    "name": "Lote Caspian",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/70c1166c8b8cf941/renderimage_0.png"
+  },
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": {
+    "value": "900 monedas V de descuento",
+    "intensity": "Low",
+    "backendValue": "AmountOff"
+  },
+  "arrays": {
+    "br": 4,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_VioletFare",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__70c1166c8b8cf941_ddcacd7562f0e059.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/70c1166c8b8cf941/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__70c1166c8b8cf941_e006074aa53e1cfc.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/70c1166c8b8cf941/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_VioletFare",
+      "name": "Caspian",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_VioletFare",
+      "name": "Filo oleado",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_VioletFare",
+      "name": "Filo oleado",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Buggy, 1 x Buggy's Coat, 1 x Buggy Knives for -1 MtxCurrency
+{
+  "offerId": "v2:/4431d4a16bd18c613e3ed16fe0c7f5485adb651a7545d313c8d36fae43ab2963",
+  "price": 1600,
+  "regular": 1600,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "billboard",
+    "textureMetadata": [
+      {
+        "key": "background",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_FlipperBalm_BG-9f591538.png"
+      },
+      {
+        "key": "foreground",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_FlipperBalm_Character-1dae77ed.png"
+      },
+      {
+        "key": "banner",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_Delilah_Logo-17440ac3.png"
+      },
+      {
+        "key": "foreground_juno",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_FlipperBalm_Figure-01341b7d.png"
+      },
+      {
+        "key": "bodyImage",
+        "value": "https://cdn2.unrealengine.com/sk-Billboard_FlipperBalm_ItemStack-5a2e6193.png"
+      }
+    ],
+    "stringMetadata": [
+      {
+        "key": "alignment",
+        "value": "left"
+      },
+      {
+        "key": "highlightEnabled",
+        "value": "true"
+      },
+      {
+        "key": "parallaxEnabled",
+        "value": "true"
+      },
+      {
+        "key": "titleColorA",
+        "value": "FFFFFF"
+      },
+      {
+        "key": "titleColorB",
+        "value": "FFFFFF"
+      }
+    ],
+    "textMetadata": [
+      {
+        "key": "cta",
+        "value": "Ver oferta"
+      },
+      {
+        "key": "title",
+        "value": "Buggy"
+      }
+    ]
+  },
+  "banner": null,
+  "arrays": {
+    "br": 3,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_FlipperBalm",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__544ccf473286f2a3_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/544ccf473286f2a3/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__544ccf473286f2a3_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/544ccf473286f2a3/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_FlipperBalm",
+      "name": "Buggy",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featur
+
+==== [VIRTUAL]1 x The Brat, 1 x Loose Links for -1 MtxCurrency
+{
+  "offerId": "v2:/aae0828fb115d54f46787a360636c6fca1f240f98fb0561b553399d39fab00f0",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-13T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_614_M_MissingLink",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__e22eacd6dc1ab816_08afae8270853e84.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/e22eacd6dc1ab816/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__e22eacd6dc1ab816_b00cd469caaf06aa.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/e22eacd6dc1ab816/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_614_Athena_Commando_M_MissingLink",
+      "name": "Salchicho",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "Trails_ID_081_MissingLink",
+      "name": "Eslabón perdido",
+      "type": "Estela",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Mega Man (Dual Override), 1 x Buster Cannon Fire Sword for -1 MtxCurrency
+{
+  "offerId": "v2:/3f084d06dc3afd56b80d5e0953299c8465f80c4df0530aa5c62e729b9bc07d63",
+  "price": 1800,
+  "regular": 1800,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "Megaman",
+    "name": "Mega Man",
+    "index": 0,
+    "rank": 182,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_DuneBriefMerry",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__471086c27df7e951_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/471086c27df7e951/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__471086c27df7e951_d2e71b6320aa32c2.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/471086c27df7e951/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_DuneBriefMerry",
+      "name": "Mega Man (Dual Override)",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "Pickaxe_DuneBriefMerry",
+      "name": "Hoja ígnea de Mega Buster",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Starr Oakley, 1 x Overdraw Pack for -1 MtxCurrency
+{
+  "offerId": "v2:/5cc185c57083d1faa6b5db44597a13f4daa00f640f031f7b511a412aea768f80",
+  "price": 1200,
+  "regular": 1200,
+  "inDate": "2026-11-15T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "BR111526",
+    "name": "Energía de protagonista ",
+    "index": 12,
+    "rank": 184,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Character_SparkArcher",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__c4e31304a57174d7_74358ac07c866021.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/c4e31304a57174d7/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__c4e31304a57174d7_213b31193a78aa6f.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/c4e31304a57174d7/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Character_SparkArcher",
+      "name": "Starr Oakley",
+      "type": "Personaje",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego",
+        "bean"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_SparkArcher",
+      "name": "Carcaj potente",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Straw Hat Guitar, 1 x Straw Hat Guitar, 1 x Straw Hat Guitar for 800 MtxCurrency
+{
+  "offerId": "v2:/bba959166b14246f2d4f86d3583479b914e49a1105e920a6c160c4939aa1565b",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-01T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "ConclusionC111426",
+    "name": "One Piece ",
+    "index": 46,
+    "rank": 194,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 1
+  },
+  "display": {
+    "id": "DAv2_Sparks_Celerystitch_Guitar",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__5eb28f7e18991c73_29c0c4191e61fb71.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/5eb28f7e18991c73/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "Pickaxe_CeleryStitch_Guitar",
+      "name": "Cuerdas de los Sombrero de paja",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "Backpack_CeleryStitch_Guitar",
+      "name": "Cuerdas de los Sombrero de paja",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": [
+    {
+      "keys": [
+        "id",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "id": "Sparks_CeleryStitch_Guitar",
+      "name": "Cuerdas de los Sombrero de paja",
+      "type": {
+        "value": "guitar",
+        "displayValue": "Guitarra",
+        "backendValue": "SparksGuitar"
+      },
+      "images": {
+        "small": "https://fortnite-api.com/images/cosmetics/instruments/sparks_celerystitch_guitar/small.png",
+        "large": "https://fortnite-api.com/images/cosmetics/instruments/sparks_celerystitch_guitar/large.png"
+      }
+    }
+  ]
+}
+
+==== [VIRTUAL]1 x Real, 1 x Real for 800 MtxCurrency
+{
+  "offerId": "v2:/0e369f6c189d2c38dab52474253efdbe742bfb1fabf038b0bae11e8f858ba0d6",
+  "price": 800,
+  "regular": 800,
+  "inDate": "2026-11-11T00:00:00Z",
+  "bundle": null,
+  "layout": null,
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": null,
+  "br": [
+    {
+      "id": "Pickaxe_ID_661_VividMale1H_ZN6Q0",
+      "name": "Real",
+      "type": "Pico",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_825_VividMale_7L9T0",
+      "name": "Real",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Spider-Man Zero, 1 x Spider Drone for -1 MtxCurrency
+{
+  "offerId": "v2:/f3f9dd07be6ff4f6730129df7ed27f575c06e288a2ee4f70e60277635b73e1cc",
+  "price": 1500,
+  "regular": 1500,
+  "inDate": "2026-11-12T00:00:00Z",
+  "bundle": null,
+  "layout": {
+    "id": "FantasticSurfer",
+    "name": "Marvel",
+    "index": 31,
+    "rank": 185,
+    "showIneligibleOffers": "always",
+    "useWidePreview": false,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 2,
+    "tracks": 0,
+    "cars": 0,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_CID_A_430_M_SpectacleWeb",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__03b848865ff3bef0_810960eca9d781ef.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/03b848865ff3bef0/renderimage_0.png"
+      },
+      {
+        "productTag": "Product.Juno",
+        "fileName": "cosmo__03b848865ff3bef0_28171a0b6e71bd6d.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/03b848865ff3bef0/renderimage_1.png"
+      }
+    ]
+  },
+  "br": [
+    {
+      "id": "CID_A_430_Athena_Commando_M_SpectacleWeb",
+      "name": "Spider-Man Cero",
+      "type": "Atuendo",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured",
+        "lego"
+      ],
+      "image": null
+    },
+    {
+      "id": "BID_A_027_SpectacleWebMale",
+      "name": "Spider-Dron",
+      "type": "Mochila retro",
+      "images": [
+        "smallIcon",
+        "icon",
+        "featured"
+      ],
+      "image": null
+    }
+  ],
+  "tracks": [],
+  "cars": [],
+  "instruments": []
+}
+
+==== [VIRTUAL]1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank, 1 x Blank for -1 MtxCurrency
+{
+  "offerId": "v2:/ca1b447468da0055616c833bd944faf76725874c2c5ce6c168b567ee77ef30ec",
+  "price": 2000,
+  "regular": 2000,
+  "inDate": "2026-11-14T00:00:00Z",
+  "bundle": {
+    "name": "Volkswagen Golf GTI",
+    "info": "Bundle",
+    "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d8b01bb813dab09a/renderimage_0.png"
+  },
+  "layout": {
+    "id": "VWGolf",
+    "name": "Volkswagen Golf GTI ",
+    "category": "Calienta los motores",
+    "index": 15,
+    "rank": 179,
+    "showIneligibleOffers": "always",
+    "useWidePreview": true,
+    "displayType": "tileGrid"
+  },
+  "banner": null,
+  "arrays": {
+    "br": 0,
+    "tracks": 0,
+    "cars": 8,
+    "instruments": 0
+  },
+  "display": {
+    "id": "DAv2_Bundle_Featured_DubT1",
+    "render": [
+      {
+        "productTag": "Product.BR",
+        "fileName": "cosmo__d8b01bb813dab09a_7fd28c8bdf45571c.png",
+        "image": "https://fortnite-api.com/images/cosmetics/br/newdisplayassets/d8b01bb813dab09a/renderimage_0.png"
+      }
+    ]
+  },
+  "br": [],
+  "tracks": [],
+  "cars": [
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "sample": {
+        "id": "CarSkin_DubT1Huntress",
+        "vehicleId": "VCID_CarSkin_DubT1Huntress",
+        "name": "Cazadora",
+        "description": "Calcomanía personalizada de Volkswagen Golf II GTI.",
+        "type": {
+          "value": "skin",
+          "displayValue": "Aspecto",
+          "backendValue": "VehicleCosmetics_Skin"
+        },
+        "rarity": {
+          "value": "uncommon",
+          "displayValue": "Poco común",
+          "backendValue": "EFortRarity::Uncommon"
+        },
+        "images": {
+          "small": "https://fortnite-api.com/images/cosmetics/cars/carskin_dubt1huntress/small.png",
+          "large": "https://fortnite-api.com/images/cosmetics/cars/carskin_dubt1huntress/large.png"
+        },
+        "added": "2026-11-12T13:09:30Z"
+      }
+    },
+    {
+      "keys": [
+        "id",
+        "vehicleId",
+        "name",
+        "description",
+        "type",
+        "rarity",
+        "images",
+        "added"
+      ],
+      "sample": {
+        "id": "CarSkin_DubT1Wings",
+        "vehicleId": "VCID_CarSkin_DubT1Wings",
+        "name": "Alas",
+        "description": "Calcomanía personalizada de Volkswagen Golf II GTI.",
+        "type": {
+          "value": "skin",
+          "displayValue": "Aspecto",
+          "backendV

@@ -1,0 +1,104 @@
+.panel { display:grid; gap:28px; color:var(--loot-body,#d8dced); }
+.panel h2,.panel h3 { margin:0 0 10px; color:white; }
+.panel p { line-height:1.6; }
+.recharge { background:#11162c; padding:28px; border:1px solid #2c334e; display:grid; gap:18px; }
+.panel fieldset { min-width:0; border:0; padding:0; display:grid; gap:20px; }
+.panel label { display:grid; gap:10px; }
+.panel input[type=file] { width:100%; padding:12px; border:1px solid #343b54; }
+.amountButtons { display:flex; flex-wrap:wrap; gap:10px; }
+.amountButtons button { padding:10px 18px; background:#1b2340; color:white; border:1px solid #3d4969; cursor:pointer; }
+.amountButtons button[aria-pressed=true] { color:#111; background:var(--loot-lime,#d6ff38); }
+.summary { display:grid; grid-template-columns:1fr auto; gap:14px; padding:18px; background:#090d1d; }
+.list { display:grid; gap:14px; margin-bottom:18px; }
+.list article { background:#11162c; border:1px solid #2c334e; padding:20px; overflow-wrap:anywhere; }
+.list header { display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between; margin-bottom:8px; }
+.list form { display:grid; gap:12px; margin-top:16px; }
+.payment { background:#090d1d; padding:16px; margin-top:14px; }
+.pendingCard { background:#11162c; border:1px solid var(--loot-lime,#d6ff38); padding:24px; display:grid; gap:12px; overflow-wrap:anywhere; }
+.pendingCard header { display:flex; flex-wrap:wrap; gap:14px; justify-content:space-between; color:white; font-size:1.1rem; }
+.pendingCard .payment { margin-top:0; }
+.pendingCard .payment p { margin:4px 0; }
+.pendingCard form { display:grid; gap:12px; }
+.reference { color:var(--loot-lime,#d6ff38); font-size:1.15rem; letter-spacing:.04em; }
+.recharge h2 { font-size:clamp(1.5rem,2.4vw,2rem); }
+@media(max-width:650px) { .recharge,.pendingCard { padding:20px; } .summary { grid-template-columns:1fr; } }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr)); gap:14px; }
+.stats > div { background:#11162c; border:1px solid #2c334e; padding:18px; display:grid; gap:6px; align-content:start; min-width:0; }
+.stats > div[data-alert=true] { border-color:#ff6b6b; }
+.stats span { font-size:.85rem; color:#aab1cc; }
+.stats strong { color:white; font-size:1.8rem; line-height:1.1; font-variant-numeric:tabular-nums; }
+.stats small { color:#aab1cc; }
+.paused { background:#2a1d0c; border:1px solid #f0a356; padding:20px; display:flex; flex-wrap:wrap; gap:16px; align-items:center; justify-content:space-between; }
+.paused > div { flex:1 1 320px; min-width:0; }
+.whatsNotice { display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:#0f2a1c; border:1px solid #3ccf7f; padding:14px 18px; margin-bottom:18px; }
+.whatsNotice p { margin:0; flex:1 1 260px; }
+.list article > a.secondary-button, .list article > small { display:inline-block; margin-top:12px; }
+.netNote { margin:0; padding:10px 12px; background:#090d1d; border-left:3px solid #f0a356; font-size:.92rem; }
+.gift { font-style:normal; color:var(--loot-lime,#d6ff38); }
+.nextOffer { margin:0; padding:12px 14px; background:#162038; border-left:3px solid var(--loot-lime,#d6ff38); }
+.linkButton { background:none; border:0; padding:0; color:var(--loot-lime,#d6ff38); text-decoration:underline; cursor:pointer; font:inherit; }
+.campaign { background:#1d2a12; border:1px solid var(--loot-lime,#d6ff38); padding:14px 16px; display:grid; gap:6px; }
+.campaign p { margin:0; }
+.tiers { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr)); gap:8px; }
+.tiers li { display:grid; gap:2px; padding:10px 12px; background:#090d1d; border:1px solid #2c334e; }
+.tiers li[aria-current=true] { border-color:var(--loot-lime,#d6ff38); }
+.tiers span { font-size:.85rem; color:#aab1cc; }
+.offerRow { background:#090d1d; border:1px solid #2c334e !important; padding:16px !important; }
+.offerRow header { display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between; align-items:baseline; }
+.marginOk { color:#5ccf8f; }
+.marginBad { color:#ff7a84; }
+.copyBox { display:grid; gap:8px; }
+.copyBox textarea { width:100%; min-height:120px; font:inherit; background:#11162c; color:inherit; border:1px solid #343b54; padding:10px; }
+.after { margin:0; font-size:14px; }
+.after strong { color:white; }
+.afterDetails { border-top:1px solid #ffffff1a; padding-top:10px; }
+.afterDetails summary { cursor:pointer; color:var(--loot-lime,#d6ff38); font-weight:800; font-size:14px; margin-bottom:8px; }
+.detailHead { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.detailHead h2 { margin:0; }
+/* Confirmación grande: la recarga se creó o el comprobante llegó. */
+.flash { position:relative; display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start; padding:18px 48px 18px 18px; background:#16260f; border:2px solid var(--loot-lime,#d6ff38); color:#fff; animation:flashIn .3s ease; }
+.flash > svg { color:var(--loot-lime,#d6ff38); }
+.flash strong { display:block; font-size:1.15rem; margin-bottom:4px; }
+.flash p { margin:0; color:#dfe6c8; line-height:1.45; }
+.flashClose { position:absolute; top:8px; right:8px; width:36px; height:36px; display:grid; place-items:center; background:transparent; border:0; color:#fff; font-size:22px; cursor:pointer; }
+.flashClose:focus-visible { outline:3px solid var(--loot-lime,#d6ff38); }
+@keyframes flashIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation:none; } }
+.cardState { flex-basis:100%; display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--loot-lime,#d6ff38); }
+.cardState[data-state=review] { color:#ffd166; }
+.reviewCard { border-color:#ffd16699; }
+.reviewCard > p { margin:0; line-height:1.5; }
+.copy { margin-left:6px; padding:2px 10px; min-height:28px; background:#1b2340; color:#fff; border:1px solid #3d4969; font-size:12px; font-weight:700; cursor:pointer; vertical-align:middle; }
+.copy:hover { border-color:var(--loot-lime,#d6ff38); }
+.another { border:1px solid #ffffff1a; padding:12px 16px; }
+.another > summary { cursor:pointer; color:var(--loot-lime,#d6ff38); font-weight:800; }
+.another[open] > summary { margin-bottom:14px; }
+/* Escalera de precio por volumen (admin): base + escalones editados juntos. */
+.ladder { display:grid; gap:12px; }
+.ladderBase { margin:0; padding:10px 12px; background:#11162c; border-left:3px solid var(--loot-lime,#d6ff38); }
+.ladderBase strong { color:#fff; }
+.ladderHead, .ladderRow { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto minmax(0,1.3fr); gap:12px; align-items:center; }
+.ladderHead { font-size:.78rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#9aa2bd; }
+.panel .ladderRow label { gap:6px; }
+.ladderRow input[type=number] { width:100%; min-width:0; }
+.ladderRow[data-invalid] input[type=number] { border-color:#ff7a84; }
+.ladderLabel { display:none; font-size:.8rem; font-weight:700; color:#9aa2bd; }
+.ladderCheck { white-space:nowrap; }
+.ladderInfo { display:grid; gap:2px; font-size:.9rem; min-width:0; }
+.ladderInfo strong { color:#fff; }
+.ladderError { grid-column:1 / -1; margin:0; color:#ff9aa1; font-size:.9rem; }
+.ladderOk { margin:0; color:#5ccf8f; font-size:.9rem; }
+.ladderPreview { display:grid; gap:8px; padding-top:6px; border-top:1px solid #ffffff1a; }
+.ladderPreview h3 { margin:0; font-size:1rem; }
+.ladderPreview table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:.92rem; }
+.ladderPreview th, .ladderPreview td { padding:6px 8px; text-align:left; border-bottom:1px solid #ffffff12; }
+.ladderPreview thead th { color:#9aa2bd; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; }
+.ladderPreview tbody th { color:#fff; font-weight:700; }
+.ladderPreview small { color:#9aa2bd; }
+@media (max-width:640px) {
+  .ladderHead { display:none; }
+  .ladderRow { grid-template-columns:minmax(0,1fr) minmax(0,1fr); padding-bottom:12px; border-bottom:1px solid #ffffff12; }
+  .ladderLabel { display:block; }
+  .ladderInfo { grid-column:1 / -1; }
+  .ladderPreview th, .ladderPreview td { padding:6px 4px; font-size:.85rem; }
+}

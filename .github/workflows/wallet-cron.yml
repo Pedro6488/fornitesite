@@ -1,0 +1,44 @@
+name: Wallet delivery cron
+
+# Vercel Hobby solo admite crons diarios. Este workflow llama cada 5 minutos a la cola de
+# entregas con pavos de cada ambiente. GitHub solo ejecuta `schedule` desde la rama por
+# defecto (main) y puede retrasarlo varios minutos; la entrega inmediata al comprar no depende
+# de este cron, solo el rescate de pedidos interrumpidos y el vencimiento de recargas.
+#
+# Secrets por ambiente (si falta la URL, ese ambiente se omite):
+#   WALLET_CRON_URL_PRODUCTION / WALLET_CRON_SECRET_PRODUCTION
+#   WALLET_CRON_URL_QA         / WALLET_CRON_SECRET_QA
+# La URL es la ruta completa, p. ej. https://<dominio>/api/internal/wallet, y el secret es
+# el mismo valor que CRON_SECRET en ese ambiente de Vercel.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: wallet-cron
+  cancel-in-progress: false
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [production, qa]
+    steps:
+      - name: Process wallet queue
+        env:
+          URL: ${{ matrix.target == 'production' && secrets.WALLET_CRON_URL_PRODUCTION || secrets.WALLET_CRON_URL_QA }}
+          SECRET: ${{ matrix.target == 'production' && secrets.WALLET_CRON_SECRET_PRODUCTION || secrets.WALLET_CRON_SECRET_QA }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$SECRET" ]; then
+            echo "Sin URL o secret para ${{ matrix.target }}; se omite."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 75 \
+            --header "Authorization: Bearer $SECRET" "$URL"

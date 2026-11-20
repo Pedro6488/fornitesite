@@ -11,7 +11,7 @@ import { AdminPageHeader, useDeliveryMode } from "./admin-shell";
 import { OrderActionNotice, useOrderActions } from "./order-actions";
 import { useAdminData } from "./use-admin-request";
 
-type OrderItem = { id: string; item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null };
+type OrderItem = { id: string; item_main_id: string; item_name: string; item_image_url: string | null; vbucks_price: number; quantity: number; unit_amount_mxn_cents: number; unit_amount_usd_cents?: number | null; wallet_refunded?: boolean };
 type Fulfillment = {
   order_item_id: string | null; status: "queued" | "sending" | "sent" | "unknown" | "failed" | "delivered"; result_code: string | null;
   last_error: string | null; track_id: string | null; sender_name: string | null; final_price_vbucks: number | null; finished_at: string | null;
@@ -26,6 +26,7 @@ const FULFILLMENT_LABELS: Record<Fulfillment["status"], { text: string; tone: st
   failed: { text: "No enviado", tone: "is-bad" },
 };
 type OrderDetailData = {
+  payment_source?: string; wallet_vbucks?: number | null;
   id: string; created_at: string; paid_at: string | null; delivered_at: string | null; customer_email: string | null;
   epic_display_name: string; epic_account_id: string; recipient_platform: string; contact_whatsapp: string | null;
   amount_mxn_cents: number; currency?: "MXN" | "USD"; amount_usd_cents?: number | null; status: OrderStatus; order_items: OrderItem[];
@@ -91,7 +92,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
 
     <div className="ac-grid-2 ac-detail">
       <section className="ac-card" aria-labelledby="ac-receipt-title">
-        <header className="ac-card-head"><div><h2 id="ac-receipt-title">Comprobante de pago</h2><p>El depósito en el banco debe ser de {formatOrderMoney(order)}.</p></div></header>
+        <header className="ac-card-head"><div><h2 id="ac-receipt-title">{order.payment_source === "wallet" ? "Pago con pavos" : "Comprobante de pago"}</h2><p>{order.payment_source === "wallet" ? "Saldo descontado. La entrega se procesa automáticamente; no requiere revisar una transferencia." : `El depósito en el banco debe ser de ${formatOrderMoney(order)}.`}</p></div></header>
         {order.receipt ? <>
           <p className="ac-flag is-ok"><FileCheck2 aria-hidden="true" size={15} />Enviado por el cliente el {formatDateTime(order.receipt.createdAt)}</p>
           {order.receipt.url
@@ -124,7 +125,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
           return <li key={`${item.item_main_id}-${index}`}>
           <span className="ac-thumb is-large">{item.item_image_url ? <Image src={item.item_image_url} alt="" width={56} height={56} unoptimized /> : <b aria-hidden="true">{item.item_name.slice(0, 1)}</b>}</span>
           <div>
-            <strong>{item.quantity}× {item.item_name}</strong><small>{item.vbucks_price.toLocaleString("es-MX")} paVos</small>
+            <strong>{item.quantity}× {item.item_name}</strong><small>{item.vbucks_price.toLocaleString("es-MX")} paVos{item.wallet_refunded ? " · Pavos devueltos al cliente" : ""}</small>
             {fulfillment && state && <small className="ac-item-state">
               <span className={`ac-send-state ${state.tone}`}>{state.text}</span>
               {fulfillment.sender_name ? ` · cuenta ${fulfillment.sender_name}` : ""}
@@ -132,7 +133,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
               {fulfillment.status === "failed" || fulfillment.status === "unknown" ? ` · ${fulfillment.last_error ?? fulfillment.result_code ?? ""}` : ""}
             </small>}
           </div>
-          <span>{formatItemMoney(order.currency, item)}</span>
+          <span>{order.payment_source === "wallet" ? `${item.vbucks_price} pavos` : formatItemMoney(order.currency, item)}</span>
           <Link className="ac-link" href={`/objetos/${encodeURIComponent(item.item_main_id)}?from=${encodeURIComponent("/admin")}`} target="_blank">Ver en la tienda</Link>
         </li>;
         })}

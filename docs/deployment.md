@@ -72,6 +72,35 @@ Para automatizaciones, configura un bot de Telegram y usa como
 Resend, verifica el dominio de `EMAIL_FROM` antes de enviar a clientes reales.
 El cron de Hobby ejecuta `/api/internal/jobs` diariamente; Telegram y la
 verificación de correo se intentan de inmediato y se reintentan desde la cola.
+Ese worker general no toma las entregas con pavos (`wallet.deliver`).
+
+### Cola de pavos (cada 5 minutos, fuera de Vercel)
+
+Vercel Hobby solo admite crons diarios, así que `vercel.json` no declara
+`/api/internal/wallet`. Lo llama el workflow
+`.github/workflows/wallet-cron.yml` cada 5 minutos. En cada llamada:
+
+- Procesa hasta 10 entregas o 45 segundos.
+- Marca como vencidas las recargas sin comprobante de más de 48 horas.
+
+Para activarlo, agrega estos secrets en GitHub → Settings → Secrets and variables → Actions:
+
+| Secret | Valor |
+| --- | --- |
+| `WALLET_CRON_URL_PRODUCTION` | `https://<dominio de producción>/api/internal/wallet` |
+| `WALLET_CRON_SECRET_PRODUCTION` | El mismo valor que `CRON_SECRET` en Vercel Production |
+| `WALLET_CRON_URL_QA` | `https://<dominio de QA>/api/internal/wallet` |
+| `WALLET_CRON_SECRET_QA` | El mismo valor que `CRON_SECRET` en el ambiente de QA |
+
+Si falta la URL o el secret de un ambiente, ese ambiente se omite sin error.
+GitHub solo ejecuta `schedule` desde la rama por defecto (`main`) y puede
+retrasarlo unos minutos. No pasa nada: la entrega se intenta de inmediato al
+comprar, y el cron solo rescata pedidos interrumpidos. Para probarlo a mano, usa
+**Run workflow** en la pestaña Actions.
+
+Una entrega que falla se reintenta con espera creciente. Al llegar a 8
+intentos el trabajo queda como `failed` y sale un aviso a Telegram con el
+enlace al pedido. A partir de ahí se revisa y se concilia a mano.
 
 `NEXT_PUBLIC_APP_URL` utiliza `https://www.sigfriedlootbox.com` como respaldo
 cuando no está definida. En previews y desarrollo se debe configurar de forma

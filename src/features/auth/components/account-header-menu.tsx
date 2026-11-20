@@ -1,17 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { BadgeCheck, CircleAlert, Clock3, Heart, LayoutDashboard, LogIn, LogOut, Menu, ScanLine, UserPlus, UserRound } from "lucide-react";
+import { BadgeCheck, CircleAlert, Clock3, Coins, Heart, LayoutDashboard, LogIn, LogOut, Menu, ScanLine, UserPlus, UserRound } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCommerceState } from "@/features/commerce/components/commerce-state-provider";
 import { getIdentityPresentation } from "@/features/commerce/application/identity-presentation";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
+import { useWalletBalance } from "@/features/wallet/components/use-wallet-balance";
 
 export function AccountHeaderMenu() {
   const pathname = usePathname();
   const router = useRouter();
   const commerce = useCommerceState();
+  const wallet = useWalletBalance(commerce.authenticated && !pathname.startsWith("/admin"), commerce.sessionId);
   const identity = getIdentityPresentation(commerce.validation);
   const IdentityIcon = identity.tone === "success" ? BadgeCheck : identity.tone === "danger" ? CircleAlert : identity.tone === "warning" ? Clock3 : ScanLine;
   const [signingOut, setSigningOut] = useState(false);
@@ -61,10 +63,12 @@ export function AccountHeaderMenu() {
         <div className="account-menu-divider" />
         {commerce.authenticated ? <>
           <Link href="/cuenta"><LayoutDashboard aria-hidden="true" size={16} /><span>Mi cuenta</span></Link>
+          <Link href="/pavos"><Coins aria-hidden="true" size={16} /><span>Mis pavos{wallet ? ` · ${wallet.balance.toLocaleString("es-MX")} disponibles` : " · comprar saldo"}</span></Link>
           <button className="account-menu-signout" type="button" disabled={signingOut} onClick={() => void signOut()}><LogOut aria-hidden="true" size={16} /><span>{signingOut ? "Saliendo…" : "Cerrar sesión"}</span></button>
         </> : <>
           <Link className="account-menu-primary" href="/cuenta?mode=register"><UserPlus aria-hidden="true" size={16} /><span>Crear cuenta</span></Link>
           <Link href="/cuenta"><LogIn aria-hidden="true" size={16} /><span>Iniciar sesión</span></Link>
+          <Link href="/pavos"><BadgeCheck aria-hidden="true" size={16} /><span>Pavos de la tienda · qué son</span></Link>
         </>}
       </>}
     </div>

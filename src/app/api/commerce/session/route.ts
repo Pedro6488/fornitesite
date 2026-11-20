@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSavedEmail } from "@/features/commerce/server/get-saved-email";
 import { z } from "zod";
 import {
   attachCommerceCookie,
@@ -88,6 +89,7 @@ async function sessionResponse(request: Request, migrateLegacyState: boolean) {
       { data: favorites },
       { data: validations },
       { data: sessionState },
+      savedEmail,
     ] = await Promise.all([
       cartId
         ? database
@@ -108,9 +110,10 @@ async function sessionResponse(request: Request, migrateLegacyState: boolean) {
         .order("last_checked_at", { ascending: false }),
       database
         .from("commerce_sessions")
-        .select("active_game_id_validation_id")
+        .select("active_game_id_validation_id,whatsapp")
         .eq("id", session.id)
         .maybeSingle(),
+      getSavedEmail(database, session),
     ]);
     const activeValidationId =
       sessionState?.active_game_id_validation_id ??
@@ -122,6 +125,9 @@ async function sessionResponse(request: Request, migrateLegacyState: boolean) {
         favoriteItemIds: (favorites ?? []).map((item) => item.item_main_id),
         validations: validations ?? [],
         activeValidationId,
+        sessionId: session.id,
+        whatsapp: sessionState?.whatsapp ?? null,
+        email: savedEmail,
         authenticated: Boolean(session.user),
         automaticDelivery: automaticDeliveryEnabled(),
       }),

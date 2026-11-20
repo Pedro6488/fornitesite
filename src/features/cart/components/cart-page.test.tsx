@@ -8,6 +8,9 @@ const commerce = vi.hoisted(() => ({
   ready: true,
   authenticated: false,
   syncing: false,
+  sessionId: "session-a",
+  email: "cliente@example.com" as string | null,
+  refresh: vi.fn().mockResolvedValue(undefined),
   cartItemIds: ["available", "expired", "missing"],
   validation: null,
   removeCartItem: vi.fn().mockResolvedValue(null)
@@ -39,6 +42,27 @@ describe("CartPage", () => {
   beforeEach(() => {
     router.push.mockReset();
     commerce.removeCartItem.mockClear();
+    commerce.email = "cliente@example.com";
+    commerce.sessionId = "session-a";
+    commerce.cartItemIds = ["available", "expired", "missing"];
+  });
+
+  it("autocompleta el correo del carrito sin aceptar recordatorios automáticamente", () => {
+    render(<CartPage items={[item()]} />);
+    expect(screen.getByRole("textbox", { name: "Correo electrónico" })).toHaveValue("cliente@example.com");
+    expect(screen.getByRole("checkbox")).not.toBeChecked();
+  });
+
+  it("guarda el correo al continuar aunque no se activen los recordatorios", async () => {
+    commerce.email = null;
+    commerce.cartItemIds = ["available"];
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ message: "Correo guardado." }) });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<CartPage items={[item()]} />);
+    fireEvent.change(screen.getByRole("textbox", { name: "Correo electrónico" }), { target: { value: "nuevo@example.com" } });
+    fireEvent.click(screen.getAllByRole("button", { name: /Continuar compra/ })[0]);
+    await waitFor(() => expect(router.push).toHaveBeenCalledWith("/checkout"));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ email: "nuevo@example.com", consent: false });
   });
 
   it("muestra los objetos caducados y permite quitarlos juntos", async () => {
