@@ -3,10 +3,16 @@ import { useState, type FormEvent } from "react";
 import { walletMoney, type WalletRate } from "../domain/wallet";
 import { effectiveWithBonus, marginBp, type WalletBonus, type WalletTier } from "../domain/wallet-offers";
 import { toCustomer } from "../domain/wallet-whatsapp";
+import { TierLadder } from "./admin-wallet-ladder";
 import styles from "./wallet.module.css";
 
 type Region = "mx" | "us";
-type Props = { rates: WalletRate[]; tiers: WalletTier[]; bonuses: WalletBonus[]; busy: boolean; onAction: (body: unknown) => Promise<boolean> };
+type Props = {
+  rates: WalletRate[]; tiers: WalletTier[]; bonuses: WalletBonus[]; busy: boolean;
+  /** Guarda sin mensaje global: devuelve el error del servidor o null, para mostrarlo junto al formulario. */
+  onSave: (body: unknown) => Promise<string | null>;
+  onSaved: () => Promise<void>;
+};
 const regionLabel = (region: Region) => region === "mx" ? "México · MXN" : "USA · USD";
 const percent = (bp: number | null) => bp === null ? "—" : `${(bp / 100).toLocaleString("es-MX", { maximumFractionDigits: 1 })}%`;
 const toLocalInput = (iso: string) => { const date = new Date(iso); date.setMinutes(date.getMinutes() - date.getTimezoneOffset()); return date.toISOString().slice(0, 16); };
@@ -28,39 +34,36 @@ function worstBonusPer100(bonus: Pick<WalletBonus, "region" | "min_vbucks" | "bo
   return effectiveWithBonus(lowest, bonus.bonus_bp);
 }
 
-export function AdminWalletOffers({ rates, tiers, bonuses, busy, onAction }: Props) {
+export function AdminWalletOffers({ rates, tiers, bonuses, busy, onSave, onSaved }: Props) {
   const [copied, setCopied] = useState<string | null>(null);
+  const [bonusStatus, setBonusStatus] = useState<{ form: string; ok: boolean; text: string } | null>(null);
   // Hora de referencia para "vigente": se toma al abrir la pantalla (el panel se recarga cada 30 s).
   const [now] = useState(() => Date.now());
   const rateOf = (region: Region) => rates.find((rate) => rate.region === region);
-  function saveTier(event: FormEvent<HTMLFormElement>, id: string | null) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    void onAction({ action: "tier", id, region: form.get("region"), minVbucks: Number(form.get("min")), centsPer100: Math.round(Number(form.get("price")) * 100), active: form.get("active") === "on" })
-      .then((ok) => { if (ok && !id) (event.target as HTMLFormElement).reset(); });
-  }
   function saveBonus(event: FormEvent<HTMLFormElement>, id: string | null) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const cap = String(form.get("cap") ?? "").trim();
     const starts = String(form.get("starts") ?? "");
-    void onAction({
+    const formId = id ?? "new";
+    setBonusStatus(null);
+    void onSave({
       action: "bonus", id, region: form.get("region"), label: String(form.get("label") ?? ""), minVbucks: Number(form.get("min")),
       bonusBp: Math.round(Number(form.get("percent")) * 100), bonusCap: cap ? Number(cap) : null, firstTopupOnly: form.get("first") === "on",
       startsAt: starts ? new Date(starts).toISOString() : null, endsAt: new Date(String(form.get("ends"))).toISOString(), active: form.get("active") === "on",
-    }).then((ok) => { if (ok && !id) (event.target as HTMLFormElement).reset(); });
+    }).then(async (error) => {
+      if (error) { setBonusStatus({ form: formId, ok: false, text: error }); return; }
+      if (!id) (event.target as HTMLFormElement).reset();
+      await onSaved();
+      setBonusStatus({ form: formId, ok: true, text: "Promoción guardada." });
+    });
   }
+  const bonusMessage = (formId: string) => bonusStatus?.form === formId && <p className={bonusStatus.ok ? styles.ladderOk : styles.ladderError} role={bonusStatus.ok ? "status" : "alert"}>{bonusStatus.text}</p>;
   async function copy(id: string, text: string) {
     try { await navigator.clipboard.writeText(text); setCopied(id); }
     catch { setCopied(`${id}:manual`); }
   }
 
-  const tierFields = (tier?: WalletTier) => <>
-    <label>Región<select name="region" defaultValue={tier?.region ?? "mx"}><option value="mx">México · MXN</option><option value="us">USA · USD</option></select></label>
-    <label>Desde (pavos)<input name="min" type="number" min={100} max={50000} step={100} required defaultValue={tier?.min_vbucks ?? ""} /></label>
-    <label>Precio por 100<input name="price" type="number" min="0.01" step="0.01" required defaultValue={tier ? tier.cents_per_100 / 100 : ""} /></label>
-    <label><span><input type="checkbox" name="active" defaultChecked={tier?.active ?? true} /> Activo</span></label>
-  </>;
   const bonusFields = (bonus?: WalletBonus) => <>
     <label>Nombre de la promoción<input name="label" maxLength={80} required defaultValue={bonus?.label ?? ""} placeholder="Ej. Noviembre +5%" /></label>
     <label>Región<select name="region" defaultValue={bonus?.region ?? "mx"}><option value="mx">México · MXN</option><option value="us">USA · USD</option></select></label>
@@ -76,15 +79,12 @@ export function AdminWalletOffers({ rates, tiers, bonuses, busy, onAction }: Pro
   return <>
     <section className={styles.recharge}>
       <h2>Precio por volumen</h2>
-      <p>Mientras más pavos compra el cliente, menos paga por cada 100. Se aplica el tramo más alto que alcanza la recarga; debajo del primero se cobra la tarifa base. No se puede activar un tramo debajo del margen mínimo.</p>
-      <div className={styles.list}>
-        {tiers.length === 0 && <p>Aún no hay tramos. Sin tramos, todas las recargas pagan la tarifa base.</p>}
-        {tiers.map((tier) => <form key={`${tier.id}-${tier.updated_at ?? ""}`} onSubmit={(event) => saveTier(event, tier.id)}><fieldset disabled={busy} className={styles.offerRow}>
-          <header><strong>{regionLabel(tier.region)} · desde {tier.min_vbucks.toLocaleString("es-MX")} pavos: {walletMoney(tier.cents_per_100, tier.region)} por 100</strong><MarginChip effective={tier.cents_per_100} rate={rateOf(tier.region)} /></header>
-          {tierFields(tier)}<button className="secondary-button">Guardar tramo</button>
-        </fieldset></form>)}
-        <form onSubmit={(event) => saveTier(event, null)}><fieldset disabled={busy} className={styles.offerRow}><header><strong>Nuevo tramo</strong></header>{tierFields()}<button className="secondary-button">Agregar tramo</button></fieldset></form>
-      </div>
+      <p>Entre más pavos compra el cliente, menos paga por cada 100. Escribe hasta 4 escalones (o agrega más) y guárdalos juntos. A cada recarga se le aplica el escalón más alto que alcanza; debajo del primero paga la tarifa base. Cada escalón debe costar menos que el anterior y no bajar de tu costo más el margen mínimo.</p>
+      {rates.filter((rate) => rate.cents_per_100).map((rate) => <div key={rate.region} className={styles.offerRow}>
+        <h3>{regionLabel(rate.region)}</h3>
+        <TierLadder region={rate.region} rate={rate} tiers={tiers.filter((tier) => tier.region === rate.region)} onSave={onSave} onSaved={onSaved} />
+      </div>)}
+      {!rates.some((rate) => rate.cents_per_100) && <p>Guarda primero la tarifa base de una región.</p>}
     </section>
     <section className={styles.recharge}>
       <h2>Promociones: pavos de regalo</h2>
@@ -98,13 +98,13 @@ export function AdminWalletOffers({ rates, tiers, bonuses, busy, onAction }: Pro
           return <form key={`${bonus.id}-${bonus.ends_at}-${String(bonus.active)}`} onSubmit={(event) => saveBonus(event, bonus.id)}><fieldset disabled={busy} className={styles.offerRow}>
             <header><strong>{bonus.label} · {regionLabel(bonus.region)} · +{percent(bonus.bonus_bp)} desde {bonus.min_vbucks.toLocaleString("es-MX")}</strong><span>{live ? "🟢 Vigente" : bonus.active === false ? "Desactivada" : "Fuera de vigencia"}</span></header>
             {worst !== null && <p>Peor caso: {walletMoney(Math.round(worst), bonus.region)} efectivos por 100 <MarginChip effective={worst} rate={rateOf(bonus.region)} /></p>}
-            {bonusFields(bonus)}<button className="secondary-button">Guardar promoción</button>
+            {bonusFields(bonus)}<button className="secondary-button">Guardar promoción</button>{bonusMessage(bonus.id)}
             {live && <div className={styles.copyBox}><label>Mensaje para tu lista de difusión de WhatsApp<textarea id={`campaign-${bonus.id}`} readOnly rows={6} value={message} onFocus={(event) => event.currentTarget.select()} /></label>
               <button type="button" className="ac-ghost" onClick={() => void copy(bonus.id, message)}>{copied === bonus.id ? "Copiado ✓" : "Copiar mensaje"}</button>
               {copied === `${bonus.id}:manual` && <small>No se pudo copiar automáticamente: selecciona el texto y cópialo.</small>}</div>}
           </fieldset></form>;
         })}
-        <form onSubmit={(event) => saveBonus(event, null)}><fieldset disabled={busy} className={styles.offerRow}><header><strong>Nueva promoción</strong></header>{bonusFields()}<button className="secondary-button">Crear promoción</button></fieldset></form>
+        <form onSubmit={(event) => saveBonus(event, null)}><fieldset disabled={busy} className={styles.offerRow}><header><strong>Nueva promoción</strong></header>{bonusFields()}<button className="secondary-button">Crear promoción</button>{bonusMessage("new")}</fieldset></form>
       </div>
     </section>
   </>;

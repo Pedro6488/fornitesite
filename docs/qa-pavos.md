@@ -15,7 +15,7 @@ Cada paso dice **quién** lo hace y **qué debe pasar**. Si el resultado no es e
   - `TELEGRAM_ADMIN_CHAT_IDS`
   - `CRON_SECRET`
   - `WHATSAPP_BUSINESS_NUMBER`
-- [ ] En Admin → Precios de pavos, México está activo con tarifa, costo por 100 y margen mínimo.
+- [ ] En Admin → Precios de pavos, México está activo con tarifa base ($9.00), **costo real** por 100 (lo que paga la tienda, no el precio al cliente) y margen mínimo. El aviso bajo el margen muestra el mínimo permitido.
 - [ ] Tres ventanas abiertas:
   - **Cliente**: una cuenta normal.
   - **Admin**: una cuenta admin, en otro navegador o en incógnito.
@@ -33,6 +33,10 @@ curl -H "Authorization: Bearer <CRON_SECRET>" https://<dominio-qa>/api/internal/
 
 | # | Quién | Acción | Debe pasar |
 |---|---|---|---|
+| A0a | Admin | En Precios de pavos → Precio por volumen, llenar los 4 escalones bajando de precio (por ejemplo 1,000 / 2,800 / 5,000 / 13,500) y "Guardar escalera". | Cada fila muestra "Ahorra N% contra la base" y su margen. Sale "Escalera guardada" junto al botón. La vista previa coincide con lo escrito. Al recargar la página, los 4 escalones siguen ahí. |
+| A0b | Admin | Escribir en una fila un precio debajo del mínimo, y en otra uno más caro que el escalón anterior. | Cada fila dice su problema en rojo ("Mínimo permitido: $X…" o "Debe costar menos que el escalón desde…"). Al guardar no se envía nada. |
+| A0c | Admin | En la tarifa, intentar guardar una base debajo de costo + margen. | Arriba sale "…vendes debajo de tu costo… El mínimo es $X". La tarifa no cambia. |
+| A0d | Cliente | En `/pavos`, tocar 1,000, 2,800, 5,000 y 13,500. | Cada cantidad paga el precio de su escalón, igual que la vista previa del admin. Bajo el botón se lee "Precios por tiempo limitado: pueden cambiar sin previo aviso…". |
 | A1 | Cliente | En la portada, mover la calculadora y tocar "Quiero N pavos". | Abre `/pavos` con esa misma cantidad. |
 | A2 | Cliente | Comprar la recarga. | La página sube sola a "Tu avance" y muestra el aviso verde **"Tu recarga RECARGA-… está creada"** con el monto exacto. Debajo está la tarjeta "Paso 2 · Pendiente de pago" con los datos de pago y botones "Copiar" para la CLABE y la referencia. La calculadora queda plegada en "Quiero otra recarga". |
 | A3 | Cliente | Subir un comprobante (JPG, PNG o PDF). | Aviso verde **"Recibimos tu comprobante"**: ya no hay nada más que hacer. La tarjeta cambia a "Paso 3 · Comprobante en revisión", con la referencia, y el título a "Estamos revisando tu pago". La calculadora sigue plegada. |

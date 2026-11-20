@@ -43,8 +43,8 @@ Política: 1 pavo de la tienda equivale a 1 pavo del precio de Fortnite. El pago
 
 Se configuran en **Admin → Precios de pavos**:
 
-1. **Costo y margen** (por región, en el formulario de la tarifa): cuánto le cuesta a la tienda entregar 100 pavos y el margen mínimo aceptado. **Sin costo capturado no se puede activar ningún tramo ni promoción**, y los que ya existan no se aplican.
-2. **Precio por volumen** (`wallet_rate_tiers`): "desde X pavos, $Y por 100". Se aplica el tramo más alto que alcanza la recarga; debajo del primero se cobra la tarifa base.
+1. **Costo y margen** (por región, en el formulario de la tarifa): cuánto le cuesta a la tienda conseguir 100 pavos (no el precio al cliente) y el margen mínimo aceptado. **Sin costo capturado no se puede activar ningún tramo ni promoción**, y los que ya existan no se aplican. Con costo capturado, la tarifa base tampoco se puede activar debajo de `costo × (1 + margen)`: `POST /api/admin/wallet` la rechaza y dice el mínimo.
+2. **Precio por volumen** (`wallet_rate_tiers`): "desde X pavos, $Y por 100". Se aplica el tramo más alto que alcanza la recarga; debajo del primero se cobra la tarifa base. El admin edita la escalera completa a la vez (4 filas, se pueden agregar más) y antes de guardar se revisa (`checkLadder`) que cada escalón cueste menos que la base y que el anterior, y que no baje del mínimo permitido. Los errores salen en la fila, y abajo hay una vista previa de lo que pagará el cliente por 1,000, 2,800, 5,000 y 13,500 pavos.
 3. **Promociones** (`wallet_bonus_rules`): "+N % de pavos de regalo desde X", con inicio, fin, tope opcional y opción de solo primera recarga. Si coinciden varias, se aplica la mayor; no se suman.
 
 Reglas que aplica la base:
@@ -55,6 +55,7 @@ Reglas que aplica la base:
 
 Lo que ve el cliente:
 
+- En la calculadora (portada y `/pavos`), bajo el botón: "Precios por tiempo limitado: pueden cambiar sin previo aviso. Al crear tu recarga, su precio queda fijo 48 horas para que la pagues."
 - En `/pavos`: las promociones vigentes, la tabla de precio por volumen, "Recibes 5,000 + 250 de regalo", el precio efectivo por 100 y "Agrega 500 pavos y recibes +250 de regalo" con un botón para subir de escalón.
 - En el checkout: la promoción vigente con un enlace a comprar pavos.
 

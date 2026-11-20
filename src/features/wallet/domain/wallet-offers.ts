@@ -55,6 +55,54 @@ export function marginBp(effectiveCentsPer100: number, costCentsPer100: number |
   return Math.round((effectiveCentsPer100 - costCentsPer100) / costCentsPer100 * 10_000);
 }
 
+/** Precio por 100 más bajo que se puede cobrar: costo × (1 + margen mínimo), la misma regla que valida la base. Null sin costo. */
+export function minAllowedPer100(rate: Pick<WalletRate, "cost_cents_per_100" | "min_margin_bp"> | undefined) {
+  if (!rate?.cost_cents_per_100) return null;
+  return Math.ceil(rate.cost_cents_per_100 * (10_000 + (rate.min_margin_bp ?? 0)) / 10_000);
+}
+
+/** Un escalón de la escalera tal como lo edita el admin (texto de los campos). */
+export type LadderRow = { key: string; id: string | null; min: string; price: string; active: boolean };
+export type LadderStep = { row: LadderRow; min: number; cents: number };
+
+/**
+ * Revisa la escalera completa antes de guardarla: cada escalón activo debe empezar en una cantidad
+ * válida y distinta, costar menos que la tarifa base y que el escalón anterior ("entre más compras,
+ * más barato") y no bajar del mínimo permitido por el costo y el margen. Devuelve el problema de
+ * cada fila (por `key`) y los escalones ya convertidos a números.
+ */
+export function checkLadder(rows: readonly LadderRow[], rate: WalletRate | undefined, money: (cents: number) => string) {
+  const problems: Record<string, string> = {};
+  const steps: LadderStep[] = [];
+  const base = rate?.cents_per_100 ?? null;
+  const floor = minAllowedPer100(rate);
+  for (const row of rows) {
+    const filled = row.min.trim() !== "" || row.price.trim() !== "";
+    if (!filled) continue;
+    const min = Number(row.min), cents = Math.round(Number(row.price) * 100);
+    if (!row.min.trim() || !row.price.trim()) problems[row.key] = "Completa «desde» y el precio.";
+    else if (!Number.isInteger(min) || min < WALLET_MIN || min > WALLET_MAX || min % 100 !== 0) problems[row.key] = `«Desde» va de ${WALLET_MIN} a ${WALLET_MAX.toLocaleString("es-MX")} pavos, en múltiplos de 100.`;
+    else if (!Number.isFinite(cents) || cents < 1) problems[row.key] = "Escribe un precio válido.";
+    else steps.push({ row, min, cents });
+  }
+  const seen = new Map<number, string>();
+  for (const step of steps) {
+    if (seen.has(step.min)) problems[step.row.key] = `Ya hay un escalón desde ${step.min.toLocaleString("es-MX")} pavos.`;
+    else seen.set(step.min, step.row.key);
+  }
+  const active = steps.filter((step) => step.row.active && !problems[step.row.key]).toSorted((a, b) => a.min - b.min);
+  let previous: LadderStep | null = null;
+  for (const step of active) {
+    if (base === null) problems[step.row.key] = "Guarda primero la tarifa base de esta región.";
+    else if (floor === null) problems[step.row.key] = "Captura tu costo por 100 en la tarifa: sin costo no se puede revisar el margen.";
+    else if (step.cents < floor) problems[step.row.key] = `Mínimo permitido: ${money(floor)} (tu costo ${money(rate!.cost_cents_per_100!)} + margen ${((rate?.min_margin_bp ?? 0) / 100).toLocaleString("es-MX")}%).`;
+    else if (step.cents >= base) problems[step.row.key] = `Debe costar menos que la tarifa base (${money(base)}).`;
+    else if (previous && step.cents >= previous.cents) problems[step.row.key] = `Debe costar menos que el escalón desde ${previous.min.toLocaleString("es-MX")} (${money(previous.cents)}).`;
+    if (!problems[step.row.key]) previous = step;
+  }
+  return { problems, steps };
+}
+
 /** Precio efectivo por 100 en el peor caso de un bono: el tramo dado con el bono completo. */
 export const effectiveWithBonus = (centsPer100: number, bonusBp: number) => centsPer100 * 10_000 / (10_000 + bonusBp);
 

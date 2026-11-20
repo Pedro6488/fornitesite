@@ -5,7 +5,7 @@ import { AdminPageHeader, useAdminCounts } from "@/features/admin/components/adm
 import { useAdminData, useAdminRequest } from "@/features/admin/components/use-admin-request";
 import { PAYPAL_FIXED_CENTS, PAYPAL_PERCENT_BP, movementLabels, paypalNetCents, topupLabels, topupReference, topupStatus, walletMoney, type WalletMovement, type WalletRate, type WalletTopup } from "../domain/wallet";
 import { toCustomer, trackingUrl, whatsappLink, type WhatsappRegion } from "../domain/wallet-whatsapp";
-import type { WalletBonus, WalletTier } from "../domain/wallet-offers";
+import { minAllowedPer100, type WalletBonus, type WalletTier } from "../domain/wallet-offers";
 import { AdminWalletOffers } from "./admin-wallet-offers";
 import styles from "./wallet.module.css";
 type Account = { user_id: string; email: string; balance: number; purchased: number; spent: number; refunded: number; adjusted?: number; frozen?: boolean; frozen_reason?: string | null; whatsapp?: string | null };
@@ -72,6 +72,11 @@ export function AdminWallet({ view = "release", initialClient = null }: { view?:
     catch(cause) { setMessage(cause instanceof Error ? cause.message : "No fue posible guardar."); return false; }
     finally { setBusy(false); }
   }
+  /** Guarda sin tocar el aviso de arriba: quien llama muestra el error junto a su formulario. */
+  async function save(body: unknown): Promise<string | null> {
+    try { await request("/api/admin/wallet", { method:"POST", headers:{ "Content-Type":"application/json" }, body:JSON.stringify(body) }); return null; }
+    catch(cause) { return cause instanceof Error ? cause.message : "No fue posible guardar."; }
+  }
   function rate(event: FormEvent<HTMLFormElement>, region: string) {
     event.preventDefault(); const form = new FormData(event.currentTarget);
     const cost = String(form.get("cost") ?? "").trim();
@@ -83,7 +88,7 @@ export function AdminWallet({ view = "release", initialClient = null }: { view?:
   const head = VIEWS[view];
   function openClient(userId: string) {
     setSelected(userId);
-    window.requestAnimationFrame(() => document.getElementById("detalle-cliente")?.scrollIntoView({ behavior:"smooth", block:"start" }));
+    window.requestAnimationFrame(() => document.getElementById("detalle-cliente")?.scrollIntoView?.({ behavior:"smooth", block:"start" }));
   }
 
   const paused = data?.summary?.paused_until && <section className={styles.paused} role="alert"><div><h2>Pago con pavos pausado</h2><p>{data.summary.pause_reason ?? "Falla de la cuenta emisora"}. Se reanuda solo a las {new Date(data.summary.paused_until).toLocaleTimeString("es-MX", { hour:"2-digit", minute:"2-digit" })}. Mientras tanto, los clientes solo pueden usar el pago habitual y los objetos no enviados se devuelven al saldo. Revisa las cuentas en FN Shop antes de reanudar.</p></div><button className="secondary-button" disabled={busy} onClick={() => void action({ action:"resume" })}>Reanudar ahora</button></section>;
@@ -114,9 +119,9 @@ export function AdminWallet({ view = "release", initialClient = null }: { view?:
   // Configuración: cambia de vez en cuando y afecta solo recargas nuevas.
   const settings = <>
     <section className={styles.recharge}><h2>Tarifas de recarga</h2><p>Precio por cada 100 pavos. Las recargas permanecen bloqueadas hasta activar una tarifa. Las solicitudes ya creadas conservan su precio.</p>
-      {data?.rates.map((r) => <form key={`${r.region}-${r.cents_per_100}-${r.active}-${r.cost_cents_per_100}-${r.min_margin_bp}`} onSubmit={(e) => rate(e,r.region)}><fieldset disabled={busy}><h3>{r.region==="mx" ? "México · MXN" : "USA · USD"}</h3><label>Precio por 100 pavos<input name="price" type="number" min="0.01" max="10000" step="0.01" required defaultValue={r.cents_per_100 ? r.cents_per_100/100 : ""} /></label><label>Tu costo por 100 pavos (lo que te cuesta entregarlos)<input name="cost" type="number" min="0.01" max="10000" step="0.01" defaultValue={r.cost_cents_per_100 ? r.cost_cents_per_100/100 : ""} placeholder="Necesario para tramos y promociones" /></label><label>Margen mínimo (%)<input name="margin" type="number" min="0" max="100" step="0.1" defaultValue={(r.min_margin_bp ?? 0)/100} /></label>{r.region==="us" && r.cents_per_100 && <p className={styles.netNote}>PayPal cobra {PAYPAL_PERCENT_BP/100}% + ${(PAYPAL_FIXED_CENTS/100).toFixed(2)} por pago. Con esta tarifa, una recarga de 1,000 pavos ({walletMoney(r.cents_per_100*10,"us")}) te deja ≈ {walletMoney(Math.round(paypalNetCents(r.cents_per_100*10)/10),"us")} netos por cada 100 pavos; una de 5,000 deja ≈ {walletMoney(Math.round(paypalNetCents(r.cents_per_100*50)/50),"us")} por 100. El pedido habitual en USA cobra aparte $2.30 de comisión; la recarga no.</p>}<label><span><input type="checkbox" name="active" defaultChecked={r.active} /> Habilitar recargas en esta región</span></label><button className="secondary-button">Guardar tarifa</button></fieldset></form>)}
+      {data?.rates.map((r) => <form key={`${r.region}-${r.cents_per_100}-${r.active}-${r.cost_cents_per_100}-${r.min_margin_bp}`} onSubmit={(e) => rate(e,r.region)}><fieldset disabled={busy}><h3>{r.region==="mx" ? "México · MXN" : "USA · USD"}</h3><label>Precio por 100 pavos<input name="price" type="number" min="0.01" max="10000" step="0.01" required defaultValue={r.cents_per_100 ? r.cents_per_100/100 : ""} /></label><label>Tu costo por 100 pavos: lo que tú pagas por ellos, no el precio al cliente<input name="cost" type="number" min="0.01" max="10000" step="0.01" defaultValue={r.cost_cents_per_100 ? r.cost_cents_per_100/100 : ""} placeholder="Necesario para tramos y promociones" /></label><label>Margen mínimo (%)<input name="margin" type="number" min="0" max="100" step="0.1" defaultValue={(r.min_margin_bp ?? 0)/100} /></label>{(() => { const floor = minAllowedPer100(r); return floor !== null && <p className={styles.netNote}>Con este costo y margen, ningún precio (base, escalón o promoción) puede quedar debajo de <strong>{walletMoney(floor,r.region)}</strong> por 100.{r.cents_per_100 && r.cents_per_100 < floor ? " ⚠️ La tarifa actual ya está debajo: corrígela." : ""}</p>; })()}{r.region==="us" && r.cents_per_100 && <p className={styles.netNote}>PayPal cobra {PAYPAL_PERCENT_BP/100}% + ${(PAYPAL_FIXED_CENTS/100).toFixed(2)} por pago. Con esta tarifa, una recarga de 1,000 pavos ({walletMoney(r.cents_per_100*10,"us")}) te deja ≈ {walletMoney(Math.round(paypalNetCents(r.cents_per_100*10)/10),"us")} netos por cada 100 pavos; una de 5,000 deja ≈ {walletMoney(Math.round(paypalNetCents(r.cents_per_100*50)/50),"us")} por 100. El pedido habitual en USA cobra aparte $2.30 de comisión; la recarga no.</p>}<label><span><input type="checkbox" name="active" defaultChecked={r.active} /> Habilitar recargas en esta región</span></label><button className="secondary-button">Guardar tarifa</button></fieldset></form>)}
     </section>
-    {data && <AdminWalletOffers rates={data.rates} tiers={data.tiers ?? []} bonuses={data.bonuses ?? []} busy={busy} onAction={action} />}
+    {data && <AdminWalletOffers rates={data.rates} tiers={data.tiers ?? []} bonuses={data.bonuses ?? []} busy={busy} onSave={save} onSaved={async () => { await reload(); }} />}
   </>;
 
   return <><AdminPageHeader title={head.title} lead={head.lead} actions={<button className="ac-ghost" onClick={() => void reload()}>Actualizar</button>} />

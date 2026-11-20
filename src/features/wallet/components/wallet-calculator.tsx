@@ -97,6 +97,7 @@ export function WalletCalculator({ amount, onAmount, source, variant = "page", d
       </ul>
       {next && <p className={styles.next}>Agrega <strong>{n(next.add)} pavos</strong> y {next.quote.bonus > (quote?.bonus ?? 0) ? <>recibes <strong>+{n(next.quote.bonus)} de regalo</strong></> : <>baja a <strong>{walletMoney(next.quote.centsPer100, region)} por 100</strong></>}. <button type="button" disabled={disabled} onClick={() => onAmount(next.target)}>Subir a {n(next.target)}</button></p>}
       {children?.(quote)}
+      {quote && <p className={styles.terms}>Precios por tiempo limitado: pueden cambiar sin previo aviso. Al crear tu recarga, su precio queda fijo 48 horas para que la pagues.</p>}
     </div>
     {aside && <div className={styles.aside}>{aside}</div>}
   </div>;
