@@ -10,6 +10,7 @@ import { GamePageHero } from "@/features/storefront/components/game-page-hero";
 import { GameStageBackdrop } from "@/features/storefront/components/game-stage";
 import stage from "@/features/storefront/components/game-stage.module.css";
 import { WalletPanel } from "@/features/wallet/components/wallet-panel";
+import { ChangePassword } from "./change-password";
 
 type CustomerOrder = { id: string; status: string; item_name: string; amount_mxn_cents: number; public_token: string; created_at: string };
 type AccountTab = "identities" | "orders" | "favorites" | "wallet";
@@ -145,6 +146,7 @@ export function AccountAccess({ nextPath = "/cuenta", adminAccess = false, initi
     <section id="account-panel-favorites" className="account-favorites-panel account-tab-panel" role="tabpanel" aria-labelledby="account-tab-favorites" hidden={activeTab !== "favorites"}>
       <span><Heart aria-hidden="true" size={24} /></span><div><p className="eyebrow">FAVORITOS</p><h3>{commerce.favoriteItemIds.size === 1 ? "1 objeto guardado" : `${commerce.favoriteItemIds.size} objetos guardados`}</h3><p>Consulta cuáles siguen disponibles antes de agregarlos al carrito.</p><Link href="/favoritos">Ver mis favoritos</Link></div>
     </section>
+    <ChangePassword />
     </div>
   </div>;
 

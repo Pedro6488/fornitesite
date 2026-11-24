@@ -1,0 +1,42 @@
+.selectWrap {
+  position: relative;
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  box-sizing: border-box;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #343849;
+  border-radius: 0;
+  background: #0d1224;
+  color: #f3f4fa;
+  padding: 12px 44px 12px 14px;
+  font: inherit;
+  font-size: 16px;
+  text-overflow: ellipsis;
+}
+
+.select:focus-visible {
+  outline: 2px solid #d5f530;
+  outline-offset: 2px;
+}
+
+.select:disabled {
+  opacity: .65;
+}
+
+.arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #f3f4fa;
+  pointer-events: none;
+}

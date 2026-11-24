@@ -29,6 +29,7 @@ const OPERATION: readonly NavItem[] = [
 const FNSHOP_ITEM: NavItem = { href: "/admin/fnshop", label: "FN Shop", icon: Gift };
 
 const STORE: readonly NavItem[] = [
+  { href: "/admin/usuarios", label: "Usuarios registrados", icon: Users },
   { href: "/admin/pavos/clientes", label: "Clientes con pavos", icon: Wallet },
   { href: "/admin/pavos/configuracion", label: "Precios de pavos", icon: SlidersHorizontal },
   { href: "/admin/precios", label: "Precios", icon: Tags },
