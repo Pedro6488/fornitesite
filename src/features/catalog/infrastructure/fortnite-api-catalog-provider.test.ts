@@ -4,6 +4,28 @@ import { FortniteApiCatalogProvider } from "./fortnite-api-catalog-provider";
 afterEach(() => vi.unstubAllGlobals());
 
 describe("FortniteApiCatalogProvider", () => {
+  it("separa el lote de Miku cuando la API pierde los metadatos del billboard", async () => {
+    const outfit = { id: "Character_PeonyPizza", name: "Capitana Hatsune Miku", type: { value: "outfit", displayValue: "Atuendo" }, images: { featured: "https://example.com/miku.png" } };
+    const backpack = { id: "Backpack_PeonyPizza", name: "Tesoro de Miku" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { entries: [
+      { offerId: "miku-bundle", finalPrice: 2200, regularPrice: 4100,
+        displayAssetPath: "/OfferCatalog/DisplayAssets/DA_Featured_Peonypizza_Bundle",
+        layout: { name: "Hatsune Miku", displayType: "tileGrid" },
+        brItems: [outfit, backpack, { id: "Pickaxe_PeonyPizza", name: "Flotador de ancla de Miku" }],
+        tracks: [{ id: "track", title: "CONNECT:COMMUNE" }] },
+      { offerId: "miku-outfit", finalPrice: 1500, brItems: [outfit, backpack] },
+      { offerId: "sanji-pickaxe", finalPrice: 800, displayAssetPath: "/OfferCatalog/DisplayAssets/DA_Featured_Pickaxe_insightbawl_Bundle",
+        brItems: [{ id: "pickaxe", name: "Utensilios de Sanji", type: { value: "pickaxe", displayValue: "Pico" } }] },
+    ] } }))));
+    const items = await new FortniteApiCatalogProvider("https://fortnite-api.com/v2").getCurrentCatalog();
+    const unique = new Map(items.map((item) => [item.mainId, item]));
+    expect(unique.size).toBe(3);
+    expect(items[0]).toMatchObject({ mainId: "miku-bundle", offerId: "miku-bundle", name: "Lote Capitana Hatsune Miku", type: "Lote", finalPriceVbucks: 2200, regularPriceVbucks: 4100 });
+    expect(items[0].description).toContain("CONNECT:COMMUNE");
+    expect(items[1]).toMatchObject({ mainId: "Character_PeonyPizza", offerId: "miku-outfit", type: "Atuendo", finalPriceVbucks: 1500 });
+    expect(items[2].type).toBe("Pico");
+  });
+
   it("distingue el lote billboard de Miku del atuendo con mochila incluida", async () => {
     const outfit = { id: "Character_PeonyPizza", name: "Capitana Hatsune Miku", type: { displayValue: "Atuendo" }, images: { icon: "https://example.com/miku.png" } };
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { entries: [
