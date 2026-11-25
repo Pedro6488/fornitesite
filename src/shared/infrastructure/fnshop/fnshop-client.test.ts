@@ -42,6 +42,11 @@ describe("FN Shop configuration", () => {
     expect(fnShopConfigFromEnv({ VERCEL_ENV: "preview", FNSHOP_API_KEY: "k" }).liveAllowed).toBe(false);
     expect(fnShopConfigFromEnv({ NODE_ENV: "production", FNSHOP_API_KEY: "k" }).liveAllowed).toBe(false);
   });
+  it("identifies the store by its domain, from FNSHOP_DOMAIN or the public app URL", () => {
+    expect(fnShopConfigFromEnv({}).domain).toBe("www.sigfriedlootbox.com");
+    expect(fnShopConfigFromEnv({ NEXT_PUBLIC_APP_URL: "https://Tienda.example.com/" }).domain).toBe("tienda.example.com");
+    expect(fnShopConfigFromEnv({ FNSHOP_DOMAIN: "sigfriedlootbox.com", NEXT_PUBLIC_APP_URL: "https://www.sigfriedlootbox.com" }).domain).toBe("sigfriedlootbox.com");
+  });
   it("never simulates in production even if the flag is left on", () => {
     expect(fnShopConfigFromEnv({ VERCEL_ENV: "production", FNSHOP_SIMULATE: "true" }).simulate).toBe(false);
     expect(fnShopConfigFromEnv({ VERCEL_ENV: "preview", FNSHOP_SIMULATE: "true" }).simulate).toBe(true);
@@ -84,7 +89,8 @@ describe("FnShopClient", () => {
     expect(init.method).toBe("POST");
     expect((init.headers as Record<string, string>)["Content-Type"]).toBe("application/x-www-form-urlencoded");
     expect((init.headers as Record<string, string>)["X-Api-Key"]).toBe("secret-key");
-    expect(init.body).toBe("receiver=psn%3AJugador");
+    expect(init.body).toBe("svr=www.sigfriedlootbox.com&receiver=psn%3AJugador");
+    expect((init.headers as Record<string, string>).Origin).toBe("https://www.sigfriedlootbox.com");
     expect(inserted[0]).toMatchObject({ action: "friend_add", counted: true, simulated: false, code: "friend_request_sent", validation_id: "v1", trigger: "customer" });
     expect(JSON.stringify(inserted[0])).not.toContain("secret-key");
     expect(inserted[0].response_headers).not.toHaveProperty("set-cookie");

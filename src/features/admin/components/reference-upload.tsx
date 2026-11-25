@@ -2,12 +2,13 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useAdminData, useAdminRequest } from "./use-admin-request";
+import styles from "./reference-upload.module.css";
 
 type Order = { id: string; epic_display_name: string; order_items: { item_name: string }[] };
 
 export function ReferenceUpload({ onPublished }: { onPublished: () => Promise<void> }) {
   const request = useAdminRequest();
-  const { data, error } = useAdminData<{ orders: Order[] }>("/api/admin/orders?queue=closed&result=delivered&limit=500");
+  const { data, error, loading } = useAdminData<{ orders: Order[] }>("/api/admin/orders?queue=closed&result=delivered&limit=500");
   const [preview, setPreview] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -32,9 +33,16 @@ export function ReferenceUpload({ onPublished }: { onPublished: () => Promise<vo
     <h2>Publicar confirmación del chat</h2>
     <p>La captura se mostrará públicamente en el carrusel del inicio y en Referencias. Oculta teléfonos y datos personales antes de subirla.</p>
     <fieldset disabled={busy} style={{ border: 0, padding: 0, display: "grid", gap: 16, minWidth: 0 }}>
-      <label>Pedido entregado<input name="orderId" list="reference-orders" required placeholder="Selecciona o pega el ID del pedido" /></label>
-      <datalist id="reference-orders">{data?.orders.map((order) => <option key={order.id} value={order.id}>{order.epic_display_name} · {order.order_items.map((item) => item.item_name).join(", ")}</option>)}</datalist>
-      <small>Se sugieren los últimos 500 pedidos entregados. También puedes pegar el ID de un pedido anterior. Se cuenta una referencia por pedido.</small>
+      <label>Usuario y objetos entregados
+        <span className={styles.selectWrap}>
+          <select className={styles.select} name="orderId" required defaultValue="" disabled={loading || !data?.orders.length}>
+            <option value="" disabled>{loading ? "Cargando entregas…" : data?.orders.length ? "Selecciona el usuario y los objetos" : "No hay entregas disponibles"}</option>
+            {data?.orders.map((order) => <option key={order.id} value={order.id}>{order.epic_display_name} · {order.order_items.map((item) => item.item_name).join(", ")}</option>)}
+          </select>
+          <span className={styles.arrow} aria-hidden="true">▾</span>
+        </span>
+      </label>
+      <small>Se muestran las últimas 500 entregas por usuario y objetos. Se cuenta una referencia por pedido.</small>
       {error && <p role="alert">{error}</p>}
       <label>Captura de confirmación<input name="image" type="file" accept="image/jpeg,image/png,image/webp" required onChange={(event) => { const file = event.target.files?.[0]; setPreview(file ? URL.createObjectURL(file) : ""); }} /></label>
       <small>JPG, PNG o WEBP, máximo 5 MB.</small>

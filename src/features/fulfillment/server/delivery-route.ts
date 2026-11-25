@@ -4,10 +4,10 @@ import { getFnShopClient } from "@/features/fnshop/server/get-fnshop-client";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
 import { DeliveryError } from "../application/deliver-order";
 import { SupabaseDeliveryStore } from "../infrastructure/supabase-delivery-store";
-import type { FnShopClient } from "@/shared/infrastructure/fnshop/fnshop-client";
+import type { FnShopCaller } from "@/shared/infrastructure/fnshop/fnshop-client";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 
-type DeliveryContext = { orderId: string; user: User; database: SupabaseClient; store: SupabaseDeliveryStore; fnshop: FnShopClient };
+type DeliveryContext = { orderId: string; user: User; database: SupabaseClient; store: SupabaseDeliveryStore; fnshop: FnShopCaller };
 
 /** Rutas de entrega: solo staff, solo con entrega automática, y errores explicados en español. */
 export async function withDeliveryContext(

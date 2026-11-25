@@ -1,0 +1,8 @@
+.list { display: grid; gap: 12px; }
+.account { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-width: 0; }
+.login { overflow-wrap: anywhere; font-size: 18px; }
+.form { display: grid; gap: 16px; max-width: 520px; }
+.form label { display: grid; gap: 8px; }
+.form input { width: 100%; box-sizing: border-box; min-height: 48px; padding: 12px; border: 1px solid #343849; background: #0d1224; color: #f3f4fa; font-size: 16px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+@media (max-width: 600px) { .account { align-items: stretch; flex-direction: column; } }

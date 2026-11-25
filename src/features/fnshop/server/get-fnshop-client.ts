@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { queueOutboxJob } from "@/features/notifications/server/outbox";
 import { deliverOutboxJob } from "@/features/notifications/server/providers";
-import { FnShopClient, fnShopAvailable, fnShopConfigFromEnv } from "@/shared/infrastructure/fnshop/fnshop-client";
+import { FnShopClient, fnShopAvailable, fnShopConfigFromEnv, type FnShopCaller } from "@/shared/infrastructure/fnshop/fnshop-client";
+import { OwnApiFirstCaller, ownApiConfigFromEnv } from "@/shared/infrastructure/fnshop/own-api-router";
 
 /** La entrega automática está encendida (`FULFILLMENT_MODE=fnshop`). */
 export function automaticDeliveryEnabled(env: Record<string, string | undefined> = process.env): boolean {
@@ -18,11 +19,17 @@ export async function sendOperationsAlert(database: SupabaseClient, text: string
 /**
  * Cliente de FN Shop listo para usar, o `null` si en este entorno no se puede
  * (sin modo automático, sin key en producción, o fuera de producción sin simulador).
+ *
+ * Con `OWN_API_BASE_URL` y `OWN_API_KEY` en producción, `friend_add` y `friend_status` van
+ * primero a nuestra API (FN Shop queda de respaldo) y `gift_check` se compara en paralelo.
+ * Sin esas variables todo sigue exactamente como antes.
  */
-export function getFnShopClient(database: SupabaseClient, options: { requireAutomatic?: boolean } = {}): FnShopClient | null {
+export function getFnShopClient(database: SupabaseClient, options: { requireAutomatic?: boolean } = {}): FnShopCaller | null {
   // «Verificar key» se permite antes de encender la entrega automática, para ligar el dominio.
   if ((options.requireAutomatic ?? true) && !automaticDeliveryEnabled()) return null;
   const config = fnShopConfigFromEnv();
   if (!fnShopAvailable(config)) return null;
-  return new FnShopClient(database, config, { alert: (text, dedupeKey) => sendOperationsAlert(database, text, dedupeKey) });
+  const fnshop = new FnShopClient(database, config, { alert: (text, dedupeKey) => sendOperationsAlert(database, text, dedupeKey) });
+  const own = ownApiConfigFromEnv(process.env, config);
+  return own ? new OwnApiFirstCaller(database, fnshop, own) : fnshop;
 }

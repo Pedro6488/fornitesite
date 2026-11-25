@@ -45,7 +45,18 @@ export function FnShopPanel() {
   const request = useAdminRequest();
   const { data, error, loading, reload } = useAdminData<FnShopData>("/api/admin/fnshop", { refreshMs: 60_000 });
   const [verify, setVerify] = useState<{ text: string; error: boolean } | null>(null);
-  const [busy, setBusy] = useState<"verify" | null>(null);
+  const [busy, setBusy] = useState<"verify" | "ip" | null>(null);
+  const [outbound, setOutbound] = useState<{ ip: string; observedAt: string; region: string | null } | null>(null);
+  const [ipError, setIpError] = useState<string | null>(null);
+
+  async function checkOutboundIp() {
+    setBusy("ip"); setIpError(null); setOutbound(null);
+    try {
+      setOutbound(await request<{ ip: string; observedAt: string; region: string | null }>("/api/admin/fnshop/outbound-ip", { method: "POST" }));
+    } catch (cause) {
+      setIpError(cause instanceof Error ? cause.message : "No fue posible consultar la IP.");
+    } finally { setBusy(null); }
+  }
 
   async function verifyKey() {
     setBusy("verify"); setVerify(null);
@@ -60,6 +71,7 @@ export function FnShopPanel() {
 
   const header = <AdminPageHeader title="FN Shop" lead="Cuántos requests llevamos, en qué se gastan y qué respondió FN Shop en cada llamada."
     actions={<>
+      <button type="button" className="ac-ghost" disabled={busy !== null} onClick={() => void checkOutboundIp()}>{busy === "ip" ? "Consultando IP…" : "Consultar IP de salida"}</button>
       <button type="button" className="ac-ghost" disabled={busy !== null} onClick={() => void verifyKey()}><KeyRound aria-hidden="true" size={15} />{busy === "verify" ? "Verificando…" : "Verificar key"}</button>
       <button type="button" className="ac-ghost" disabled={loading} onClick={() => void reload()}><RefreshCw aria-hidden="true" size={15} />{loading ? "Actualizando…" : "Actualizar"}</button>
     </>} />;
@@ -72,6 +84,13 @@ export function FnShopPanel() {
 
   return <>
     {header}
+    {ipError && <p className="ac-notice is-error" role="alert">{ipError}</p>}
+    {outbound && <section className="ac-card" aria-label="IP de salida observada">
+      <h2>IP de salida observada: <code>{outbound.ip}</code></h2>
+      <p>Consultada el {formatDateTime(outbound.observedAt)}{outbound.region ? ` · región ${outbound.region}` : ""} mediante ipify desde producción.</p>
+      <p>Esta IP puede cambiar y no representa una lista completa ni garantiza la misma IP hacia FN Shop. Pide a soporte que la compare con sus registros.</p>
+      <p lang="en">Observed outbound IP: {outbound.ip}. Timestamp: {outbound.observedAt}. Hosting: Vercel (dynamic outbound IPs). Please compare this with the source IP in your rejected request logs.</p>
+    </section>}
     {verify && <p className={`ac-notice${verify.error ? " is-error" : " is-success"}`} role="status">{verify.text}</p>}
     {error && <p className="ac-notice is-error" role="alert">{error}</p>}
     {data.mode === "manual" && <p className="ac-notice">La entrega está en modo manual (<code>FULFILLMENT_MODE=manual</code>): la tienda no llama a FN Shop. Esta pantalla muestra la bitácora que haya.</p>}
