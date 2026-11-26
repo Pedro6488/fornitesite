@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     database.from("fnshop_usage_daily").select("day,action,calls,counted,simulated").gte("day", since.slice(0, 10)).order("day").returns<UsageRow[]>(),
     database.from("provider_api_calls")
       .select("id,created_at,action,code,result,decision,duration_ms,trigger,order_id,validation_id,simulated,counted,error,http_status")
-      .order("created_at", { ascending: false }).limit(100),
+      .eq("provider", "fnshop").order("created_at", { ascending: false }).limit(100),
     database.from("fnshop_contract_catalog").select("action,code,result,simulated,calls,last_seen,response_fields").order("action").returns<ContractRow[]>(),
   ]);
   if (summary.error) return NextResponse.json({ error: "Falta aplicar las migraciones de FN Shop en esta base." }, { status: 503 });
