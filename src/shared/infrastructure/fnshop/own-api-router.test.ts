@@ -124,3 +124,69 @@ describe("OwnApiFirstCaller", () => {
     expect((await router.call("gift_check", { offerId: "v2:/x", receiver: "J" }, { trigger: "admin" })).code).toBe("eligible_to_receive_gift");
   });
 });
+
+describe("gifts through our API (OWN_API_GIFTS=on)", () => {
+  const gifts = ownApiConfigFromEnv({ ...ownEnv, OWN_API_GIFTS: "on" }, prodConfig) as OwnApiConfig;
+  const send = { offerId: "v2:/offer", receiver: "Cliente123", order_id: "item-1" };
+
+  function router(fetchImpl: unknown, fnshopBody?: Record<string, unknown>) {
+    const { database, inserted } = fakeDatabase();
+    const fnshop = fakeFnShop(fnshopBody);
+    return { router: new OwnApiFirstCaller(database, fnshop.caller, gifts, { fetch: fetchImpl as typeof fetch }), fnshop, inserted };
+  }
+
+  it("is off unless asked; when on, gift_check also goes to our API first", () => {
+    expect(own.gifts).toBe(false);
+    expect(gifts).toMatchObject({ gifts: true, primary: ["friend_add", "friend_status", "gift_check"], shadow: [] });
+  });
+
+  it("sends through our API and keeps its answer, sent or refused, without FN Shop", async () => {
+    const sent = router(jsonFetch({ result: true, code: "gift_sent_successfully", track_id: "gft_1", order_id: "item-1" }));
+    expect((await sent.router.call("gift_send", send, { trigger: "admin", orderItemId: "item-1" })).code).toBe("gift_sent_successfully");
+    expect(sent.fnshop.calls).toEqual([]);
+    expect(sent.inserted[0]).toMatchObject({ provider: "own", action: "gift_send", decision: null });
+
+    const refused = router(jsonFetch({ result: false, code: "not_eligible_to_receive_gift", reasons: { vbucks: ["a"] } }));
+    expect((await refused.router.call("gift_send", send, { trigger: "admin" })).code).toBe("not_eligible_to_receive_gift");
+    expect(refused.fnshop.calls).toEqual([]);
+  });
+
+  it("uses FN Shop only when our API proves nothing was created", async () => {
+    for (const code of ["no_sender_accounts", "api_not_in_plan", "invalid_api_key", "epic_unavailable"]) {
+      const { router: r, fnshop } = router(jsonFetch({ result: false, code }, code === "invalid_api_key" ? 401 : 200), { result: true, code: "gift_sent_successfully" });
+      expect((await r.call("gift_send", send, { trigger: "admin" })).code).toBe("gift_sent_successfully");
+      expect(fnshop.calls).toEqual(["gift_send"]);
+    }
+  });
+
+  it("never resends: no answer, a 5xx or an unexpected error become gift_outcome_unknown", async () => {
+    const cases = [
+      vi.fn(async () => { throw new Error("socket hang up"); }),
+      jsonFetch({ result: false, code: "internal_error" }, 500),
+      jsonFetch({ result: false, code: "gift_outcome_unknown", outcome: "unknown" }),
+    ];
+    for (const fetchImpl of cases) {
+      const { router: r, fnshop } = router(fetchImpl);
+      const response = await r.call("gift_send", send, { trigger: "admin" });
+      expect(response).toMatchObject({ code: "gift_outcome_unknown", result: false });
+      expect(response.body).toMatchObject({ code: "gift_outcome_unknown" });
+      expect(fnshop.calls).toEqual([]);
+    }
+  });
+
+  it("reconciles with our history first, and with FN Shop only for orders we never saw", async () => {
+    const ours = router(jsonFetch({ result: true, code: "order_history", orders: [{ id: "gft_1", order_id: "item-1", status: "completed" }] }));
+    expect((await ours.router.call("order_history", { order_id: "item-1" }, { trigger: "admin" })).body.orders).toHaveLength(1);
+    expect(ours.fnshop.calls).toEqual([]);
+
+    const old = router(jsonFetch({ result: true, code: "order_history", total: 0, orders: [] }), { result: true, code: "order_history", orders: [{ order_id: "item-0" }] });
+    expect((await old.router.call("order_history", { order_id: "item-0" }, { trigger: "admin" })).body.orders).toEqual([{ order_id: "item-0" }]);
+    expect(old.fnshop.calls).toEqual(["order_history"]);
+  });
+
+  it("does not ask FN Shop when our API is down: its «not found» would hide a gift we may have sent", async () => {
+    const { router: r, fnshop } = router(vi.fn(async () => { throw new Error("ECONNRESET"); }));
+    await expect(r.call("order_history", { order_id: "item-1" }, { trigger: "admin" })).rejects.toThrow(/no respondió/);
+    expect(fnshop.calls).toEqual([]);
+  });
+});

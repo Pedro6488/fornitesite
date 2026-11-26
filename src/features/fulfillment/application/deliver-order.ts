@@ -264,6 +264,12 @@ export async function reconcileOrder(
       });
       const orders = Array.isArray(response.body.orders) ? response.body.orders as Record<string, unknown>[] : [];
       const found = orders.find((entry) => String(entry.order_id ?? "") === item.id);
+      if (found && found.status === "pending") {
+        // Nuestra API todavía lo está confirmando con Epic: sigue dudoso, nunca «no se envió».
+        await deps.fnshop.decide(response.callId, "found_pending");
+        reports.push({ itemId: item.id, name: item.name, result: "unknown", message: "Todavía se está confirmando con Epic. Vuelve a conciliar en unos minutos; no lo reenvíes." });
+        continue;
+      }
       if (found && (found.status === "completed" || found.status === undefined)) {
         await deps.fnshop.decide(response.callId, "found_sent");
         await deps.store.finish(item.id, { status: "sent", trackId: typeof found.id === "string" ? found.id : null, senderId: typeof found.sender === "string" ? found.sender : null, senderName: null, finalPrice: typeof found.price === "number" ? found.price : null, code: "reconciled" });
