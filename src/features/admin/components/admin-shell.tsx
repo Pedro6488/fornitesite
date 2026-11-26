@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { ClipboardList, Coins, Ellipsis, ExternalLink, Gift, Hand, Heart, LayoutDashboard, LogOut, ShoppingCart, SlidersHorizontal, Star, Tags, UserRoundCheck, Users, Wallet, Zap, type LucideIcon } from "lucide-react";
+import { ClipboardList, Coins, Ellipsis, ExternalLink, Gift, Hand, Heart, LayoutDashboard, LogOut, Server, ShoppingCart, SlidersHorizontal, Star, Tags, UserRoundCheck, Users, Wallet, Zap, type LucideIcon } from "lucide-react";
 import { getSupabaseBrowser } from "@/shared/infrastructure/supabase/browser";
 import type { DeliveryMode } from "../application/order-queues";
 import { useAdminData } from "./use-admin-request";
@@ -27,6 +27,7 @@ const OPERATION: readonly NavItem[] = [
 ];
 
 const FNSHOP_ITEM: NavItem = { href: "/admin/fnshop", label: "FN Shop", icon: Gift };
+const OWN_API_ITEM: NavItem = { href: "/admin/api-propia", label: "Nuestra API", icon: Server };
 
 const STORE: readonly NavItem[] = [
   { href: "/admin/usuarios", label: "Usuarios registrados", icon: Users },
@@ -69,7 +70,7 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryM
   const quota = data?.fnshop ?? null;
   const ModeIcon = deliveryMode === "automatic" ? Zap : Hand;
   // FN Shop se ve también en modo manual: ahí se verifica la key antes de encender la entrega automática.
-  const operation = [...OPERATION, FNSHOP_ITEM];
+  const operation = [...OPERATION, OWN_API_ITEM, FNSHOP_ITEM];
   const quotaRatio = quota && quota.limit > 0 ? quota.used / quota.limit : 0;
 
   useEffect(() => {

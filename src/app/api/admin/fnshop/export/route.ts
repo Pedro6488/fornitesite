@@ -4,7 +4,7 @@ import { fnShopConfigFromEnv } from "@/shared/infrastructure/fnshop/fnshop-clien
 
 const PAGE_SIZE = 1000;
 const MAX_PAGES = 50;
-const COLUMNS = "id,created_at,environment,simulated,trigger,action,code,result,decision,counted,http_status,duration_ms,error,order_id,order_item_id,validation_id,correlation_id,request_params,response_body";
+const COLUMNS = "id,provider,created_at,environment,simulated,trigger,action,code,result,decision,counted,http_status,duration_ms,error,order_id,order_item_id,validation_id,correlation_id,request_params,response_body";
 
 function csvCell(value: unknown): string {
   if (value === null || value === undefined) return "";
