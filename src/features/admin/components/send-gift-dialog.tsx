@@ -7,6 +7,7 @@ import { CommerceSheet } from "@/features/commerce/components/commerce-sheet";
 import type { OrderStatus } from "@/features/orders/domain/order";
 import { formatDateTime, formatOrderMoney, shortOrderId, type OrderMoney } from "../application/format";
 import { ORDER_STATUS_LABELS } from "../application/order-queues";
+import { GIFT_PROVIDER_NAME, useGiftProvider } from "./admin-shell";
 import { useAdminRequest } from "./use-admin-request";
 
 type PreflightItem = { itemId: string; name: string; vbucksPrice: number; offerRefreshed: boolean } & (
@@ -40,6 +41,8 @@ export function SendGiftDialog({ order, confirmPayment, onClose, onFinished }: {
 }) {
   const request = useAdminRequest();
   const pathname = usePathname();
+  const provider = useGiftProvider();
+  const eyebrow = `ENTREGA CON ${GIFT_PROVIDER_NAME[provider].toUpperCase()}`;
   const [phase, setPhase] = useState<"checking" | "ready" | "sending" | "done">("checking");
   const [items, setItems] = useState<PreflightItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -84,7 +87,7 @@ export function SendGiftDialog({ order, confirmPayment, onClose, onFinished }: {
   if (phase === "done" && outcome) {
     const tone = outcome.report?.status === "delivered" ? "is-success" : outcome.report?.status === "reconciling" ? "is-warn" : "is-error";
     const heading = outcome.report?.status === "delivered" ? "Regalo enviado" : outcome.report?.status === "reconciling" ? "Envío sin confirmar" : "No se completó el envío";
-    return <CommerceSheet open={Boolean(order)} onClose={onClose} titleId="ac-send-title" eyebrow="ENTREGA CON FN SHOP" title={heading}
+    return <CommerceSheet open={Boolean(order)} onClose={onClose} titleId="ac-send-title" eyebrow={eyebrow} title={heading}
       description={order ? `Pedido ${shortOrderId(order.id)} · ${formatOrderMoney(order)} · para ${order.epic_display_name}` : ""}
       className="admin-action-sheet">
       <div className="admin-action-form" style={{ display: "grid", gap: ".85rem" }}>
@@ -102,13 +105,13 @@ export function SendGiftDialog({ order, confirmPayment, onClose, onFinished }: {
     </CommerceSheet>;
   }
 
-  return <CommerceSheet open={Boolean(order)} onClose={() => { if (phase !== "sending") onClose(); }} titleId="ac-send-title" eyebrow="ENTREGA CON FN SHOP"
+  return <CommerceSheet open={Boolean(order)} onClose={() => { if (phase !== "sending") onClose(); }} titleId="ac-send-title" eyebrow={eyebrow}
     title={confirmPayment ? "Confirmar pago y enviar regalo" : "Enviar regalo"}
     description={order ? `Pedido ${shortOrderId(order.id)} · ${formatOrderMoney(order)} · para ${order.epic_display_name}` : ""}
     className="admin-action-sheet">
     <div className="admin-action-form" style={{ display: "grid", gap: ".85rem" }}>
       {confirmPayment && <p className="ac-send-warning">Al enviar también se confirma el pago: revisa antes que el depósito de {order ? formatOrderMoney(order) : ""} ya esté en el banco.</p>}
-      {phase === "checking" && <p className="ac-notice" role="status">Revisando con FN Shop que cada objeto se pueda enviar…</p>}
+      {phase === "checking" && <p className="ac-notice" role="status">Revisando con {GIFT_PROVIDER_NAME[provider]} que cada objeto se pueda enviar…</p>}
       {error && <p className="ac-notice is-error" role="alert">{error}</p>}
       {items.length > 0 && <ul className="ac-send-list" aria-label="Objetos a enviar">
         {items.map((item) => <li key={item.itemId}>
@@ -124,7 +127,9 @@ export function SendGiftDialog({ order, confirmPayment, onClose, onFinished }: {
         </li>)}
       </ul>}
       {phase === "ready" && blocked.length > 0 && <p className="ac-send-warning">No se envía nada mientras haya objetos que no se pueden enviar. Resuelve el motivo o entrégalo a mano.</p>}
-      {canSend && <p className="ac-send-warning">Se usarán {requests} {requests === 1 ? "request" : "requests"} de FN Shop y se gastarán paVos de las cuentas remitentes. Un regalo enviado no se puede deshacer.</p>}
+      {canSend && <p className="ac-send-warning">{provider === "own"
+        ? "Lo envía nuestra API desde tus cuentas de Epic y se gastarán sus paVos. Un regalo enviado no se puede deshacer."
+        : `Se usarán ${requests} ${requests === 1 ? "request" : "requests"} de FN Shop y se gastarán paVos de las cuentas remitentes. Un regalo enviado no se puede deshacer.`}</p>}
       <div className="ac-send-actions">
         <button type="button" className="admin-action-cancel" disabled={phase === "sending"} onClick={onClose}>Volver</button>
         <button type="button" className="admin-action-confirm danger" disabled={!canSend} onClick={() => void send()}>
