@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CatalogItem } from "@/features/catalog/domain/catalog-item";
 import { calculateAuthoritativePrice, type PriceTier } from "../domain/price-calculator";
+import { calculateCollectionPrice, priceCollection } from "../domain/collection-rate";
 
 export interface CatalogPricingProvider {
   price(items: readonly CatalogItem[]): Promise<ReadonlyMap<string, number | null>>;
@@ -28,18 +29,23 @@ export class SupabasePricingProvider implements CatalogPricingProvider {
   async price(items: readonly CatalogItem[]): Promise<ReadonlyMap<string, number | null>> {
     const now = new Date().toISOString();
     const ids = [...new Set(items.map((item) => item.mainId))];
-    const [rulesResult, overridesResults] = await Promise.all([
+    const [rulesResult, overridesResults, collectionRatesResult] = await Promise.all([
       this.database.from("price_rules").select("min_vbucks,max_vbucks,mxn_per_hundred")
         .eq("active", true).lte("effective_from", now).or(`effective_until.is.null,effective_until.gt.${now}`)
         .order("min_vbucks"),
       Promise.all(chunk(ids, OVERRIDE_IDS_PER_REQUEST).map((group) =>
         this.database.from("offer_price_overrides").select("main_id,amount_mxn_cents,effective_from")
           .in("main_id", group).eq("active", true).lte("effective_from", now)
-          .or(`effective_until.is.null,effective_until.gt.${now}`).order("effective_from", { ascending: false })))
+          .or(`effective_until.is.null,effective_until.gt.${now}`).order("effective_from", { ascending: false }))),
+      this.database.from("collection_price_rules").select("collection,mxn_per_hundred").eq("active", true)
     ]);
     if (rulesResult.error) throw rulesResult.error;
     const failed = overridesResults.find((result) => result.error);
     if (failed?.error) throw failed.error;
+    // Permite desplegar antes de aplicar la migración sin interrumpir el catálogo.
+    if (collectionRatesResult.error && !["42P01", "PGRST205"].includes(collectionRatesResult.error.code)) throw collectionRatesResult.error;
+    const collectionRates = new Map(((collectionRatesResult.data ?? []) as { collection: string; mxn_per_hundred: number | string }[])
+      .map((row) => [row.collection, Number(row.mxn_per_hundred)]));
 
     const tiers: PriceTier[] = ((rulesResult.data ?? []) as RuleRow[]).map((rule) => ({
       minVbucks: rule.min_vbucks,
@@ -54,7 +60,13 @@ export class SupabasePricingProvider implements CatalogPricingProvider {
 
     return new Map(items.map((item) => {
       const override = overrides.get(item.mainId);
-      try { return [item.mainId, calculateAuthoritativePrice(item.finalPriceVbucks, tiers, override === undefined ? undefined : Math.round(override * 100))] as const; }
+      try {
+        const rate = collectionRates.get(priceCollection(item));
+        const price = override === undefined && rate !== undefined
+          ? calculateCollectionPrice(item.finalPriceVbucks, rate)
+          : calculateAuthoritativePrice(item.finalPriceVbucks, tiers, override === undefined ? undefined : Math.round(override * 100));
+        return [item.mainId, price] as const;
+      }
       catch { return [item.mainId, null] as const; }
     }));
   }

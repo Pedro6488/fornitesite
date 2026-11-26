@@ -6,7 +6,7 @@ import { OVERRIDE_IDS_PER_REQUEST, SupabasePricingProvider, chunk } from "./supa
 type Row = Record<string, unknown>;
 
 /** Minimal Supabase query builder: records every `.in()` list and answers from fixed rows. */
-function fakeDatabase(tables: Record<string, Row[]>) {
+function fakeDatabase(tables: Record<string, Row[]>, errors: Record<string, { code: string }> = {}) {
   const inCalls: string[][] = [];
   const database = {
     from(table: string) {
@@ -22,9 +22,9 @@ function fakeDatabase(tables: Record<string, Row[]>) {
           return builder;
         },
         order: () => builder,
-        then(resolve: (value: { data: Row[]; error: null }) => unknown) {
+        then(resolve: (value: { data: Row[] | null; error: { code: string } | null }) => unknown) {
           const rows = tables[table] ?? [];
-          return Promise.resolve({ data: ids ? rows.filter((row) => ids!.includes(String(row.main_id))) : rows, error: null }).then(resolve);
+          return Promise.resolve({ data: errors[table] ? null : ids ? rows.filter((row) => ids!.includes(String(row.main_id))) : rows, error: errors[table] ?? null }).then(resolve);
         },
       };
       return builder;
@@ -36,6 +36,44 @@ function fakeDatabase(tables: Record<string, Row[]>) {
 const item = (n: number, vbucks = 800) => ({ mainId: `main-${String(n).padStart(4, "0")}-${"x".repeat(20)}`, finalPriceVbucks: vbucks }) as unknown as CatalogItem;
 
 describe("SupabasePricingProvider", () => {
+  it.each(["42P01", "PGRST205"])("conserva los precios anteriores cuando falta la tabla nueva (%s)", async (code) => {
+    const items = [item(0), item(1)];
+    const tables = {
+      price_rules: [{ min_vbucks: 1, max_vbucks: null, mxn_per_hundred: 10 }],
+      offer_price_overrides: [{ main_id: items[1].mainId, amount_mxn_cents: 7750 }],
+    };
+    const missing = new SupabasePricingProvider(fakeDatabase(tables, { collection_price_rules: { code } }).database);
+    const migrated = new SupabasePricingProvider(fakeDatabase({ ...tables, collection_price_rules: [] }).database);
+    const before = await missing.price(items);
+    const after = await migrated.price(items);
+    expect([...after]).toEqual([...before]);
+    expect(after.get(items[0].mainId)).toBe(80);
+    expect(after.get(items[1].mainId)).toBe(77.5);
+  });
+
+  it("aplica una regla a todos los objetos de un apartado, conserva excepciones y no descuenta otras secciones", async () => {
+    const items = [0, 1, 2, 3].map((n) => ({ ...item(n), collaboration: n === 2 ? "Miku" : n === 3 ? null : " Es hora de anotar " }));
+    const { database } = fakeDatabase({
+      price_rules: [{ min_vbucks: 1, max_vbucks: null, mxn_per_hundred: 10 }],
+      collection_price_rules: [{ collection: "Es hora de anotar", mxn_per_hundred: "7.50" }, { collection: "Otros objetos", mxn_per_hundred: 5 }],
+      offer_price_overrides: [{ main_id: items[1].mainId, amount_mxn_cents: 7750 }],
+    });
+    const prices = await new SupabasePricingProvider(database).price(items);
+    expect(prices.get(items[0].mainId)).toBe(60);
+    expect(prices.get(items[1].mainId)).toBe(77.5);
+    expect(prices.get(items[2].mainId)).toBe(80);
+    expect(prices.get(items[3].mainId)).toBe(40);
+    // Un objeto recién agregado hereda la regla sin crear excepciones individuales.
+    const added = { ...item(10), collaboration: "Es hora de anotar" };
+    expect((await new SupabasePricingProvider(database).price([added])).get(added.mainId)).toBe(60);
+  });
+
+  it("puede fijar tarifa de colección aunque no exista un rango general", async () => {
+    const current = { ...item(0, 1500), collaboration: "Miku" };
+    const { database } = fakeDatabase({ price_rules: [], collection_price_rules: [{ collection: "Miku", mxn_per_hundred: 7.5 }] });
+    expect((await new SupabasePricingProvider(database).price([current])).get(current.mainId)).toBe(113);
+  });
+
   it("asks for overrides in groups, so a full shop never makes a URL too long", async () => {
     const items = Array.from({ length: 560 }, (_, n) => item(n));
     const { database, inCalls } = fakeDatabase({
