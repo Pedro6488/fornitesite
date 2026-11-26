@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createCatalogService } from "./get-catalog";
 
+const cacheMock = vi.hoisted(() => ({ calls: [] as unknown[][] }));
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: () => unknown, ...options: unknown[]) => { cacheMock.calls.push(options); return fn; }
+}));
+
 const fortniteResponse = {
   data: {
     entries: [
@@ -39,7 +44,7 @@ describe("createCatalogService", () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(fetchMock).toHaveBeenCalledWith(
       "https://fortnite-api.com/v2/shop?language=es-419",
-      { next: { revalidate: 300 } }
+      { cache: "no-store" }
     );
     expect(item).toEqual(expect.objectContaining({
       mainId: "CID_REAL",
@@ -64,5 +69,15 @@ describe("createCatalogService", () => {
     expect(String(fetchMock.mock.calls[0][0])).not.toContain("fnitem.shop");
     expect(item).toEqual(expect.objectContaining({ offerId: "fortnite-offer", giftable: true }));
     vi.unstubAllEnvs();
+  });
+
+  it("cachea la lista procesada y no la respuesta cruda de Fortnite-API", () => {
+    cacheMock.calls.length = 0;
+    createCatalogService({});
+
+    expect(cacheMock.calls).toEqual([[
+      ["fortnite-catalog", "https://fortnite-api.com/v2"],
+      { revalidate: 300, tags: ["fortnite-catalog"] }
+    ]]);
   });
 });

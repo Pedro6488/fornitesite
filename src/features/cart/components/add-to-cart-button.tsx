@@ -4,17 +4,21 @@ import { useState } from "react";
 import { Check, ShoppingBag } from "lucide-react";
 import { addToCart } from "../application/cart-storage";
 import type { CartItemSnapshot } from "../application/cart-storage";
-import { useOptionalCommerceState } from "@/features/commerce/components/commerce-state-provider";
+import { CART_ITEM_UNAVAILABLE, useOptionalCommerceState } from "@/features/commerce/components/commerce-state-provider";
 
-export function AddToCartButton({ item, compact = false, redirectTo, disabled = false }: { item: CartItemSnapshot; compact?: boolean; redirectTo?: string; disabled?: boolean }) {
+export function AddToCartButton({ item, compact = false, redirectTo, disabled: disabledByParent = false }: { item: CartItemSnapshot; compact?: boolean; redirectTo?: string; disabled?: boolean }) {
   const commerce = useOptionalCommerceState();
   const [localAdded, setLocalAdded] = useState(false);
   const [error, setError] = useState(false);
+  // El servidor no lo aceptó: reintentar no sirve, así que el botón queda como "No disponible".
+  const [rejected, setRejected] = useState(false);
+  const disabled = disabledByParent || rejected;
   const added = commerce ? commerce.cartItemIds.includes(item.mainId) : localAdded;
 
   async function add() {
     if (disabled || added) return;
     const failure = commerce ? await commerce.addCartItem(item.mainId) : (addToCart(item), null);
+    if (failure === CART_ITEM_UNAVAILABLE) { setRejected(true); return; }
     if (failure) { setError(true); window.setTimeout(() => setError(false), 2000); return; }
     if (redirectTo) {
       window.location.assign(redirectTo);
