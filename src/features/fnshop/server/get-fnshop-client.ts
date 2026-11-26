@@ -22,6 +22,7 @@ export async function sendOperationsAlert(database: SupabaseClient, text: string
  *
  * Con `OWN_API_BASE_URL` y `OWN_API_KEY` en producción, `friend_add` y `friend_status` van
  * primero a nuestra API (FN Shop queda de respaldo) y `gift_check` se compara en paralelo.
+ * Con `OWN_API_GIFTS=on`, además, los envíos y la conciliación salen por nuestra API.
  * Sin esas variables todo sigue exactamente como antes.
  */
 export function getFnShopClient(database: SupabaseClient, options: { requireAutomatic?: boolean } = {}): FnShopCaller | null {
