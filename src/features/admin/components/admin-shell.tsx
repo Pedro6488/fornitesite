@@ -15,6 +15,12 @@ type Quota = { used: number; limit: number; simulated: boolean } | null;
 const DeliveryModeContext = createContext<DeliveryMode>("manual");
 /** Entrega manual o automática (FN Shop). Decide qué botón principal lleva cada pedido. */
 export function useDeliveryMode() { return useContext(DeliveryModeContext); }
+
+/** Quién envía los regalos: nuestra API (`OWN_API_GIFTS=on`) o FN Shop. Solo cambia los textos. */
+export type GiftProvider = "own" | "fnshop";
+const GiftProviderContext = createContext<GiftProvider>("fnshop");
+export function useGiftProvider() { return useContext(GiftProviderContext); }
+export const GIFT_PROVIDER_NAME: Record<GiftProvider, string> = { own: "nuestra API", fnshop: "FN Shop" };
 /** `short` es la etiqueta de la barra inferior en móvil; `exact` no marca la sección cuando se está en una subruta hermana. */
 type NavItem = { href: string; label: string; short?: string; exact?: boolean; icon: LucideIcon; badge?: (counts: Counts) => number };
 
@@ -60,7 +66,7 @@ function NavLink({ item, pathname, counts, onNavigate, compact = false }: { item
   </Link>;
 }
 
-export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryMode; children: ReactNode }) {
+export function AdminShell({ deliveryMode, giftProvider = "fnshop", children }: { deliveryMode: DeliveryMode; giftProvider?: GiftProvider; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -91,7 +97,7 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryM
     { href: "/admin/pavos", label: "recargas de pavos por liberar", short: "recargas", count: counts?.topups ?? 0 },
   ];
 
-  return <DeliveryModeContext.Provider value={deliveryMode}><AdminCountsContext.Provider value={{ refreshCounts: () => void reload() }}>
+  return <DeliveryModeContext.Provider value={deliveryMode}><GiftProviderContext.Provider value={giftProvider}><AdminCountsContext.Provider value={{ refreshCounts: () => void reload() }}>
     <div className="ac-shell">
       <a className="ac-skip" href="#ac-main">Saltar al contenido</a>
       <aside className="ac-side">
@@ -142,7 +148,7 @@ export function AdminShell({ deliveryMode, children }: { deliveryMode: DeliveryM
         </nav>
       </div>}
     </div>
-  </AdminCountsContext.Provider></DeliveryModeContext.Provider>;
+  </AdminCountsContext.Provider></GiftProviderContext.Provider></DeliveryModeContext.Provider>;
 }
 
 /** Encabezado común de cada pantalla: qué es, para qué sirve y sus controles. */

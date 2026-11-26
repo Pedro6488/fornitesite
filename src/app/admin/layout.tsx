@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/features/admin/components/admin-shell";
 import { getSupabaseAdmin } from "@/shared/infrastructure/supabase/admin";
 import { getSupabaseServer } from "@/shared/infrastructure/supabase/server";
+import { fnShopConfigFromEnv } from "@/shared/infrastructure/fnshop/fnshop-client";
+import { ownApiConfigFromEnv } from "@/shared/infrastructure/fnshop/own-api-router";
 import "../admin-console.css";
 
 export const metadata: Metadata = { title: "Consola · SigfriedLootBox", robots: { index: false, follow: false } };
@@ -18,5 +20,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!user) redirect("/acceso-admin");
   const { data: profile } = await database.from("profiles").select("role").eq("id", user.id).maybeSingle<{ role: string }>();
   if (profile?.role !== "admin") redirect("/cuenta?error=admin");
-  return <AdminShell deliveryMode={process.env.FULFILLMENT_MODE === "fnshop" ? "automatic" : "manual"}>{children}</AdminShell>;
+  const giftProvider = ownApiConfigFromEnv(process.env, fnShopConfigFromEnv())?.gifts ? "own" : "fnshop";
+  return <AdminShell deliveryMode={process.env.FULFILLMENT_MODE === "fnshop" ? "automatic" : "manual"} giftProvider={giftProvider}>{children}</AdminShell>;
 }
