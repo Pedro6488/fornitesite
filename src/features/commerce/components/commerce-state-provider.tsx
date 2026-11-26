@@ -67,6 +67,9 @@ type CommerceState = Readonly<{
 
 const CommerceContext = createContext<CommerceState | null>(null);
 
+/** `addCartItem` devuelve este mensaje cuando el servidor no aceptó el objeto en el carrito. */
+export const CART_ITEM_UNAVAILABLE = "Este objeto ya no está disponible en la tienda.";
+
 function legacyCartIds(): string[] {
   try {
     const value: unknown = JSON.parse(window.localStorage.getItem(LEGACY_CART_KEY) ?? "[]");
@@ -204,7 +207,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
     return () => window.clearTimeout(timeout);
   }, [refresh, validation?.giftable_at, validation?.status]);
 
-  const persistCart = useCallback(async (next: string[]) => {
+  const persistCart = useCallback(async (next: string[], addedItemId?: string) => {
     const previous = cartItemIds;
     setCartItemIds(next);
     setSyncing(true);
@@ -218,6 +221,8 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
       if (!response.ok) throw new Error(body.error ?? "No fue posible guardar el carrito.");
       if (!body.itemIds) throw new Error("El servicio no devolvió el carrito actualizado.");
       setCartItemIds(body.itemIds);
+      // /api/cart responde 200 pero quita lo que ya no está en la tienda: hay que decirlo.
+      if (addedItemId && !body.itemIds.includes(addedItemId)) return CART_ITEM_UNAVAILABLE;
       return null;
     } catch (error) {
       setCartItemIds(previous);
@@ -227,7 +232,7 @@ export function CommerceStateProvider({ children }: { children: ReactNode }) {
 
   const addCartItem = useCallback(async (itemId: string) => {
     if (cartItemIds.includes(itemId)) return null;
-    return persistCart([...cartItemIds, itemId]);
+    return persistCart([...cartItemIds, itemId], itemId);
   }, [cartItemIds, persistCart]);
   const removeCartItem = useCallback(async (itemId: string) => persistCart(cartItemIds.filter((id) => id !== itemId)), [cartItemIds, persistCart]);
 

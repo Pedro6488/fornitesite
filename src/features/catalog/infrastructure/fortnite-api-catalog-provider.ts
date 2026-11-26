@@ -68,7 +68,9 @@ export class FortniteApiCatalogProvider implements CatalogProvider {
   constructor(private readonly baseUrl: string) {}
 
   async getCurrentCatalog(): Promise<readonly CatalogItem[]> {
-    const response = await fetch(`${this.baseUrl}/shop?language=es-419`, { next: { revalidate: 300 } });
+    // Sin caché de fetch: la respuesta cruda pasa de 2 MB, Next no la guarda y se quedaba sirviendo
+    // la tienda anterior. La lista ya procesada (mucho más chica) se cachea en get-catalog.ts.
+    const response = await fetch(`${this.baseUrl}/shop?language=es-419`, { cache: "no-store" });
     if (!response.ok) throw new Error(`Fortnite-API respondió ${response.status}.`);
     const payload = record(await response.json());
     const data = record(payload.data);
