@@ -5,7 +5,7 @@ import { AdminActionModal } from "@/shared/components/admin-action-modal";
 import type { OrderStatus } from "@/features/orders/domain/order";
 import { formatOrderMoney, shortOrderId, type OrderMoney } from "../application/format";
 import type { OrderAction } from "../application/order-queues";
-import { useAdminCounts } from "./admin-shell";
+import { useAdminCounts, useGiftProvider } from "./admin-shell";
 import { DeliveryReportList, SendGiftDialog, type DeliveryReport } from "./send-gift-dialog";
 import { useAdminRequest } from "./use-admin-request";
 
@@ -19,6 +19,7 @@ type Notice = { text: string; error: boolean; detail?: ReactNode };
  */
 export function useOrderActions({ reload }: { reload: () => void | Promise<void> }) {
   const request = useAdminRequest();
+  const provider = useGiftProvider();
   const { refreshCounts } = useAdminCounts();
   const [pending, setPending] = useState<{ order: ActionableOrder; action: OrderAction } | null>(null);
   const [sending, setSending] = useState<{ order: ActionableOrder; confirmPayment: boolean } | null>(null);
@@ -75,7 +76,9 @@ export function useOrderActions({ reload }: { reload: () => void | Promise<void>
     confirmLabel: "Sí, ya lo entregué",
   } : action.kind === "reconcile" ? {
     title: "Conciliar envíos",
-    description: `Busca en el historial de FN Shop los envíos sin confirmar del pedido ${shortOrderId(order.id)}. Usa 1 request por objeto dudoso y no envía nada.`,
+    description: provider === "own"
+      ? `Busca en el historial de nuestra API (y en el de FN Shop si no lo conoce) los envíos sin confirmar del pedido ${shortOrderId(order.id)}. No envía nada.`
+      : `Busca en el historial de FN Shop los envíos sin confirmar del pedido ${shortOrderId(order.id)}. Usa 1 request por objeto dudoso y no envía nada.`,
     confirmLabel: "Buscar en el historial",
   } : action.kind === "status" && action.to === "paid" ? {
     title: "Confirmar pago",

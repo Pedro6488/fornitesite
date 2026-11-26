@@ -75,7 +75,7 @@ export function OrderDetail({ orderId }: { orderId: string }) {
       <div>
         <span className={`ac-pill status-${order.status}`}>{ORDER_STATUS_LABELS[order.status]}</span>
         <h2 id="ac-next-title">{primary ? "Qué sigue" : sending ? "Enviando" : "Pedido cerrado"}</h2>
-        <p>{primary ? queue.hint : sending ? "FN Shop está enviando los regalos. Actualiza en un momento; si se queda así varios minutos, usa «Conciliar» en Otras acciones." : `Este pedido terminó como «${ORDER_STATUS_LABELS[order.status]}». No hay nada más que hacer.`}</p>
+        <p>{primary ? queue.hint : sending ? "Se están enviando los regalos. Actualiza en un momento; si se queda así varios minutos, usa «Conciliar» en Otras acciones." : `Este pedido terminó como «${ORDER_STATUS_LABELS[order.status]}». No hay nada más que hacer.`}</p>
         <ol className="ac-steps" aria-label="Avance del pedido">
           {STEPS.map((step) => <li key={step.label} className={step.reached(order) ? "is-done" : ""}>{step.label}</li>)}
         </ol>
