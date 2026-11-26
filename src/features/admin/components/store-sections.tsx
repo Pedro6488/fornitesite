@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { ReferenceUpload } from "./reference-upload";
+import { CollectionPrices } from "./collection-prices";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { RefreshCw } from "lucide-react";
 import { AdminPageHeader } from "./admin-shell";
@@ -48,6 +49,7 @@ export function AdminPrices() {
   const request = useAdminRequest();
   const { data, error, loading, reload } = useAdminData<{ rules?: PriceRule[]; overrides?: PriceOverride[]; walletRate?: WalletRateInfo }>("/api/admin/prices");
   return <StoreSection title="Precios" lead="Tarifa por rango de paVos y precios especiales por objeto." error={error} loading={loading} ready={Boolean(data)} loadingText="Cargando precios…" reload={reload}>
+    <CollectionPrices />
     <Prices data={{ rules: data?.rules ?? [], overrides: data?.overrides ?? [], walletRate: data?.walletRate ?? null }} request={request} reload={reload} />
   </StoreSection>;
 }
@@ -190,8 +192,9 @@ function Prices({ data, request, reload }: { data: { rules: PriceRule[]; overrid
 <label>MXN por cada 100 paVos<input name="rate" type="number" min="0.01" step="0.01" required defaultValue={editingRule ? Number(editingRule.mxn_per_hundred) : ""} />
 </label>
 </> : <>
-<label>Colección<select value={collection} onChange={(event) => { setCollection(event.target.value); setSelectedItemId(""); }} disabled={!catalogItems || Boolean(editingOverride)}>
+<label>Colección (filtra objetos)<select value={collection} onChange={(event) => { setCollection(event.target.value); setSelectedItemId(""); }} disabled={!catalogItems || Boolean(editingOverride)}>
 <option value="">Todas las colecciones</option>{collections.map((value) => <option key={value} value={value}>{value}</option>)}</select>
+<small>Para fijar una tarifa a todos sus objetos, usa <a href="#collection-prices-heading">Tarifa para toda una colección</a>.</small>
 </label>
 <label>Objeto<select name="item" required={!editingOverride} value={selectedItemId} onChange={(event) => setSelectedItemId(event.target.value)} disabled={!catalogItems || Boolean(editingOverride) || selectableItems.length === 0}>
 <option value="">{catalogItems ? selectableItems.length ? "Selecciona un objeto" : "Todos los objetos disponibles ya tienen excepción" : "Cargando objetos…"}</option>{selectableItems.map((item) => <option key={item.mainId} value={item.mainId}>{item.name} · {item.type}</option>)}</select>
