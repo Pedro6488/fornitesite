@@ -43,7 +43,9 @@ function percentile(sorted: readonly number[], fraction: number): number | null 
 }
 
 export type OwnApiSummary = {
-  totals: { calls: number; answered: number; fallback: number; failed: number; shadow: number; today: number; lastCallAt: string | null };
+  totals: { calls: number; answered: number; fallback: number; failed: number; shadow: number; today: number; firstCallAt: string | null; lastCallAt: string | null };
+  /** Llamadas por día desde la primera llamada del periodo (no entre los 30 días completos). */
+  pacePerDay: number;
   /** De lo que la tienda preguntó (sin contar comparaciones), qué parte contestó nuestra API. */
   share: { own: number; fnshop: number; ownPercent: number | null };
   /** Contestadas entre las que debían contestarse (sin comparaciones). */
@@ -59,7 +61,7 @@ export function summarizeOwnApi(input: { own: readonly OwnCallRow[]; fnshop: rea
   for (let offset = input.days - 1; offset >= 0; offset -= 1) days.push(mexicoDay(new Date(input.now.getTime() - offset * 86_400_000)));
   const byDay = new Map(days.map((day) => [day, { day, own: 0, fnshop: 0, problems: 0 }]));
 
-  const totals = { calls: 0, answered: 0, fallback: 0, failed: 0, shadow: 0, today: 0, lastCallAt: null as string | null };
+  const totals = { calls: 0, answered: 0, fallback: 0, failed: 0, shadow: 0, today: 0, firstCallAt: null as string | null, lastCallAt: null as string | null };
   const actions = new Map<string, { action: string; calls: number; answered: number; fallback: number; failed: number; shadow: number; durations: number[] }>();
   const codes = new Map<string, number>();
 
@@ -70,6 +72,7 @@ export function summarizeOwnApi(input: { own: readonly OwnCallRow[]; fnshop: rea
     totals[outcome] += 1;
     if (day === today) totals.today += 1;
     if (!totals.lastCallAt || row.created_at > totals.lastCallAt) totals.lastCallAt = row.created_at;
+    if (!totals.firstCallAt || row.created_at < totals.firstCallAt) totals.firstCallAt = row.created_at;
     const bucket = byDay.get(day);
     if (bucket && outcome === "answered") bucket.own += 1;
     if (bucket && (outcome === "fallback" || outcome === "failed")) bucket.problems += 1;
@@ -92,8 +95,10 @@ export function summarizeOwnApi(input: { own: readonly OwnCallRow[]; fnshop: rea
 
   const asked = totals.answered + totals.fallback + totals.failed;
   const handled = totals.answered + fnshopCalls;
+  const activeDays = totals.firstCallAt ? Math.max(1, (input.now.getTime() - Date.parse(totals.firstCallAt)) / 86_400_000) : 1;
   return {
     totals,
+    pacePerDay: Math.round((totals.calls / activeDays) * 10) / 10,
     share: { own: totals.answered, fnshop: fnshopCalls, ownPercent: handled > 0 ? Math.round((totals.answered / handled) * 1000) / 10 : null },
     answerRate: asked > 0 ? Math.round((totals.answered / asked) * 1000) / 10 : null,
     byDay: [...byDay.values()],

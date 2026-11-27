@@ -36,7 +36,9 @@ describe("summarizeOwnApi", () => {
         { created_at: "2026-11-26T18:00:00Z", action: "verify_license" },
       ],
     });
-    expect(summary.totals).toMatchObject({ calls: 5, answered: 3, shadow: 1, fallback: 1, failed: 0, today: 2, lastCallAt: "2026-11-26T18:27:00Z" });
+    expect(summary.totals).toMatchObject({ calls: 5, answered: 3, shadow: 1, fallback: 1, failed: 0, today: 2, firstCallAt: "2026-11-25T20:00:00Z", lastCallAt: "2026-11-26T18:27:00Z" });
+    // Pace counts from the first call (less than a day ago → one day), not over the 30-day window.
+    expect(summary.pacePerDay).toBe(5);
     expect(summary.share).toEqual({ own: 3, fnshop: 2, ownPercent: 60 });
     expect(summary.answerRate).toBe(75);
     expect(summary.byDay).toEqual([
@@ -52,6 +54,7 @@ describe("summarizeOwnApi", () => {
     const summary = summarizeOwnApi({ now, days: 7, own: [], fnshop: [] });
     expect(summary.share.ownPercent).toBeNull();
     expect(summary.answerRate).toBeNull();
+    expect(summary.pacePerDay).toBe(0);
     expect(summary.byDay).toHaveLength(7);
     expect(mexicoDay("2026-11-27T05:30:00Z")).toBe("2026-11-26");
   });

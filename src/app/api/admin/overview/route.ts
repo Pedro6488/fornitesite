@@ -7,6 +7,7 @@ import type { OrderStatus } from "@/features/orders/domain/order";
 import { authorizeStaff } from "@/shared/server/authorize-staff";
 import { automaticDeliveryEnabled } from "@/features/fnshop/server/get-fnshop-client";
 import { fnShopConfigFromEnv } from "@/shared/infrastructure/fnshop/fnshop-client";
+import { mexicoDay } from "@/features/admin/application/own-api-summary";
 
 // Todo sale de nuestra base. Abrir o refrescar la consola no llama a ningún proveedor.
 
@@ -76,7 +77,20 @@ async function counts(database: SupabaseClient) {
   return NextResponse.json({
     counts: { receipts: count(RECEIPT_REVIEW_STATUSES), deliver: count(statusesOf("deliver")), problem: count(statusesOf("problem")), recipients, topups: topups.error ? 0 : topups.count ?? 0 },
     fnshop: await fnShopQuota(database),
+    api: await apiToday(database),
   });
+}
+
+/** Llamadas de hoy a la API (provider = 'own') para la franja de estado. Sin llamadas a nadie. */
+async function apiToday(database: SupabaseClient) {
+  // México no tiene horario de verano desde 2022: el día empieza a las 00:00 UTC-6.
+  const start = new Date(`${mexicoDay(new Date())}T00:00:00-06:00`).toISOString();
+  const [all, failed] = await Promise.all([
+    database.from("provider_api_calls").select("id", { count: "exact", head: true }).eq("provider", "own").gte("created_at", start),
+    database.from("provider_api_calls").select("id", { count: "exact", head: true }).eq("provider", "own").gte("created_at", start).or("error.not.is.null,http_status.gte.500,decision.eq.fallback_to_fnshop"),
+  ]);
+  if (all.error) return null;
+  return { today: all.count ?? 0, problems: failed.error ? 0 : failed.count ?? 0 };
 }
 
 /** Cuota de FN Shop para la franja de estado. Se lee de nuestra bitácora: 0 requests. */
