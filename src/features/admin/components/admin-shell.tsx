@@ -11,6 +11,7 @@ import { useAdminData } from "./use-admin-request";
 
 type Counts = { receipts: number; deliver: number; problem: number; recipients: number; topups?: number };
 type Quota = { used: number; limit: number; simulated: boolean } | null;
+type ApiToday = { today: number; problems: number } | null;
 
 const DeliveryModeContext = createContext<DeliveryMode>("manual");
 /** Entrega manual o automática (FN Shop). Decide qué botón principal lleva cada pedido. */
@@ -33,7 +34,7 @@ const OPERATION: readonly NavItem[] = [
 ];
 
 const FNSHOP_ITEM: NavItem = { href: "/admin/fnshop", label: "FN Shop", icon: Gift };
-const OWN_API_ITEM: NavItem = { href: "/admin/api-propia", label: "Nuestra API", icon: Server };
+const OWN_API_ITEM: NavItem = { href: "/admin/api-propia", label: "API", icon: Server };
 
 const STORE: readonly NavItem[] = [
   { href: "/admin/usuarios", label: "Usuarios registrados", icon: Users },
@@ -71,9 +72,10 @@ export function AdminShell({ deliveryMode, giftProvider = "fnshop", children }: 
   const router = useRouter();
   const [moreOpen, setMoreOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const { data, reload } = useAdminData<{ counts: Counts; fnshop?: Quota }>("/api/admin/overview?view=counts", { refreshMs: REFRESH_MS });
+  const { data, reload } = useAdminData<{ counts: Counts; fnshop?: Quota; api?: ApiToday }>("/api/admin/overview?view=counts", { refreshMs: REFRESH_MS });
   const counts = data?.counts ?? null;
   const quota = data?.fnshop ?? null;
+  const apiToday = data?.api ?? null;
   const ModeIcon = deliveryMode === "automatic" ? Zap : Hand;
   // FN Shop se ve también en modo manual: ahí se verifica la key antes de encender la entrega automática.
   const operation = [...OPERATION, OWN_API_ITEM, FNSHOP_ITEM];
@@ -118,13 +120,16 @@ export function AdminShell({ deliveryMode, giftProvider = "fnshop", children }: 
 
       <div className="ac-body">
         <div className="ac-strip" role="status" aria-label="Estado de la operación">
-          <span className={`ac-mode is-${deliveryMode}`} title={deliveryMode === "automatic" ? "Al confirmar el pago, el sistema envía el regalo." : "Los regalos se envían a mano en Fortnite y aquí se marcan como entregados."}>
-            <ModeIcon aria-hidden="true" size={14} />{deliveryMode === "automatic" ? "Entrega automática" : "Entrega manual"}
+          <span className={`ac-mode is-${deliveryMode}`} title={deliveryMode === "automatic" ? `Al confirmar el pago, el sistema envía el regalo por ${giftProvider === "own" ? "la API" : "FN Shop"}.` : "Los regalos se envían a mano en Fortnite y aquí se marcan como entregados."}>
+            <ModeIcon aria-hidden="true" size={14} />{deliveryMode === "automatic" ? `Entrega automática · ${giftProvider === "own" ? "API" : "FN Shop"}` : "Entrega manual"}
           </span>
           {strip.map((entry) => <Link key={entry.href} href={entry.href} className={entry.count > 0 ? "is-busy" : ""} aria-label={`${entry.count} ${entry.label}`}>
             <strong>{counts ? entry.count : "–"}</strong><span>{entry.short}</span>
           </Link>)}
-          {quota && <Link href="/admin/fnshop" className={`ac-quota${quotaRatio >= 0.85 ? " is-alert" : quotaRatio >= 0.7 ? " is-busy" : ""}`} aria-label={`FN Shop: ${quota.used} de ${quota.limit} requests usados${quota.simulated ? " (simulado)" : ""}`}>
+          {giftProvider === "own" && apiToday && <Link href="/admin/api-propia" className={`ac-quota${apiToday.problems > 0 ? " is-busy" : ""}`} aria-label={`API: ${apiToday.today} llamadas hoy${apiToday.problems ? `, ${apiToday.problems} con problema` : ""}`}>
+            <strong>{apiToday.today.toLocaleString("es-MX")}</strong><span>API hoy{apiToday.problems ? ` · ${apiToday.problems} con problema` : ""}</span>
+          </Link>}
+          {giftProvider !== "own" && quota && <Link href="/admin/fnshop" className={`ac-quota${quotaRatio >= 0.85 ? " is-alert" : quotaRatio >= 0.7 ? " is-busy" : ""}`} aria-label={`FN Shop: ${quota.used} de ${quota.limit} requests usados${quota.simulated ? " (simulado)" : ""}`}>
             <strong>{quota.used.toLocaleString("es-MX")}</strong><span>/ {quota.limit.toLocaleString("es-MX")} requests{quota.simulated ? " · simulado" : ""}</span>
           </Link>}
         </div>
@@ -133,12 +138,13 @@ export function AdminShell({ deliveryMode, giftProvider = "fnshop", children }: 
 
       <nav className="ac-tabbar" aria-label="Secciones">
         {OPERATION.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} compact />)}
-        <button type="button" aria-expanded={moreOpen} aria-controls="ac-more" className={[...STORE, FNSHOP_ITEM].some((item) => isCurrent(pathname, item.href, item.exact)) ? "is-current" : ""} onClick={() => setMoreOpen((open) => !open)}><Ellipsis aria-hidden="true" size={18} /><span>Más</span></button>
+        <button type="button" aria-expanded={moreOpen} aria-controls="ac-more" className={[...STORE, OWN_API_ITEM, FNSHOP_ITEM].some((item) => isCurrent(pathname, item.href, item.exact)) ? "is-current" : ""} onClick={() => setMoreOpen((open) => !open)}><Ellipsis aria-hidden="true" size={18} /><span>Más</span></button>
       </nav>
       {moreOpen && <div className="ac-more" id="ac-more">
         <button type="button" className="ac-more-backdrop" aria-label="Cerrar menú" onClick={() => setMoreOpen(false)} />
         <nav aria-label="Tienda y sesión">
           <p>Entrega</p>
+          <NavLink item={OWN_API_ITEM} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} />
           <NavLink item={FNSHOP_ITEM} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} />
           <p>Tienda</p>
           {STORE.map((item) => <NavLink key={item.href} item={item} pathname={pathname} counts={counts} onNavigate={() => setMoreOpen(false)} />)}
